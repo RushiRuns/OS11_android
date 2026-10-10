@@ -24,6 +24,7 @@ interface TaskRepository {
     fun observeCompletedSlim(): Flow<List<SlimTask>>
     fun observeMyDaySuggestions(today: String): Flow<List<SlimTask>>
     fun observeTrashSlim(): Flow<List<SlimTask>>
+    fun observeTasksByTagSlim(tagId: String): Flow<List<SlimTask>>
     fun observeActiveTaskCount(): Flow<Int>
 
     suspend fun saveTask(task: TaskEntity): TaskEntity
@@ -70,6 +71,8 @@ internal class TaskRepositoryImpl(
     override fun observeMyDaySuggestions(today: String): Flow<List<SlimTask>> = taskDao.observeMyDaySuggestions(today)
 
     override fun observeTrashSlim(): Flow<List<SlimTask>> = taskDao.observeTrashSlim()
+
+    override fun observeTasksByTagSlim(tagId: String): Flow<List<SlimTask>> = taskDao.observeTasksByTagSlim(tagId)
 
     override fun observeActiveTaskCount(): Flow<Int> = taskDao.observeActiveTaskCount()
 

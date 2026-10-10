@@ -30,7 +30,7 @@ data class SubtaskProgress(val completed: Int, val total: Int) {
 }
 
 @Singleton
-@Suppress("TooManyFunctions", "TooGenericExceptionCaught")
+@Suppress("TooManyFunctions", "TooGenericExceptionCaught", "LargeClass")
 class TaskService @Inject constructor(
     private val taskRepository: TaskRepository,
     private val countsRepository: CountsRepository,
@@ -617,4 +617,233 @@ class TaskService @Inject constructor(
             AppResult.err(AppError.Unexpected(e))
         }
     }
+
+    suspend fun reorderTask(taskId: String, newSortOrder: Double): AppResult<Unit> = withContext(ioDispatcher) {
+        try {
+            val existing = taskRepository.getById(taskId)
+                ?: return@withContext AppResult.err(AppError.NotFound)
+            val updated = existing.copy(
+                sortOrder = newSortOrder,
+                updatedAt = clock.nowIso(),
+            )
+            taskRepository.saveTask(updated)
+            AppResult.ok(Unit)
+        } catch (e: CancellationException) {
+            throw e
+        } catch (e: Exception) {
+            AppResult.err(AppError.Unexpected(e))
+        }
+    }
+
+    suspend fun bulkComplete(taskIds: List<String>, completed: Boolean): AppResult<UndoToken> =
+        withContext(ioDispatcher) {
+            if (taskIds.isEmpty()) {
+                return@withContext AppResult.err(
+                    AppError.Validation("taskIds", "No tasks specified"),
+                )
+            }
+            try {
+                val now = clock.nowIso()
+                val previousStates = mutableMapOf<String, Pair<Boolean, String?>>()
+                for (id in taskIds) {
+                    val task = taskRepository.getById(id) ?: continue
+                    previousStates[id] = Pair(task.isCompleted, task.completedAt)
+                    val updated = task.copy(
+                        isCompleted = completed,
+                        completedAt = if (completed) now else null,
+                        updatedAt = now,
+                    )
+                    taskRepository.saveTask(updated)
+                }
+                val token = undoManager.registerUndo(
+                    description = if (completed) {
+                        "${previousStates.size} tasks completed"
+                    } else {
+                        "${previousStates.size} tasks uncompleted"
+                    },
+                ) {
+                    for ((id, prev) in previousStates) {
+                        val task = taskRepository.getById(id) ?: continue
+                        taskRepository.saveTask(
+                            task.copy(
+                                isCompleted = prev.first,
+                                completedAt = prev.second,
+                                updatedAt = clock.nowIso(),
+                            ),
+                        )
+                    }
+                    AppResult.ok(Unit)
+                }
+                AppResult.ok(token)
+            } catch (e: CancellationException) {
+                throw e
+            } catch (e: Exception) {
+                AppResult.err(AppError.Unexpected(e))
+            }
+        }
+
+    suspend fun bulkTrash(taskIds: List<String>): AppResult<UndoToken> = withContext(ioDispatcher) {
+        if (taskIds.isEmpty()) {
+            return@withContext AppResult.err(
+                AppError.Validation("taskIds", "No tasks specified"),
+            )
+        }
+        try {
+            val trashedIds = mutableListOf<String>()
+            for (id in taskIds) {
+                taskRepository.getById(id) ?: continue
+                taskRepository.trashTask(id)
+                trashedIds.add(id)
+            }
+            val token = undoManager.registerUndo(
+                description = "${trashedIds.size} tasks moved to trash",
+            ) {
+                for (id in trashedIds) {
+                    taskRepository.restoreTask(id)
+                }
+                AppResult.ok(Unit)
+            }
+            AppResult.ok(token)
+        } catch (e: CancellationException) {
+            throw e
+        } catch (e: Exception) {
+            AppResult.err(AppError.Unexpected(e))
+        }
+    }
+
+    suspend fun bulkMove(
+        taskIds: List<String>,
+        areaId: String?,
+        projectId: String?,
+        sectionId: String? = null,
+    ): AppResult<UndoToken> = withContext(ioDispatcher) {
+        if (taskIds.isEmpty()) {
+            return@withContext AppResult.err(
+                AppError.Validation("taskIds", "No tasks specified"),
+            )
+        }
+        try {
+            val now = clock.nowIso()
+            val previousLocations = mutableMapOf<String, Triple<String?, String?, String?>>()
+            for (id in taskIds) {
+                val task = taskRepository.getById(id) ?: continue
+                previousLocations[id] = Triple(task.areaId, task.projectId, task.sectionId)
+                val updated = task.copy(
+                    areaId = areaId,
+                    projectId = projectId,
+                    sectionId = sectionId,
+                    updatedAt = now,
+                )
+                taskRepository.saveTask(updated)
+            }
+            val token = undoManager.registerUndo(
+                description = "${previousLocations.size} tasks moved",
+            ) {
+                for ((id, prev) in previousLocations) {
+                    val task = taskRepository.getById(id) ?: continue
+                    taskRepository.saveTask(
+                        task.copy(
+                            areaId = prev.first,
+                            projectId = prev.second,
+                            sectionId = prev.third,
+                            updatedAt = clock.nowIso(),
+                        ),
+                    )
+                }
+                AppResult.ok(Unit)
+            }
+            AppResult.ok(token)
+        } catch (e: CancellationException) {
+            throw e
+        } catch (e: Exception) {
+            AppResult.err(AppError.Unexpected(e))
+        }
+    }
+
+    suspend fun bulkSetDueDate(
+        taskIds: List<String>,
+        dueDate: String?,
+        dueTime: String? = null,
+    ): AppResult<UndoToken> = withContext(ioDispatcher) {
+        if (taskIds.isEmpty()) {
+            return@withContext AppResult.err(
+                AppError.Validation("taskIds", "No tasks specified"),
+            )
+        }
+        try {
+            val now = clock.nowIso()
+            val previousDates = mutableMapOf<String, Pair<String?, String?>>()
+            for (id in taskIds) {
+                val task = taskRepository.getById(id) ?: continue
+                previousDates[id] = Pair(task.dueDate, task.dueTime)
+                val updated = task.copy(
+                    dueDate = dueDate,
+                    dueTime = dueTime,
+                    updatedAt = now,
+                )
+                taskRepository.saveTask(updated)
+            }
+            val token = undoManager.registerUndo(
+                description = "Due date updated for ${previousDates.size} tasks",
+            ) {
+                for ((id, prev) in previousDates) {
+                    val task = taskRepository.getById(id) ?: continue
+                    taskRepository.saveTask(
+                        task.copy(
+                            dueDate = prev.first,
+                            dueTime = prev.second,
+                            updatedAt = clock.nowIso(),
+                        ),
+                    )
+                }
+                AppResult.ok(Unit)
+            }
+            AppResult.ok(token)
+        } catch (e: CancellationException) {
+            throw e
+        } catch (e: Exception) {
+            AppResult.err(AppError.Unexpected(e))
+        }
+    }
+
+    suspend fun bulkSetPriority(taskIds: List<String>, priority: Int): AppResult<UndoToken> =
+        withContext(ioDispatcher) {
+            if (taskIds.isEmpty()) {
+                return@withContext AppResult.err(
+                    AppError.Validation("taskIds", "No tasks specified"),
+                )
+            }
+            try {
+                val now = clock.nowIso()
+                val previousPriorities = mutableMapOf<String, Int>()
+                for (id in taskIds) {
+                    val task = taskRepository.getById(id) ?: continue
+                    previousPriorities[id] = task.priority
+                    val updated = task.copy(
+                        priority = priority,
+                        updatedAt = now,
+                    )
+                    taskRepository.saveTask(updated)
+                }
+                val token = undoManager.registerUndo(
+                    description = "Priority updated for ${previousPriorities.size} tasks",
+                ) {
+                    for ((id, prev) in previousPriorities) {
+                        val task = taskRepository.getById(id) ?: continue
+                        taskRepository.saveTask(
+                            task.copy(
+                                priority = prev,
+                                updatedAt = clock.nowIso(),
+                            ),
+                        )
+                    }
+                    AppResult.ok(Unit)
+                }
+                AppResult.ok(token)
+            } catch (e: CancellationException) {
+                throw e
+            } catch (e: Exception) {
+                AppResult.err(AppError.Unexpected(e))
+            }
+        }
 }

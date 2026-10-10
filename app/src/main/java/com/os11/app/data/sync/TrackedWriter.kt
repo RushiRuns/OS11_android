@@ -587,6 +587,22 @@ class TrackedWriter(
         db.notificationHistoryDao().upsert(item)
     }
 
+    suspend fun markNotificationRead(id: String, readAt: String) {
+        db.notificationHistoryDao().markAsRead(id, readAt)
+    }
+
+    suspend fun markAllNotificationsRead(readAt: String) {
+        db.notificationHistoryDao().markAllAsRead(readAt)
+    }
+
+    suspend fun deleteNotification(id: String) {
+        db.notificationHistoryDao().deleteById(id)
+    }
+
+    suspend fun clearNotifications() {
+        db.notificationHistoryDao().clearAll()
+    }
+
     suspend fun purgeNotifications(cutoffIso: String) {
         db.notificationHistoryDao().purgeOlderThan(cutoffIso)
     }

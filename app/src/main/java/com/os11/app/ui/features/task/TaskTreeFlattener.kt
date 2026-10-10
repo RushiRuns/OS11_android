@@ -109,6 +109,7 @@ object TaskTreeFlattener {
             indentDepth = depth,
             parentTaskId = task.parentTaskId,
             workspaceId = task.workspaceId,
+            sortOrder = task.sortOrder,
         )
     }
 }

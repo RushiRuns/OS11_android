@@ -53,4 +53,13 @@ sealed interface OS11Route {
 
     @Serializable
     data object Search : OS11Route
+
+    @Serializable
+    data class TagDetail(val tagId: String, val tagName: String) : OS11Route
+
+    @Serializable
+    data object TagManager : OS11Route
+
+    @Serializable
+    data object NotificationCenter : OS11Route
 }

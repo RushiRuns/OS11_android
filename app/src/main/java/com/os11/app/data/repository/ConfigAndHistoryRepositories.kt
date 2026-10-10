@@ -40,7 +40,12 @@ internal class ModuleRepositoryImpl(private val db: OS11Database, private val tr
 
 interface NotificationRepository {
     fun observeAll(): Flow<List<NotificationHistoryEntity>>
+    fun observeUnreadCount(): Flow<Int>
     suspend fun add(item: NotificationHistoryEntity)
+    suspend fun markAsRead(id: String, readAt: String)
+    suspend fun markAllAsRead(readAt: String)
+    suspend fun delete(id: String)
+    suspend fun clearAll()
     suspend fun purgeOlderThan(cutoffIso: String)
 }
 
@@ -48,7 +53,17 @@ internal class NotificationRepositoryImpl(private val db: OS11Database, private 
     NotificationRepository {
     override fun observeAll(): Flow<List<NotificationHistoryEntity>> = db.notificationHistoryDao().observeAll()
 
+    override fun observeUnreadCount(): Flow<Int> = db.notificationHistoryDao().observeUnreadCount()
+
     override suspend fun add(item: NotificationHistoryEntity) = trackedWriter.writeNotification(item)
+
+    override suspend fun markAsRead(id: String, readAt: String) = trackedWriter.markNotificationRead(id, readAt)
+
+    override suspend fun markAllAsRead(readAt: String) = trackedWriter.markAllNotificationsRead(readAt)
+
+    override suspend fun delete(id: String) = trackedWriter.deleteNotification(id)
+
+    override suspend fun clearAll() = trackedWriter.clearNotifications()
 
     override suspend fun purgeOlderThan(cutoffIso: String) = trackedWriter.purgeNotifications(cutoffIso)
 }

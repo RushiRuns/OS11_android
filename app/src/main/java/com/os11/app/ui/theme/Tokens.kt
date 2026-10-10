@@ -143,6 +143,25 @@ data class OS11TagPalette(
 ) {
     /** Palette order matches desktop's 12-color picker. */
     val all: List<Color> = listOf(blue, cyan, teal, green, lime, yellow, orange, red, pink, purple, lavender, gray)
+
+    val allNames: List<String> = listOf(
+        "blue", "cyan", "teal", "green", "lime", "yellow",
+        "orange", "red", "pink", "purple", "lavender", "gray",
+    )
+
+    private val byName: Map<String, Color>
+        get() = mapOf(
+            "blue" to blue, "cyan" to cyan, "teal" to teal, "green" to green,
+            "lime" to lime, "yellow" to yellow, "orange" to orange, "red" to red,
+            "pink" to pink, "purple" to purple, "lavender" to lavender, "gray" to gray,
+        )
+
+    fun fromNameOrHex(value: String?): Color {
+        if (value.isNullOrBlank()) return blue
+        val key = value.lowercase().trim()
+        val idx = (value.hashCode().let { if (it < 0) -it else it }) % all.size
+        return byName[key] ?: all[idx]
+    }
 }
 
 private val White = Color.White

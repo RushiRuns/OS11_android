@@ -15,6 +15,7 @@ import kotlinx.collections.immutable.ImmutableList
 
 /**
  * Performant task list backed by LazyColumn with stable keys and content types.
+ * Supports swipe-to-complete, swipe-to-when, selection mode, and TalkBack semantics.
  */
 @Composable
 fun TaskList(
@@ -24,6 +25,11 @@ fun TaskList(
     onLongClick: (TaskUiModel) -> Unit,
     onStarClick: (TaskUiModel) -> Unit,
     modifier: Modifier = Modifier,
+    onWhenClick: ((TaskUiModel) -> Unit)? = null,
+    enableSwipe: Boolean = true,
+    isSelectionMode: Boolean = false,
+    selectedTaskIds: Set<String> = emptySet(),
+    onSelectionChange: ((TaskUiModel, Boolean) -> Unit)? = null,
     emptyTitle: String = "No tasks yet",
     emptyDescription: String = "Create a task to get started.",
     contentPadding: PaddingValues = PaddingValues(bottom = OS11Theme.spacing.s16),
@@ -56,6 +62,11 @@ fun TaskList(
                     onClick = { onClick(task) },
                     onLongClick = { onLongClick(task) },
                     onStarClick = { onStarClick(task) },
+                    onWhenClick = onWhenClick?.let { { it(task) } },
+                    enableSwipe = enableSwipe,
+                    isSelectionMode = isSelectionMode,
+                    isSelected = selectedTaskIds.contains(task.id),
+                    onSelectionChange = onSelectionChange?.let { { selected -> it(task, selected) } },
                 )
             }
         }

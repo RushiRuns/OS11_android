@@ -7,6 +7,7 @@ import com.os11.app.data.db.entities.TaskTagEntity
 import com.os11.app.data.sync.TrackedWriter
 import kotlinx.coroutines.flow.Flow
 
+@Suppress("TooManyFunctions")
 interface TagRepository {
     fun observeAll(): Flow<List<TagEntity>>
     suspend fun getById(id: String): TagEntity?
@@ -19,8 +20,14 @@ interface TagRepository {
     suspend fun delete(id: String)
     suspend fun addTagToTask(taskId: String, tagId: String)
     suspend fun removeTagFromTask(taskId: String, tagId: String)
+    suspend fun getTaskIdsForTag(tagId: String): List<String>
+    fun observeTaskCountForTag(tagId: String): Flow<Int>
+    suspend fun getTaskCountForTag(tagId: String): Int
+    fun observeChildTags(parentId: String): Flow<List<TagEntity>>
+    suspend fun getChildTags(parentId: String): List<TagEntity>
 }
 
+@Suppress("TooManyFunctions")
 internal class TagRepositoryImpl(private val db: OS11Database, private val trackedWriter: TrackedWriter) :
     TagRepository {
     override fun observeAll(): Flow<List<TagEntity>> = db.tagDao().observeAll()
@@ -51,6 +58,16 @@ internal class TagRepositoryImpl(private val db: OS11Database, private val track
     override suspend fun addTagToTask(taskId: String, tagId: String) = trackedWriter.writeTaskTag(taskId, tagId)
 
     override suspend fun removeTagFromTask(taskId: String, tagId: String) = trackedWriter.deleteTaskTag(taskId, tagId)
+
+    override suspend fun getTaskIdsForTag(tagId: String): List<String> = db.taskTagDao().getTaskIdsForTag(tagId)
+
+    override fun observeTaskCountForTag(tagId: String): Flow<Int> = db.taskTagDao().observeTaskCountForTag(tagId)
+
+    override suspend fun getTaskCountForTag(tagId: String): Int = db.taskTagDao().getTaskCountForTag(tagId)
+
+    override fun observeChildTags(parentId: String): Flow<List<TagEntity>> = db.tagDao().observeChildTags(parentId)
+
+    override suspend fun getChildTags(parentId: String): List<TagEntity> = db.tagDao().getChildTags(parentId)
 }
 
 interface DependencyRepository {

@@ -6,6 +6,8 @@ import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.ExperimentalLayoutApi
+import androidx.compose.foundation.layout.FlowRow
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxSize
@@ -42,16 +44,21 @@ import androidx.compose.ui.graphics.vector.ImageVector
 import androidx.compose.ui.semantics.Role
 import androidx.compose.ui.unit.dp
 import androidx.hilt.navigation.compose.hiltViewModel
+import com.os11.app.service.tag.TagItem
 import com.os11.app.ui.components.OSButton
 import com.os11.app.ui.components.OSButtonVariant
 import com.os11.app.ui.components.OSChip
 import com.os11.app.ui.components.OSIconButton
 import com.os11.app.ui.components.OSSheet
+import com.os11.app.ui.components.OSTagDot
+import com.os11.app.ui.components.OSTagDotVariant
+import com.os11.app.ui.components.OSTagShape
 import com.os11.app.ui.components.OSTextField
 import com.os11.app.ui.navigation.OS11Route
 import com.os11.app.ui.theme.OS11Theme
 
-@OptIn(ExperimentalMaterial3Api::class)
+@OptIn(ExperimentalMaterial3Api::class, ExperimentalLayoutApi::class)
+@Suppress("CyclomaticComplexMethod")
 @Composable
 fun BrowseScreen(
     onNavigate: (OS11Route) -> Unit = {},
@@ -67,6 +74,8 @@ fun BrowseScreen(
     var newAreaName by remember { mutableStateOf("") }
     var newProjectName by remember { mutableStateOf("") }
     var newProjectAreaId by remember { mutableStateOf<String?>(null) }
+    var newTagName by remember { mutableStateOf("") }
+    var newTagColor by remember { mutableStateOf<String?>("blue") }
 
     LazyColumn(
         modifier = modifier
@@ -250,6 +259,61 @@ fun BrowseScreen(
                 )
             }
         }
+
+        // 4. Tags Section
+        item(key = "tags_header") {
+            Row(
+                modifier = Modifier.fillMaxWidth(),
+                verticalAlignment = Alignment.CenterVertically,
+                horizontalArrangement = Arrangement.SpaceBetween,
+            ) {
+                Text(
+                    text = "Tags",
+                    style = type.sectionHeader.copy(color = colors.textPrimary),
+                )
+                Row(horizontalArrangement = Arrangement.spacedBy(spacing.s1)) {
+                    OSIconButton(
+                        onClick = viewModel::openCreateTagDialog,
+                        contentDescription = "New Tag",
+                    ) {
+                        Icon(
+                            imageVector = Icons.Default.Add,
+                            contentDescription = null,
+                            tint = colors.accent,
+                        )
+                    }
+                    OSButton(
+                        onClick = { onNavigate(OS11Route.TagManager) },
+                        variant = OSButtonVariant.Secondary,
+                    ) {
+                        Text("Manage")
+                    }
+                }
+            }
+        }
+
+        item(key = "tags_content") {
+            if (state.tags.isEmpty()) {
+                Text(
+                    text = "No tags created yet",
+                    style = type.meta.copy(color = colors.textSecondary),
+                    modifier = Modifier.padding(vertical = spacing.s2),
+                )
+            } else {
+                FlowRow(
+                    modifier = Modifier.fillMaxWidth(),
+                    horizontalArrangement = Arrangement.spacedBy(spacing.s2),
+                    verticalArrangement = Arrangement.spacedBy(spacing.s2),
+                ) {
+                    state.tags.forEach { tag ->
+                        BrowseTagChip(
+                            tag = tag,
+                            onClick = { onNavigate(OS11Route.TagDetail(tag.id, tag.name)) },
+                        )
+                    }
+                }
+            }
+        }
     }
 
     // Create Area Sheet
@@ -343,6 +407,70 @@ fun BrowseScreen(
                     modifier = Modifier.fillMaxWidth(),
                 ) {
                     Text("Create Project")
+                }
+            }
+        }
+    }
+
+    // Create Tag Sheet
+    if (state.showCreateTagDialog) {
+        OSSheet(onDismissRequest = viewModel::closeCreateTagDialog) {
+            Column(
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .padding(spacing.s4),
+            ) {
+                Text(
+                    text = "New Tag",
+                    style = type.subViewTitle.copy(color = colors.textPrimary),
+                )
+                Spacer(modifier = Modifier.height(spacing.s3))
+                OSTextField(
+                    value = newTagName,
+                    onValueChange = { newTagName = it },
+                    placeholder = "Tag name (e.g. work/client)...",
+                    modifier = Modifier.fillMaxWidth(),
+                )
+                Spacer(modifier = Modifier.height(spacing.s3))
+                Text(
+                    text = "Tag Color",
+                    style = type.meta.copy(color = colors.textSecondary),
+                )
+                Spacer(modifier = Modifier.height(spacing.s2))
+                FlowRow(
+                    horizontalArrangement = Arrangement.spacedBy(spacing.s2),
+                    verticalArrangement = Arrangement.spacedBy(spacing.s2),
+                ) {
+                    colors.tags.allNames.forEach { colorName ->
+                        val isSelected = newTagColor == colorName
+                        val col = colors.tags.fromNameOrHex(colorName)
+                        Box(
+                            modifier = Modifier
+                                .size(32.dp)
+                                .clip(CircleShape)
+                                .background(col)
+                                .border(
+                                    width = if (isSelected) 2.dp else 0.dp,
+                                    color = if (isSelected) colors.textPrimary else Color.Transparent,
+                                    shape = CircleShape,
+                                )
+                                .clickable { newTagColor = colorName },
+                        )
+                    }
+                }
+                Spacer(modifier = Modifier.height(spacing.s4))
+                OSButton(
+                    onClick = {
+                        if (newTagName.isNotBlank()) {
+                            viewModel.createTag(newTagName.trim(), newTagColor)
+                            newTagName = ""
+                            newTagColor = "blue"
+                        }
+                    },
+                    variant = OSButtonVariant.Primary,
+                    modifier = Modifier.fillMaxWidth(),
+                ) {
+                    Text("Create Tag")
                 }
             }
         }
@@ -513,6 +641,42 @@ private fun ProjectRow(
         }
         Text(
             text = "$taskCount",
+            style = type.meta.copy(color = colors.textTertiary),
+        )
+    }
+}
+
+@Composable
+private fun BrowseTagChip(tag: TagItem, onClick: () -> Unit, modifier: Modifier = Modifier) {
+    val colors = OS11Theme.colors
+    val spacing = OS11Theme.spacing
+    val type = OS11Theme.type
+    val radius = OS11Theme.radius
+    val tagColor = colors.tags.fromNameOrHex(tag.color)
+    val shape = OSTagShape.fromTag(tag.name)
+
+    Row(
+        modifier = modifier
+            .clip(RoundedCornerShape(radius.full))
+            .background(colors.surfaceRaised)
+            .border(spacing.px, colors.borderSubtle, RoundedCornerShape(radius.full))
+            .clickable(role = Role.Button, onClick = onClick)
+            .padding(horizontal = spacing.s3, vertical = spacing.s2),
+        verticalAlignment = Alignment.CenterVertically,
+        horizontalArrangement = Arrangement.spacedBy(spacing.s2),
+    ) {
+        OSTagDot(
+            color = tagColor,
+            shape = shape,
+            variant = OSTagDotVariant.PillDot,
+            contentDescriptionText = "Tag ${tag.name}",
+        )
+        Text(
+            text = tag.name,
+            style = type.body.copy(color = colors.textPrimary),
+        )
+        Text(
+            text = "${tag.taskCount}",
             style = type.meta.copy(color = colors.textTertiary),
         )
     }

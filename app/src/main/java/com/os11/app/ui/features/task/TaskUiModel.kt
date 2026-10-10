@@ -1,11 +1,17 @@
 package com.os11.app.ui.features.task
 
 import androidx.compose.runtime.Immutable
+import com.os11.app.ui.components.OSTagShape
 import kotlinx.collections.immutable.ImmutableList
 import kotlinx.collections.immutable.persistentListOf
 
 @Immutable
-data class TagDotUiModel(val id: String, val name: String, val colorHex: String?)
+data class TagDotUiModel(
+    val id: String,
+    val name: String,
+    val colorHex: String?,
+    val shape: OSTagShape = OSTagShape.fromTag(name, colorHex),
+)
 
 @Immutable
 data class TaskUiModel(
@@ -26,6 +32,7 @@ data class TaskUiModel(
     val indentDepth: Int = 0,
     val parentTaskId: String? = null,
     val workspaceId: String = "",
+    val sortOrder: Double = 0.0,
 ) {
     val hasSecondLine: Boolean
         get() = formattedDueDate != null ||

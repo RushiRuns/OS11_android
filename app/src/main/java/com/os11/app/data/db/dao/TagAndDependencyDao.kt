@@ -30,9 +30,16 @@ internal interface TagDao {
 
     @Query("DELETE FROM tags WHERE id = :id")
     suspend fun deleteById(id: String)
+
+    @Query("SELECT * FROM tags WHERE parent_tag_id = :parentId ORDER BY sort_order ASC, name ASC")
+    fun observeChildTags(parentId: String): Flow<List<TagEntity>>
+
+    @Query("SELECT * FROM tags WHERE parent_tag_id = :parentId")
+    suspend fun getChildTags(parentId: String): List<TagEntity>
 }
 
 @Dao
+@Suppress("TooManyFunctions")
 internal interface TaskTagDao {
     @Query("SELECT tag_id FROM task_tags WHERE task_id = :taskId")
     suspend fun getTagIdsForTask(taskId: String): List<String>
@@ -74,6 +81,15 @@ internal interface TaskTagDao {
 
     @Query("DELETE FROM task_tags WHERE task_id = :taskId")
     suspend fun deleteByTask(taskId: String)
+
+    @Query("SELECT task_id FROM task_tags WHERE tag_id = :tagId")
+    suspend fun getTaskIdsForTag(tagId: String): List<String>
+
+    @Query("SELECT COUNT(*) FROM task_tags WHERE tag_id = :tagId")
+    fun observeTaskCountForTag(tagId: String): Flow<Int>
+
+    @Query("SELECT COUNT(*) FROM task_tags WHERE tag_id = :tagId")
+    suspend fun getTaskCountForTag(tagId: String): Int
 }
 
 @Dao

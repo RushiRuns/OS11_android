@@ -86,6 +86,7 @@ dependencies {
     implementation(libs.androidx.work.runtime.ktx)
     implementation(libs.androidx.profileinstaller)
     implementation(libs.jsoup)
+    implementation(libs.reorderable)
 
     // Compose
     implementation(platform(libs.compose.bom))

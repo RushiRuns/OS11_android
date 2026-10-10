@@ -214,13 +214,13 @@ The largest foundation phase. Sync readiness is built here or never cheaply.
 
 ## PHASE 8: Gestures, Selection, Dates (Weeks 17-18)
 
-- [ ] Swipe right complete, swipe left When sheet; visible alternative for each
-- [ ] Drag to reorder (per S-3), one tracked write on drop, none during drag
-- [ ] Nesting by Indent / Outdent; drag-offset nesting only if S-3 proved it cheap
-- [ ] Multi-select mode with bottom action bar and Select all
-- [ ] Bulk actions: complete, move, set date, tag, priority, trash
-- [ ] Date picker sheet: quick options, calendar grid, 15-minute time list, natural-language field
-- [ ] TalkBack custom actions for every swipe action
+- [x] Swipe right complete, swipe left When sheet; visible alternative for each
+- [x] Drag to reorder (per S-3), one tracked write on drop, none during drag
+- [x] Nesting by Indent / Outdent; drag-offset nesting only if S-3 proved it cheap
+- [x] Multi-select mode with bottom action bar and Select all
+- [x] Bulk actions: complete, move, set date, tag, priority, trash
+- [x] Date picker sheet: quick options, calendar grid, 15-minute time list, natural-language field
+- [x] TalkBack custom actions for every swipe action
 
 **Done when:** every gesture has a non-gesture path, verified by a manual TalkBack pass.
 
@@ -228,12 +228,12 @@ The largest foundation phase. Sync readiness is built here or never cheaply.
 
 ## PHASE 9: Tags, Priority, Notification Center (Week 19)
 
-- [ ] Tag picker sheet, inline create, nested tags
-- [ ] Tag view; tag manager with rename, recolor, merge (merge is a tracked multi-write)
-- [ ] Priority picker; critical pulse (alpha) with reduced-motion handling
-- [ ] Color-blind-safe tag shapes
-- [ ] In-app notification center and `notification_history`
-- [ ] Notification channels defined (reminders, pomodoro, follow-ups, system)
+- [x] Tag picker sheet, inline create, nested tags
+- [x] Tag view; tag manager with rename, recolor, merge (merge is a tracked multi-write)
+- [x] Priority picker; critical pulse (alpha) with reduced-motion handling
+- [x] Color-blind-safe tag shapes
+- [x] In-app notification center and `notification_history`
+- [x] Notification channels defined (reminders, pomodoro, follow-ups, system)
 
 **Done when:** tag merge leaves no orphan `task_tags` rows and is undoable.
 

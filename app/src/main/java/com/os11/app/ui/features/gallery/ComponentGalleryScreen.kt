@@ -185,10 +185,26 @@ fun ComponentGalleryScreen(modifier: Modifier = Modifier) {
 
                     Spacer(modifier = Modifier.weight(1f))
 
-                    OSTagDot(color = colors.tags.blue, variant = OSTagDotVariant.TaskRow)
-                    OSTagDot(color = colors.tags.green, variant = OSTagDotVariant.TaskRow)
-                    OSTagDot(color = colors.tags.yellow, variant = OSTagDotVariant.TaskRow)
-                    OSTagDot(color = colors.tags.red, variant = OSTagDotVariant.TaskRow)
+                    OSTagDot(
+                        color = colors.tags.blue,
+                        shape = com.os11.app.ui.components.OSTagShape.Circle,
+                        variant = OSTagDotVariant.TaskRow,
+                    )
+                    OSTagDot(
+                        color = colors.tags.green,
+                        shape = com.os11.app.ui.components.OSTagShape.Square,
+                        variant = OSTagDotVariant.TaskRow,
+                    )
+                    OSTagDot(
+                        color = colors.tags.yellow,
+                        shape = com.os11.app.ui.components.OSTagShape.Triangle,
+                        variant = OSTagDotVariant.TaskRow,
+                    )
+                    OSTagDot(
+                        color = colors.tags.red,
+                        shape = com.os11.app.ui.components.OSTagShape.Diamond,
+                        variant = OSTagDotVariant.TaskRow,
+                    )
                 }
             }
 

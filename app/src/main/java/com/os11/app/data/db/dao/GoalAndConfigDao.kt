@@ -54,6 +54,21 @@ internal interface NotificationHistoryDao {
     @Insert(onConflict = OnConflictStrategy.REPLACE)
     suspend fun upsert(item: NotificationHistoryEntity)
 
+    @Query("SELECT COUNT(*) FROM notification_history WHERE read_at IS NULL")
+    fun observeUnreadCount(): Flow<Int>
+
+    @Query("UPDATE notification_history SET read_at = :readAt WHERE id = :id")
+    suspend fun markAsRead(id: String, readAt: String)
+
+    @Query("UPDATE notification_history SET read_at = :readAt WHERE read_at IS NULL")
+    suspend fun markAllAsRead(readAt: String)
+
+    @Query("DELETE FROM notification_history WHERE id = :id")
+    suspend fun deleteById(id: String)
+
+    @Query("DELETE FROM notification_history")
+    suspend fun clearAll()
+
     @Query("DELETE FROM notification_history WHERE created_at < :cutoffIso")
     suspend fun purgeOlderThan(cutoffIso: String)
 }

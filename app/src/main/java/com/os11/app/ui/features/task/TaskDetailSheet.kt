@@ -1,8 +1,12 @@
 package com.os11.app.ui.features.task
 
+import androidx.compose.foundation.background
+import androidx.compose.foundation.border
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.ExperimentalLayoutApi
+import androidx.compose.foundation.layout.FlowRow
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxWidth
@@ -11,6 +15,7 @@ import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.rememberScrollState
+import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.outlined.KeyboardArrowRight
@@ -31,14 +36,22 @@ import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.draw.clip
 import androidx.compose.ui.semantics.Role
 import androidx.compose.ui.unit.dp
+import com.os11.app.service.tag.TagItem
 import com.os11.app.ui.components.OSCheckbox
 import com.os11.app.ui.components.OSChip
 import com.os11.app.ui.components.OSDatePickerSheet
 import com.os11.app.ui.components.OSIconButton
+import com.os11.app.ui.components.OSPriority
+import com.os11.app.ui.components.OSPriorityPicker
 import com.os11.app.ui.components.OSSheet
+import com.os11.app.ui.components.OSTagDot
+import com.os11.app.ui.components.OSTagDotVariant
+import com.os11.app.ui.components.OSTagShape
 import com.os11.app.ui.components.OSTextField
+import com.os11.app.ui.components.TagPickerSheet
 import com.os11.app.ui.components.note.NoteEditor
 import com.os11.app.ui.theme.OS11Theme
 
@@ -46,7 +59,7 @@ import com.os11.app.ui.theme.OS11Theme
  * Task detail bottom sheet implementing progressive disclosure:
  * Sections collapsed by default; empty sections render nothing until expanded.
  */
-@OptIn(ExperimentalMaterial3Api::class)
+@OptIn(ExperimentalMaterial3Api::class, ExperimentalLayoutApi::class)
 @Composable
 fun TaskDetailSheet(
     title: String,
@@ -56,6 +69,8 @@ fun TaskDetailSheet(
     priority: Int,
     isCompleted: Boolean,
     subtasks: List<TaskUiModel>,
+    tags: List<TagItem> = emptyList(),
+    allTags: List<TagItem> = emptyList(),
     onTitleChange: (String) -> Unit,
     onNotesChange: (String) -> Unit,
     onDueDateChange: (String?) -> Unit,
@@ -63,6 +78,9 @@ fun TaskDetailSheet(
     onCompletedChange: (Boolean) -> Unit,
     onAddSubtask: (String) -> Unit,
     onSubtaskCompletedChange: (String, Boolean) -> Unit,
+    onAddTag: ((String) -> Unit)? = null,
+    onRemoveTag: ((String) -> Unit)? = null,
+    onCreateTag: ((String, String?) -> Unit)? = null,
     onDismissRequest: () -> Unit,
     modifier: Modifier = Modifier,
 ) {
@@ -74,6 +92,7 @@ fun TaskDetailSheet(
     var currentNotes by remember(notes) { mutableStateOf(notes ?: "") }
     var currentPriority by remember(priority) { mutableIntStateOf(priority) }
     var showDatePicker by remember { mutableStateOf(false) }
+    var showTagPicker by remember { mutableStateOf(false) }
 
     var isNotesExpanded by remember { mutableStateOf(!notes.isNullOrBlank()) }
     var isSubtasksExpanded by remember { mutableStateOf(subtasks.isNotEmpty()) }
@@ -120,6 +139,15 @@ fun TaskDetailSheet(
                     currentPriority = pLevel
                     onPriorityChange(pLevel)
                 },
+            )
+
+            Spacer(modifier = Modifier.height(spacing.s3))
+
+            // Tags Row
+            TaskDetailTagsRow(
+                tags = tags,
+                onRemoveTag = onRemoveTag,
+                onAddTagClick = { showTagPicker = true },
             )
 
             Spacer(modifier = Modifier.height(spacing.s4))
@@ -179,6 +207,24 @@ fun TaskDetailSheet(
                 showDatePicker = false
                 onDueDateChange(selectedDate)
             },
+        )
+    }
+
+    if (showTagPicker) {
+        TagPickerSheet(
+            tags = allTags,
+            selectedTagIds = tags.map { it.id }.toSet(),
+            onTagToggled = { tagId ->
+                if (tags.any { it.id == tagId }) {
+                    onRemoveTag?.invoke(tagId)
+                } else {
+                    onAddTag?.invoke(tagId)
+                }
+            },
+            onCreateTag = { name, parentId ->
+                onCreateTag?.invoke(name, parentId)
+            },
+            onDismissRequest = { showTagPicker = false },
         )
     }
 }
@@ -326,26 +372,95 @@ private fun TaskDetailPriorityRow(currentPriority: Int, onPriorityChange: (Int) 
     val spacing = OS11Theme.spacing
     val type = OS11Theme.type
 
-    Row(
+    Column(
         modifier = Modifier.fillMaxWidth(),
-        verticalAlignment = Alignment.CenterVertically,
-        horizontalArrangement = Arrangement.spacedBy(spacing.s2),
+        verticalArrangement = Arrangement.spacedBy(spacing.s2),
     ) {
         Text(
             text = "Priority:",
             style = type.meta.copy(color = colors.textSecondary),
         )
-        listOf(
-            0 to "None",
-            1 to "Low",
-            2 to "Med",
-            3 to "High",
-            4 to "Crit",
-        ).forEach { (pLevel, label) ->
+        OSPriorityPicker(
+            selectedPriority = OSPriority.fromInt(currentPriority),
+            onPriorityChange = { priority ->
+                onPriorityChange(priority.value)
+            },
+        )
+    }
+}
+
+@OptIn(ExperimentalLayoutApi::class)
+@Composable
+private fun TaskDetailTagsRow(tags: List<TagItem>, onRemoveTag: ((String) -> Unit)?, onAddTagClick: () -> Unit) {
+    val colors = OS11Theme.colors
+    val spacing = OS11Theme.spacing
+    val type = OS11Theme.type
+    val radius = OS11Theme.radius
+
+    Column(
+        modifier = Modifier.fillMaxWidth(),
+        verticalArrangement = Arrangement.spacedBy(spacing.s2),
+    ) {
+        Text(
+            text = "Tags:",
+            style = type.meta.copy(color = colors.textSecondary),
+        )
+
+        FlowRow(
+            modifier = Modifier.fillMaxWidth(),
+            horizontalArrangement = Arrangement.spacedBy(spacing.s2),
+            verticalArrangement = Arrangement.spacedBy(spacing.s2),
+        ) {
+            tags.forEach { tag ->
+                val tagColor = colors.tags.fromNameOrHex(tag.color)
+                val shape = OSTagShape.fromTag(tag.name)
+
+                Row(
+                    modifier = Modifier
+                        .clip(RoundedCornerShape(radius.full))
+                        .background(colors.surfaceRaised)
+                        .border(spacing.px, colors.borderSubtle, RoundedCornerShape(radius.full))
+                        .padding(
+                            start = spacing.s3,
+                            end = if (onRemoveTag != null) spacing.s1 else spacing.s3,
+                            top = spacing.s1,
+                            bottom = spacing.s1,
+                        ),
+                    verticalAlignment = Alignment.CenterVertically,
+                    horizontalArrangement = Arrangement.spacedBy(spacing.s1),
+                ) {
+                    OSTagDot(
+                        color = tagColor,
+                        shape = shape,
+                        variant = OSTagDotVariant.PillDot,
+                        contentDescriptionText = "Tag ${tag.name}",
+                    )
+                    Text(
+                        text = tag.name,
+                        style = type.body.copy(color = colors.textPrimary),
+                    )
+                    if (onRemoveTag != null) {
+                        OSIconButton(
+                            onClick = { onRemoveTag(tag.id) },
+                            contentDescription = "Remove tag ${tag.name}",
+                            modifier = Modifier.size(24.dp),
+                        ) {
+                            Icon(
+                                imageVector = Icons.Default.Close,
+                                contentDescription = null,
+                                tint = colors.textTertiary,
+                                modifier = Modifier.size(14.dp),
+                            )
+                        }
+                    }
+                }
+            }
+
+            // + Tag Chip
             OSChip(
-                label = label,
-                selected = currentPriority == pLevel,
-                onClick = { onPriorityChange(pLevel) },
+                label = "+ Tag",
+                selected = false,
+                onClick = onAddTagClick,
             )
         }
     }

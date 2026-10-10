@@ -15,12 +15,23 @@ import androidx.compose.ui.Modifier
 import com.os11.app.ui.theme.OS11Motion
 import com.os11.app.ui.theme.OS11Theme
 
-enum class OSPriority {
-    None,
-    Low,
-    Medium,
-    High,
-    Critical,
+enum class OSPriority(val value: Int, val label: String) {
+    None(0, "None"),
+    Low(1, "Low"),
+    Medium(2, "Medium"),
+    High(3, "High"),
+    Critical(4, "Critical"),
+    ;
+
+    companion object {
+        fun fromInt(value: Int): OSPriority = when (value) {
+            1 -> Low
+            2 -> Medium
+            3 -> High
+            4 -> Critical
+            else -> None
+        }
+    }
 }
 
 /**

@@ -28,6 +28,7 @@ import androidx.compose.material.icons.filled.DateRange
 import androidx.compose.material.icons.filled.Home
 import androidx.compose.material.icons.filled.MailOutline
 import androidx.compose.material.icons.filled.Search
+import androidx.compose.material.icons.outlined.Notifications
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.FloatingActionButton
 import androidx.compose.material3.Icon
@@ -148,6 +149,18 @@ fun OS11AppShell(modifier: Modifier = Modifier, undoManager: UndoManager? = null
                     )
                 }
 
+                // Notifications Button
+                OSIconButton(
+                    onClick = { navController.navigate(OS11Route.NotificationCenter) },
+                    contentDescription = "Notification Center",
+                ) {
+                    Icon(
+                        imageVector = Icons.Outlined.Notifications,
+                        contentDescription = null,
+                        tint = colors.textSecondary,
+                    )
+                }
+
                 // Profile Avatar Button
                 OSIconButton(
                     onClick = { showProfileMenu = true },
@@ -259,6 +272,20 @@ fun OS11AppShell(modifier: Modifier = Modifier, undoManager: UndoManager? = null
                             },
                         ),
                         OSMenuItem(
+                            title = "Tag Manager",
+                            onClick = {
+                                showProfileMenu = false
+                                navController.navigate(OS11Route.TagManager)
+                            },
+                        ),
+                        OSMenuItem(
+                            title = "Notification Center",
+                            onClick = {
+                                showProfileMenu = false
+                                navController.navigate(OS11Route.NotificationCenter)
+                            },
+                        ),
+                        OSMenuItem(
                             title = "Settings",
                             onClick = {
                                 showProfileMenu = false
@@ -353,6 +380,9 @@ private val SCREEN_TITLES = listOf(
     "AllTasks" to "All Tasks",
     "Completed" to "Completed",
     "Search" to "Search",
+    "TagDetail" to "Tag",
+    "TagManager" to "Tag Manager",
+    "NotificationCenter" to "Notifications",
 )
 
 private fun resolveScreenTitle(currentRoute: String?): String {

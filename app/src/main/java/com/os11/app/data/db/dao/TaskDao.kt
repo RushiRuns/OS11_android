@@ -264,6 +264,25 @@ internal interface TaskDao {
     )
     fun observeTrashSlim(): Flow<List<SlimTask>>
 
+    @Query(
+        """
+        SELECT t.id, t.title, t.workspace_id as workspaceId, t.area_id as areaId, t.project_id as projectId,
+               t.section_id as sectionId, t.parent_task_id as parentTaskId, t.due_date as dueDate,
+               t.due_time as dueTime, t.all_day as allDay, t.recurrence_rule as recurrenceRule,
+               t.recurrence_basis as recurrenceBasis, t.priority, t.is_starred as isStarred,
+               t.is_completed as isCompleted, t.completed_at as completedAt, t.estimated_minutes as estimatedMinutes,
+               t.sort_order as sortOrder, t.my_day_date as myDayDate, t.pomodoro_count as pomodoroCount,
+               t.scheduled_start_min as scheduledStartMin, t.scheduled_duration_min as scheduledDurationMin,
+               t.bucket, t.waiting_on as waitingOn, t.waiting_since as waitingSince, t.follow_up_date as followUpDate,
+               t.is_trashed as isTrashed, t.created_at as createdAt, t.updated_at as updatedAt
+        FROM tasks t
+        JOIN task_tags tt ON tt.task_id = t.id
+        WHERE tt.tag_id = :tagId AND t.is_trashed = 0
+        ORDER BY t.sort_order ASC, t.id ASC
+        """,
+    )
+    fun observeTasksByTagSlim(tagId: String): Flow<List<SlimTask>>
+
     @Query("SELECT COUNT(*) FROM tasks WHERE is_trashed = 0 AND is_completed = 0")
     fun observeActiveTaskCount(): Flow<Int>
 

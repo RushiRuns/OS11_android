@@ -87,6 +87,7 @@ Each of these exists exactly once. A second copy is a bug.
 | `SecretStore` | `platform/security/SecretStore.kt` | Keystore-backed AES-256-GCM secret storage | 4 | Built |
 | `DeferredStartupManager` | `platform/startup/DeferredStartupManager.kt` | Post-first-frame deferred background initializations | 4 | Built |
 | `AlarmScheduler` | `platform/alarms/AlarmScheduler.kt` | Exact alarm manager wrapper for single next-alarm arming | 1 | Built |
+| `NotificationService` | `service/notification/NotificationService.kt` | In-app notification center & platform dispatch orchestration | 9 | Built |
 
 ## Repository Methods
 
@@ -102,6 +103,7 @@ Record query methods here as they are written, grouped by repository, so a new q
 | `TaskRepository` | `observeByAreaSlim(areaId)` | `Flow<List<SlimTask>>` | 3 | Built |
 | `TaskRepository` | `observeSubtasksSlim(parentId)` | `Flow<List<SlimTask>>` | 3 | Built |
 | `TaskRepository` | `observeMyDaySlim(date)` | `Flow<List<SlimTask>>` | 3 | Built |
+| `TaskRepository` | `observeTasksByTagSlim(tagId)` | `Flow<List<SlimTask>>` | 9 | Built |
 | `TaskRepository` | `observeTrashSlim()` | `Flow<List<SlimTask>>` | 3 | Built |
 | `TaskRepository` | `observeActiveTaskCount()` | `Flow<Int>` | 3 | Built |
 | `TaskRepository` | `saveTask(task)` | `TaskEntity` | 3 | Built |
@@ -112,7 +114,7 @@ Record query methods here as they are written, grouped by repository, so a new q
 | `AreaRepository` | `observeAll()`, `getById(id)`, `save(area)`, `delete(id)` | Area queries | 3 | Built |
 | `ProjectRepository` | `observeAll()`, `observeByArea(areaId)`, `getById(id)`, `save(project)`, `delete(id)` | Project queries | 3 | Built |
 | `SectionRepository` | `observeByProject(projectId)`, `getById(id)`, `save(section)`, `delete(id)` | Section queries | 3 | Built |
-| `TagRepository` | `observeAll()`, `getById(id)`, `getByName(name)`, `observeTagsForTask(taskId)`, `getTagsForTasks(taskIds)`, `observeTagsForTasks(taskIds)`, `save(tag)`, `delete(id)`, `addTagToTask(taskId, tagId)`, `removeTagFromTask(taskId, tagId)` | Tag queries & batch loading | 3 | Built |
+| `TagRepository` | `observeAll()`, `getById(id)`, `getByName(name)`, `observeTagsForTask(taskId)`, `getTagsForTasks(taskIds)`, `observeTagsForTasks(taskIds)`, `observeChildTags(parentId)`, `getChildren(parentId)`, `getTaskCountForTag(tagId)`, `getTasksForTag(tagId)`, `save(tag)`, `delete(id)`, `addTagToTask(taskId, tagId)`, `removeTagFromTask(taskId, tagId)`, `repointTasks(fromTagId, toTagId)`, `repointChildTags(oldParentId, newParentId)` | Tag queries, hierarchy & batch loading | 9 | Built |
 | `DependencyRepository` | `getDependenciesForTask(taskId)`, `getAllDependencyPairs()`, `addDependency(...)`, `removeDependency(...)` | Dependency queries | 3 | Built |
 | `MilestoneRepository` | `observeByProject(projectId)`, `getById(id)`, `save(milestone)`, `delete(id)` | Milestone queries | 3 | Built |
 | `ReminderRepository` | `observeByTask(taskId)`, `getById(id)`, `save(reminder)`, `delete(id)` | Reminder queries | 3 | Built |
@@ -122,7 +124,7 @@ Record query methods here as they are written, grouped by repository, so a new q
 | `GoalRepository` | `observeAll()`, `getById(id)`, `save(goal)`, `delete(id)` | Goal queries | 3 | Built |
 | `SettingsRepository` | `observeAll()`, `getByKey(key)`, `set(key, value)`, `delete(key)` | Setting queries | 3 | Built |
 | `ModuleRepository` | `observeAll()`, `observeEnabled()`, `setModuleEnabled(id, enabled)` | Module queries | 3 | Built |
-| `NotificationRepository`| `observeRecent()`, `recordNotification(history)` | Notification queries | 3 | Built |
+| `NotificationRepository`| `observeRecent()`, `observeUnreadCount()`, `markAsRead(id)`, `markAllAsRead()`, `clearAll()`, `recordNotification(history)` | In-app notification center queries & mutation | 9 | Built |
 | `HistoryRepository` | `observeByTask(taskId)`, `purgeOlderThan(cutoffIso)` | Task history queries | 3 | Built |
 | `SearchRepository` | `searchTasks(query, limit)` | FTS5 ranked tasks | 3 | Built |
 | `CountsRepository` | `observeBrowseCounts(today)` | Single-query browse badge counts | 3 | Built |
@@ -137,6 +139,9 @@ Record query methods here as they are written, grouped by repository, so a new q
 | `OSSheet` | Modal bottom sheet container | 2 | Built |
 | `OSGlassMenu` | Translucent menu surface | 2 | Built |
 | `OSChip`, `OSTagDot`, `OSPriorityBar` | Tags and priority | 2 | Built |
+| `OSTagShape` | Color-blind safe geometric shape silhouette mapping | 9 | Built |
+| `OSPriorityPicker`, `OSPriorityPickerSheet` | Priority picker inline row and bottom sheet with critical pulse | 9 | Built |
+| `TagPickerSheet` | Nested tag search, selection, and inline tag creation sheet | 9 | Built |
 | `OSSnackbarHost`, `OSSnackbar` | Snackbar with Undo | 2 | Built |
 | `OSEmptyState` | Empty state | 2 | Built |
 | `OSProgressRing`, `OSProgressBar` | Progress indicators via Canvas | 2 | Built |
@@ -150,7 +155,8 @@ Record query methods here as they are written, grouped by repository, so a new q
 | `TaskActionsSheet` | Long-press action set | 5 | Built |
 | `TaskSortFilterSheet` | Task sort and filter bottom sheet | 5 | Built |
 | `NoteEditor` | Rich text markdown/HTML note editor | 5 | Built |
-| `ReorderableTaskList` | Shared reorder behavior | 8 | Planned |
+| `ReorderableTaskList` | Shared reorder behavior with drag-drop and fractional indexing | 8 | Built |
+| `TaskBulkActionBar` | Floating bottom action bar for multi-select bulk operations | 8 | Built |
 | `ParsePreviewChips` | Quick Add parse preview chips (dates, priority, area, project, tags, recurrence, pomodoros) | 7 | Built |
 | `QuickAddSheet` | Quick Add modal sheet with live NLP, autocomplete, voice input, enter retention | 7 | Built |
 | `SearchScreen` | FTS5 prefix search screen with grouped actions, tasks, snippets, and recents | 7 | Built |
@@ -170,7 +176,8 @@ Record query methods here as they are written, grouped by repository, so a new q
 |---|---|---|---|
 | `TrashPurgeWorker` | Daily 30-day trash purge background worker | 5 | Built |
 | `AlarmGateway` | Wraps `AlarmManager` for testability | 11 | Planned |
-| `NotificationChannels` | Channel definitions | 9 | Planned |
+| `OS11NotificationChannels` | Channel definitions and initialization | 9 | Built |
+| `NotificationPlatformDispatcher` | Platform system notification dispatcher with permission checks | 9 | Built |
 | `HapticsGateway` | Wraps `Vibrator`/`HapticFeedback` | 2 | Planned |
 | `FilePicker` | SAF contracts | 15 | Planned |
 

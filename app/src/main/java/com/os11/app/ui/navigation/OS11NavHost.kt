@@ -59,7 +59,9 @@ fun OS11NavHost(
             PomodoroScreen()
         }
         composable<OS11Route.Settings> {
-            SettingsScreen()
+            SettingsScreen(
+                onNavigate = { route -> navController.navigate(route) },
+            )
         }
         composable<OS11Route.Gallery> {
             ComponentGalleryScreen()
@@ -97,6 +99,21 @@ fun OS11NavHost(
             com.os11.app.ui.features.search.SearchScreen(
                 onNavigateBack = { navController.popBackStack() },
                 onNavigate = { route -> navController.navigate(route) },
+            )
+        }
+        composable<OS11Route.TagDetail> {
+            com.os11.app.ui.features.tags.TagDetailScreen(
+                onNavigateBack = { navController.popBackStack() },
+            )
+        }
+        composable<OS11Route.TagManager> {
+            com.os11.app.ui.features.tags.TagManagerScreen(
+                onNavigateBack = { navController.popBackStack() },
+            )
+        }
+        composable<OS11Route.NotificationCenter> {
+            com.os11.app.ui.features.notification.NotificationCenterScreen(
+                onNavigateBack = { navController.popBackStack() },
             )
         }
     }

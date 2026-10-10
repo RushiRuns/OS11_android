@@ -52,6 +52,7 @@ fun TaskActionsSheet(
     onPromote: () -> Unit,
     onTrash: () -> Unit,
     modifier: Modifier = Modifier,
+    onSelect: (() -> Unit)? = null,
 ) {
     val colors = OS11Theme.colors
     val spacing = OS11Theme.spacing
@@ -74,13 +75,24 @@ fun TaskActionsSheet(
             )
 
             ActionItem(
-                icon = if (task.isCompleted) Icons.Outlined.CheckCircle else Icons.Outlined.CheckCircle,
+                icon = Icons.Outlined.CheckCircle,
                 title = if (task.isCompleted) "Mark incomplete" else "Mark complete",
                 onClick = {
                     onDismissRequest()
                     onToggleCompleted()
                 },
             )
+
+            if (onSelect != null) {
+                ActionItem(
+                    icon = Icons.Outlined.CheckCircle,
+                    title = "Select task (multi-select)",
+                    onClick = {
+                        onDismissRequest()
+                        onSelect()
+                    },
+                )
+            }
 
             ActionItem(
                 icon = if (task.isStarred) Icons.Filled.Star else Icons.Outlined.Star,

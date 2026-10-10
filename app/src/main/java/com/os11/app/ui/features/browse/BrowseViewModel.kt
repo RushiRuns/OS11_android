@@ -6,6 +6,8 @@ import com.os11.app.service.area.AreaItem
 import com.os11.app.service.area.AreaService
 import com.os11.app.service.project.ProjectItem
 import com.os11.app.service.project.ProjectService
+import com.os11.app.service.tag.TagItem
+import com.os11.app.service.tag.TagService
 import com.os11.app.service.task.BrowseCountsItem
 import com.os11.app.service.task.TaskItem
 import com.os11.app.service.task.TaskService
@@ -28,9 +30,11 @@ data class BrowseUiState(
     val counts: BrowseCountsItem = BrowseCountsItem(),
     val areasWithProjects: List<AreaWithProjects> = emptyList(),
     val looseProjects: List<ProjectItem> = emptyList(),
+    val tags: List<TagItem> = emptyList(),
     val projectTaskCounts: Map<String, Int> = emptyMap(),
     val showCreateAreaDialog: Boolean = false,
     val showCreateProjectDialog: Boolean = false,
+    val showCreateTagDialog: Boolean = false,
     val isLoading: Boolean = false,
 )
 
@@ -39,6 +43,7 @@ class BrowseViewModel @Inject constructor(
     private val taskService: TaskService,
     private val areaService: AreaService,
     private val projectService: ProjectService,
+    private val tagService: TagService,
     private val clock: Clock,
 ) : ViewModel() {
 
@@ -50,32 +55,39 @@ class BrowseViewModel @Inject constructor(
     private val _showCreateProjectDialog = MutableStateFlow(false)
     val showCreateProjectDialog: StateFlow<Boolean> = _showCreateProjectDialog.asStateFlow()
 
+    private val _showCreateTagDialog = MutableStateFlow(false)
+    val showCreateTagDialog: StateFlow<Boolean> = _showCreateTagDialog.asStateFlow()
+
     private data class BrowseData(
         val counts: BrowseCountsItem,
         val areas: List<AreaItem>,
         val projects: List<ProjectItem>,
         val allTasks: List<TaskItem>,
+        val tags: List<TagItem>,
     )
 
     private val areasFlow = areaService.observeAreaItems(workspaceId)
     private val projectsFlow = projectService.observeProjectItems(workspaceId)
     private val allTasksFlow = taskService.observeAllTasks()
     private val countsFlow = taskService.observeBrowseCounts(clock.today())
+    private val tagsFlow = tagService.observeTagItems()
 
     private val browseDataFlow = combine(
         countsFlow,
         areasFlow,
         projectsFlow,
         allTasksFlow,
-    ) { counts, areas, projects, allTasks ->
-        BrowseData(counts, areas, projects, allTasks)
+        tagsFlow,
+    ) { counts, areas, projects, allTasks, tags ->
+        BrowseData(counts, areas, projects, allTasks, tags)
     }
 
     val uiState: StateFlow<BrowseUiState> = combine(
         browseDataFlow,
         _showCreateAreaDialog,
         _showCreateProjectDialog,
-    ) { data, showAreaDlg, showProjDlg ->
+        _showCreateTagDialog,
+    ) { data, showAreaDlg, showProjDlg, showTagDlg ->
         val activeTasks = data.allTasks.filter { !it.isCompleted && !it.isTrashed }
 
         val areaTaskCounts = mutableMapOf<String, Int>()
@@ -106,9 +118,11 @@ class BrowseViewModel @Inject constructor(
             counts = data.counts,
             areasWithProjects = areasWithProjects.toImmutableList(),
             looseProjects = looseProjects.toImmutableList(),
+            tags = data.tags.toImmutableList(),
             projectTaskCounts = projectTaskCounts,
             showCreateAreaDialog = showAreaDlg,
             showCreateProjectDialog = showProjDlg,
+            showCreateTagDialog = showTagDlg,
             isLoading = false,
         )
     }.stateIn(
@@ -133,6 +147,14 @@ class BrowseViewModel @Inject constructor(
         _showCreateProjectDialog.value = false
     }
 
+    fun openCreateTagDialog() {
+        _showCreateTagDialog.value = true
+    }
+
+    fun closeCreateTagDialog() {
+        _showCreateTagDialog.value = false
+    }
+
     fun createArea(name: String, color: String? = null) {
         if (name.isBlank()) return
         viewModelScope.launch {
@@ -155,6 +177,18 @@ class BrowseViewModel @Inject constructor(
                 color = color,
             )
             _showCreateProjectDialog.value = false
+        }
+    }
+
+    fun createTag(name: String, color: String? = null, parentTagId: String? = null) {
+        if (name.isBlank()) return
+        viewModelScope.launch {
+            tagService.getOrCreateTag(
+                name = name.trim(),
+                color = color,
+                parentTagId = parentTagId,
+            )
+            _showCreateTagDialog.value = false
         }
     }
 }

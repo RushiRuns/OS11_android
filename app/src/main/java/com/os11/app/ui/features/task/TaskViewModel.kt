@@ -2,18 +2,23 @@ package com.os11.app.ui.features.task
 
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
+import com.os11.app.service.tag.TagItem
+import com.os11.app.service.tag.TagService
 import com.os11.app.service.task.TaskItem
 import com.os11.app.service.task.TaskService
+import com.os11.domain.result.AppResult
 import com.os11.domain.time.Clock
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.collections.immutable.ImmutableList
 import kotlinx.collections.immutable.persistentListOf
 import kotlinx.collections.immutable.toImmutableList
+import kotlinx.coroutines.Job
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.SharingStarted
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.flow.combine
+import kotlinx.coroutines.flow.map
 import kotlinx.coroutines.flow.stateIn
 import kotlinx.coroutines.launch
 import javax.inject.Inject
@@ -24,7 +29,11 @@ import javax.inject.Inject
  */
 @HiltViewModel
 @Suppress("TooManyFunctions")
-class TaskViewModel @Inject constructor(private val taskService: TaskService, private val clock: Clock) : ViewModel() {
+class TaskViewModel @Inject constructor(
+    private val taskService: TaskService,
+    private val tagService: TagService,
+    private val clock: Clock,
+) : ViewModel() {
 
     private val _sortOption = MutableStateFlow(TaskSortOption.Manual)
     val sortOption: StateFlow<TaskSortOption> = _sortOption.asStateFlow()
@@ -38,8 +47,27 @@ class TaskViewModel @Inject constructor(private val taskService: TaskService, pr
     private val _detailSubtasks = MutableStateFlow<ImmutableList<TaskUiModel>>(persistentListOf())
     val detailSubtasks: StateFlow<ImmutableList<TaskUiModel>> = _detailSubtasks.asStateFlow()
 
+    private val _detailTags = MutableStateFlow<ImmutableList<TagItem>>(persistentListOf())
+    val detailTags: StateFlow<ImmutableList<TagItem>> = _detailTags.asStateFlow()
+
+    val allTags: StateFlow<ImmutableList<TagItem>> = tagService.observeTagItems()
+        .map { it.toImmutableList() }
+        .stateIn(
+            scope = viewModelScope,
+            started = SharingStarted.WhileSubscribed(5_000),
+            initialValue = persistentListOf(),
+        )
+
+    private var detailTagsJob: Job? = null
+
     private val _selectedActionsTask = MutableStateFlow<TaskUiModel?>(null)
     val selectedActionsTask: StateFlow<TaskUiModel?> = _selectedActionsTask.asStateFlow()
+
+    private val _isSelectionMode = MutableStateFlow(false)
+    val isSelectionMode: StateFlow<Boolean> = _isSelectionMode.asStateFlow()
+
+    private val _selectedTaskIds = MutableStateFlow<Set<String>>(emptySet())
+    val selectedTaskIds: StateFlow<Set<String>> = _selectedTaskIds.asStateFlow()
 
     val inboxTasks: StateFlow<ImmutableList<TaskUiModel>> = combine(
         taskService.observeInboxTasks(),
@@ -93,12 +121,33 @@ class TaskViewModel @Inject constructor(private val taskService: TaskService, pr
             val item = taskService.getTaskItemById(taskId)
             _selectedDetailTask.value = item
             loadSubtasksForDetail(taskId)
+            loadTagsForDetail(taskId)
         }
     }
 
     fun closeDetail() {
+        detailTagsJob?.cancel()
+        detailTagsJob = null
         _selectedDetailTask.value = null
         _detailSubtasks.value = persistentListOf()
+        _detailTags.value = persistentListOf()
+    }
+
+    private fun loadTagsForDetail(taskId: String) {
+        detailTagsJob?.cancel()
+        detailTagsJob = viewModelScope.launch {
+            tagService.observeTagsForTask(taskId).collect { entities ->
+                _detailTags.value = entities.map { entity ->
+                    TagItem(
+                        id = entity.id,
+                        name = entity.name,
+                        color = entity.color,
+                        parentTagId = entity.parentTagId,
+                        sortOrder = entity.sortOrder,
+                    )
+                }.toImmutableList()
+            }
+        }
     }
 
     private fun loadSubtasksForDetail(parentId: String) {
@@ -198,6 +247,120 @@ class TaskViewModel @Inject constructor(private val taskService: TaskService, pr
             if (_selectedDetailTask.value?.id == taskId) {
                 closeDetail()
             }
+        }
+    }
+
+    fun enterSelectionMode(initialTaskId: String? = null) {
+        _isSelectionMode.value = true
+        _selectedTaskIds.value = if (initialTaskId != null) setOf(initialTaskId) else emptySet()
+    }
+
+    fun toggleSelect(taskId: String) {
+        val current = _selectedTaskIds.value
+        val updated = if (current.contains(taskId)) current - taskId else current + taskId
+        _selectedTaskIds.value = updated
+        if (updated.isNotEmpty()) {
+            _isSelectionMode.value = true
+        }
+    }
+
+    fun selectAll(allIds: List<String>) {
+        _selectedTaskIds.value = allIds.toSet()
+        _isSelectionMode.value = true
+    }
+
+    fun toggleSelectAll(allIds: List<String>) {
+        if (_selectedTaskIds.value.size >= allIds.size) {
+            _selectedTaskIds.value = emptySet()
+        } else {
+            _selectedTaskIds.value = allIds.toSet()
+            _isSelectionMode.value = true
+        }
+    }
+
+    fun clearSelection() {
+        _selectedTaskIds.value = emptySet()
+        _isSelectionMode.value = false
+    }
+
+    fun bulkComplete(completed: Boolean) {
+        val ids = _selectedTaskIds.value.toList()
+        if (ids.isEmpty()) return
+        viewModelScope.launch {
+            taskService.bulkComplete(ids, completed)
+            clearSelection()
+        }
+    }
+
+    fun bulkTrash() {
+        val ids = _selectedTaskIds.value.toList()
+        if (ids.isEmpty()) return
+        viewModelScope.launch {
+            taskService.bulkTrash(ids)
+            clearSelection()
+        }
+    }
+
+    fun bulkMove(areaId: String?, projectId: String?, sectionId: String? = null) {
+        val ids = _selectedTaskIds.value.toList()
+        if (ids.isEmpty()) return
+        viewModelScope.launch {
+            taskService.bulkMove(ids, areaId, projectId, sectionId)
+            clearSelection()
+        }
+    }
+
+    fun bulkSetDueDate(dueDate: String?, dueTime: String? = null) {
+        val ids = _selectedTaskIds.value.toList()
+        if (ids.isEmpty()) return
+        viewModelScope.launch {
+            taskService.bulkSetDueDate(ids, dueDate, dueTime)
+            clearSelection()
+        }
+    }
+
+    fun bulkSetPriority(priority: Int) {
+        val ids = _selectedTaskIds.value.toList()
+        if (ids.isEmpty()) return
+        viewModelScope.launch {
+            taskService.bulkSetPriority(ids, priority)
+            clearSelection()
+        }
+    }
+
+    fun addTagToTask(taskId: String, tagId: String) {
+        viewModelScope.launch {
+            tagService.addTagToTask(taskId, tagId)
+        }
+    }
+
+    fun removeTagFromTask(taskId: String, tagId: String) {
+        viewModelScope.launch {
+            tagService.removeTagFromTask(taskId, tagId)
+        }
+    }
+
+    fun createTagAndAddToTask(taskId: String, name: String, parentId: String?) {
+        viewModelScope.launch {
+            val res = tagService.getOrCreateTag(name, parentTagId = parentId)
+            if (res is AppResult.Ok) {
+                tagService.addTagToTask(taskId, res.value.id)
+            }
+        }
+    }
+
+    fun bulkAddTag(tagId: String) {
+        val ids = _selectedTaskIds.value.toList()
+        if (ids.isEmpty()) return
+        viewModelScope.launch {
+            tagService.bulkAddTag(ids, tagId)
+            clearSelection()
+        }
+    }
+
+    fun reorderTask(taskId: String, newSortOrder: Double) {
+        viewModelScope.launch {
+            taskService.reorderTask(taskId, newSortOrder)
         }
     }
 
