@@ -1,7 +1,10 @@
 package com.os11.app.platform.startup
 
+import android.content.Context
 import com.os11.app.di.IoDispatcher
+import com.os11.app.platform.work.TrashPurgeWorker
 import com.os11.app.service.reminder.ReminderService
+import dagger.hilt.android.qualifiers.ApplicationContext
 import kotlinx.coroutines.CancellationException
 import kotlinx.coroutines.CoroutineDispatcher
 import kotlinx.coroutines.CoroutineScope
@@ -11,19 +14,11 @@ import java.util.concurrent.atomic.AtomicBoolean
 import javax.inject.Inject
 import javax.inject.Singleton
 
-/**
- * Coordinates background maintenance and system hook initializations
- * strictly AFTER the first frame is rendered.
- *
- * Architecture Rule 16 (ARCHITECTURE.md):
- * Application.onCreate does Hilt initialization only. Heavy systems
- * (sync engine, alarm reconciliation, widget refresh, backup, trash purge)
- * start lazily or after the first frame has rendered.
- */
 @Singleton
 @Suppress("TooGenericExceptionCaught")
 class DeferredStartupManager @Inject constructor(
     private val reminderService: ReminderService,
+    @param:ApplicationContext private val context: Context,
     @param:IoDispatcher private val ioDispatcher: CoroutineDispatcher,
 ) {
     private val scope = CoroutineScope(SupervisorJob() + ioDispatcher)
@@ -57,7 +52,7 @@ class DeferredStartupManager @Inject constructor(
     }
 
     private fun performTrashPurgeCheck() {
-        // Trash purge check hook; in later phases enqueues WorkManager daily purge
+        TrashPurgeWorker.scheduleDailyPurge(context)
     }
 
     private fun performWidgetRefresh() {

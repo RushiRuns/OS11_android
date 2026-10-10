@@ -82,7 +82,8 @@ Each of these exists exactly once. A second copy is a bug.
 | `UndoManager` | `service/undo/UndoManager.kt` | Service-level 100-entry undo stack and Snackbar bridge | 4 | Built |
 | `ImportService` | `service/data/` | JSON/CSV import round trip | 17 | Planned |
 | `BackupService` | `service/data/` | Daily ZIP backup | 17 | Planned |
-| `NoteSanitizer` | `service/note/` | Jsoup-based HTML sanitizer | 5 | Planned |
+| `NoteSanitizer` | `service/note/NoteSanitizer.kt` | Jsoup-based HTML sanitizer preserving TipTap attributes | 5 | Built |
+| `TaskTreeFlattener` | `ui/features/task/TaskTreeFlattener.kt` | Tree flattener on Dispatchers.Default for LazyColumn | 5 | Built |
 | `SecretStore` | `platform/security/SecretStore.kt` | Keystore-backed AES-256-GCM secret storage | 4 | Built |
 | `DeferredStartupManager` | `platform/startup/DeferredStartupManager.kt` | Post-first-frame deferred background initializations | 4 | Built |
 | `AlarmScheduler` | `platform/alarms/AlarmScheduler.kt` | Exact alarm manager wrapper for single next-alarm arming | 1 | Built |
@@ -143,8 +144,12 @@ Record query methods here as they are written, grouped by repository, so a new q
 | `OSSwitch`, `OSSegmented` | Settings and view controls | 2 | Built |
 | `OS11AppShell` | Edge-to-edge shell, top bar, bottom bar, FAB | 2 | Built |
 | `ComponentGalleryScreen` | Visual component audit harness | 2 | Built |
-| `TaskRow` | The one task row | 5 | Planned |
-| `TaskActionsSheet` | Long-press action set | 5 | Planned |
+| `TaskRow` | The one task row | 5 | Built |
+| `TaskList` | LazyColumn with stable keys and content types | 5 | Built |
+| `TaskDetailSheet` | Progressive disclosure task detail modal | 5 | Built |
+| `TaskActionsSheet` | Long-press action set | 5 | Built |
+| `TaskSortFilterSheet` | Task sort and filter bottom sheet | 5 | Built |
+| `NoteEditor` | Rich text markdown/HTML note editor | 5 | Built |
 | `ReorderableTaskList` | Shared reorder behavior | 8 | Planned |
 | `WeekStrip` | Collapsible week/month calendar | 6 | Planned |
 | `ParsePreviewChips` | Quick Add parse preview | 7 | Planned |
@@ -161,6 +166,7 @@ Record query methods here as they are written, grouped by repository, so a new q
 
 | Name | Purpose | Phase | Status |
 |---|---|---|---|
+| `TrashPurgeWorker` | Daily 30-day trash purge background worker | 5 | Built |
 | `AlarmGateway` | Wraps `AlarmManager` for testability | 11 | Planned |
 | `NotificationChannels` | Channel definitions | 9 | Planned |
 | `HapticsGateway` | Wraps `Vibrator`/`HapticFeedback` | 2 | Planned |

@@ -183,6 +183,15 @@ internal interface TaskDao {
     @Query("SELECT COUNT(*) FROM tasks WHERE is_trashed = 0 AND is_completed = 0")
     fun observeActiveTaskCount(): Flow<Int>
 
+    @Query("SELECT * FROM tasks WHERE is_trashed = 1")
+    suspend fun getTrashedTasks(): List<TaskEntity>
+
+    @Query("SELECT * FROM tasks WHERE is_trashed = 1 AND trashed_at < :cutoffIso")
+    suspend fun getTrashedTasksOlderThan(cutoffIso: String): List<TaskEntity>
+
+    @Query("SELECT * FROM tasks WHERE parent_task_id = :parentId AND is_trashed = 0")
+    suspend fun getSubtasks(parentId: String): List<TaskEntity>
+
     @Insert(onConflict = OnConflictStrategy.REPLACE)
     suspend fun upsert(task: TaskEntity)
 

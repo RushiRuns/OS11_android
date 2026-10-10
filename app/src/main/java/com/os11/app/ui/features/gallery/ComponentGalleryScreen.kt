@@ -314,6 +314,35 @@ fun ComponentGalleryScreen(modifier: Modifier = Modifier) {
                     },
                 )
             }
+
+            // 11. Task Row at Densities
+            GallerySection(title = "Task Row (Density variants: 44dp, 52dp, 60dp)") {
+                com.os11.app.ui.features.task.TaskRow(
+                    task = com.os11.app.ui.features.task.TaskUiModel(
+                        id = "gallery-1",
+                        title = "Sample task with due date & project",
+                        dueDate = "Tomorrow",
+                        formattedDueDate = "Tomorrow",
+                        projectName = "Launch OS11",
+                        priority = 3,
+                        subtaskProgress = "2/5",
+                        hasNotes = true,
+                    ),
+                    onCompletedChange = {},
+                    onClick = {},
+                    onLongClick = {},
+                    onStarClick = {},
+                )
+            }
+
+            // 12. Note Editor
+            GallerySection(title = "Note Editor") {
+                com.os11.app.ui.components.note.NoteEditor(
+                    initialText = "<h2>Sprint Notes</h2><p>Sanitized with Jsoup on save " +
+                        "per <strong>ADR-A11</strong>.</p>",
+                    onNotesChanged = {},
+                )
+            }
         }
 
         // Active Sheet Modals

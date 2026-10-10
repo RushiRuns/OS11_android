@@ -1,0 +1,418 @@
+package com.os11.app.ui.features.task
+
+import androidx.compose.foundation.clickable
+import androidx.compose.foundation.layout.Arrangement
+import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.Row
+import androidx.compose.foundation.layout.Spacer
+import androidx.compose.foundation.layout.fillMaxWidth
+import androidx.compose.foundation.layout.height
+import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.layout.size
+import androidx.compose.foundation.layout.width
+import androidx.compose.foundation.rememberScrollState
+import androidx.compose.foundation.verticalScroll
+import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.automirrored.outlined.KeyboardArrowRight
+import androidx.compose.material.icons.automirrored.outlined.List
+import androidx.compose.material.icons.filled.Add
+import androidx.compose.material.icons.filled.Close
+import androidx.compose.material.icons.outlined.DateRange
+import androidx.compose.material.icons.outlined.Edit
+import androidx.compose.material.icons.outlined.KeyboardArrowDown
+import androidx.compose.material3.ExperimentalMaterial3Api
+import androidx.compose.material3.Icon
+import androidx.compose.material3.Text
+import androidx.compose.runtime.Composable
+import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableIntStateOf
+import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.remember
+import androidx.compose.runtime.setValue
+import androidx.compose.ui.Alignment
+import androidx.compose.ui.Modifier
+import androidx.compose.ui.semantics.Role
+import androidx.compose.ui.unit.dp
+import com.os11.app.ui.components.OSCheckbox
+import com.os11.app.ui.components.OSChip
+import com.os11.app.ui.components.OSDatePickerSheet
+import com.os11.app.ui.components.OSIconButton
+import com.os11.app.ui.components.OSSheet
+import com.os11.app.ui.components.OSTextField
+import com.os11.app.ui.components.note.NoteEditor
+import com.os11.app.ui.theme.OS11Theme
+
+/**
+ * Task detail bottom sheet implementing progressive disclosure:
+ * Sections collapsed by default; empty sections render nothing until expanded.
+ */
+@OptIn(ExperimentalMaterial3Api::class)
+@Composable
+fun TaskDetailSheet(
+    title: String,
+    notes: String?,
+    dueDate: String?,
+    dueTime: String?,
+    priority: Int,
+    isCompleted: Boolean,
+    subtasks: List<TaskUiModel>,
+    onTitleChange: (String) -> Unit,
+    onNotesChange: (String) -> Unit,
+    onDueDateChange: (String?) -> Unit,
+    onPriorityChange: (Int) -> Unit,
+    onCompletedChange: (Boolean) -> Unit,
+    onAddSubtask: (String) -> Unit,
+    onSubtaskCompletedChange: (String, Boolean) -> Unit,
+    onDismissRequest: () -> Unit,
+    modifier: Modifier = Modifier,
+) {
+    val colors = OS11Theme.colors
+    val spacing = OS11Theme.spacing
+    val type = OS11Theme.type
+
+    var currentTitle by remember(title) { mutableStateOf(title) }
+    var currentNotes by remember(notes) { mutableStateOf(notes ?: "") }
+    var currentPriority by remember(priority) { mutableIntStateOf(priority) }
+    var showDatePicker by remember { mutableStateOf(false) }
+
+    var isNotesExpanded by remember { mutableStateOf(!notes.isNullOrBlank()) }
+    var isSubtasksExpanded by remember { mutableStateOf(subtasks.isNotEmpty()) }
+    var newSubtaskTitle by remember { mutableStateOf("") }
+
+    OSSheet(
+        onDismissRequest = onDismissRequest,
+        modifier = modifier,
+    ) {
+        Column(
+            modifier = Modifier
+                .fillMaxWidth()
+                .verticalScroll(rememberScrollState())
+                .padding(spacing.s4),
+        ) {
+            // Header: Complete checkbox + Title + Close button
+            TaskDetailHeader(
+                isCompleted = isCompleted,
+                title = currentTitle,
+                onCompletedChange = onCompletedChange,
+                onTitleChange = {
+                    currentTitle = it
+                    onTitleChange(it)
+                },
+                onClose = onDismissRequest,
+            )
+
+            Spacer(modifier = Modifier.height(spacing.s3))
+
+            // When / Due date row
+            TaskDetailWhenRow(
+                dueDate = dueDate,
+                dueTime = dueTime,
+                onSetDateClick = { showDatePicker = true },
+                onClearDueDate = { onDueDateChange(null) },
+            )
+
+            Spacer(modifier = Modifier.height(spacing.s3))
+
+            // Priority Selection Row
+            TaskDetailPriorityRow(
+                currentPriority = currentPriority,
+                onPriorityChange = { pLevel ->
+                    currentPriority = pLevel
+                    onPriorityChange(pLevel)
+                },
+            )
+
+            Spacer(modifier = Modifier.height(spacing.s4))
+
+            // Subtasks Section (Progressive disclosure: collapsed if empty)
+            SectionHeader(
+                title = "Subtasks (${subtasks.size})",
+                icon = Icons.AutoMirrored.Outlined.List,
+                isExpanded = isSubtasksExpanded,
+                onClick = { isSubtasksExpanded = !isSubtasksExpanded },
+            )
+
+            if (isSubtasksExpanded) {
+                TaskDetailSubtasksList(
+                    subtasks = subtasks,
+                    newSubtaskTitle = newSubtaskTitle,
+                    onNewSubtaskTitleChange = { newSubtaskTitle = it },
+                    onAddSubtask = {
+                        if (newSubtaskTitle.isNotBlank()) {
+                            onAddSubtask(newSubtaskTitle.trim())
+                            newSubtaskTitle = ""
+                        }
+                    },
+                    onSubtaskCompletedChange = onSubtaskCompletedChange,
+                )
+            }
+
+            Spacer(modifier = Modifier.height(spacing.s4))
+
+            // Notes Section (Progressive disclosure: collapsed if empty)
+            SectionHeader(
+                title = "Notes",
+                icon = Icons.Outlined.Edit,
+                isExpanded = isNotesExpanded,
+                onClick = { isNotesExpanded = !isNotesExpanded },
+            )
+
+            if (isNotesExpanded) {
+                NoteEditor(
+                    initialText = currentNotes,
+                    onNotesChanged = {
+                        currentNotes = it
+                        onNotesChange(it)
+                    },
+                    modifier = Modifier.padding(top = spacing.s2),
+                )
+            }
+
+            Spacer(modifier = Modifier.height(spacing.s6))
+        }
+    }
+
+    if (showDatePicker) {
+        OSDatePickerSheet(
+            onDismissRequest = { showDatePicker = false },
+            onDateSelected = { selectedDate ->
+                showDatePicker = false
+                onDueDateChange(selectedDate)
+            },
+        )
+    }
+}
+
+@Composable
+private fun SectionHeader(
+    title: String,
+    icon: androidx.compose.ui.graphics.vector.ImageVector,
+    isExpanded: Boolean,
+    onClick: () -> Unit,
+) {
+    val colors = OS11Theme.colors
+    val spacing = OS11Theme.spacing
+    val type = OS11Theme.type
+
+    Row(
+        modifier = Modifier
+            .fillMaxWidth()
+            .clickable(role = Role.Button, onClick = onClick)
+            .padding(vertical = spacing.s2),
+        verticalAlignment = Alignment.CenterVertically,
+    ) {
+        Icon(
+            imageVector = icon,
+            contentDescription = null,
+            tint = colors.textSecondary,
+            modifier = Modifier.size(18.dp),
+        )
+        Spacer(modifier = Modifier.width(spacing.s2))
+        Text(
+            text = title,
+            style = type.subViewTitle.copy(color = colors.textPrimary),
+            modifier = Modifier.weight(1f),
+        )
+        Icon(
+            imageVector = if (isExpanded) {
+                Icons.Outlined.KeyboardArrowDown
+            } else {
+                Icons.AutoMirrored.Outlined.KeyboardArrowRight
+            },
+            contentDescription = if (isExpanded) "Collapse" else "Expand",
+            tint = colors.textTertiary,
+            modifier = Modifier.size(20.dp),
+        )
+    }
+}
+
+@Composable
+private fun TaskDetailHeader(
+    isCompleted: Boolean,
+    title: String,
+    onCompletedChange: (Boolean) -> Unit,
+    onTitleChange: (String) -> Unit,
+    onClose: () -> Unit,
+) {
+    val colors = OS11Theme.colors
+    val spacing = OS11Theme.spacing
+
+    Row(
+        modifier = Modifier.fillMaxWidth(),
+        verticalAlignment = Alignment.CenterVertically,
+    ) {
+        OSCheckbox(
+            checked = isCompleted,
+            onCheckedChange = onCompletedChange,
+        )
+
+        Spacer(modifier = Modifier.width(spacing.s2))
+
+        OSTextField(
+            value = title,
+            onValueChange = onTitleChange,
+            modifier = Modifier.weight(1f),
+            placeholder = "Task title",
+        )
+
+        OSIconButton(
+            onClick = onClose,
+            contentDescription = "Close detail sheet",
+        ) {
+            Icon(
+                imageVector = Icons.Default.Close,
+                contentDescription = null,
+                tint = colors.textSecondary,
+            )
+        }
+    }
+}
+
+@Composable
+private fun TaskDetailWhenRow(
+    dueDate: String?,
+    dueTime: String?,
+    onSetDateClick: () -> Unit,
+    onClearDueDate: () -> Unit,
+) {
+    val colors = OS11Theme.colors
+    val spacing = OS11Theme.spacing
+
+    val whenLabel = when {
+        !dueDate.isNullOrBlank() && !dueTime.isNullOrBlank() -> "When: $dueDate $dueTime"
+        !dueDate.isNullOrBlank() -> "When: $dueDate"
+        else -> "Set date (When)"
+    }
+
+    Row(
+        modifier = Modifier.fillMaxWidth(),
+        verticalAlignment = Alignment.CenterVertically,
+        horizontalArrangement = Arrangement.spacedBy(spacing.s2),
+    ) {
+        OSChip(
+            label = whenLabel,
+            selected = !dueDate.isNullOrBlank(),
+            onClick = onSetDateClick,
+            leadingContent = {
+                Icon(
+                    imageVector = Icons.Outlined.DateRange,
+                    contentDescription = null,
+                    tint = if (!dueDate.isNullOrBlank()) colors.accent else colors.textSecondary,
+                    modifier = Modifier.size(16.dp),
+                )
+            },
+        )
+
+        if (!dueDate.isNullOrBlank()) {
+            OSIconButton(
+                onClick = onClearDueDate,
+                contentDescription = "Clear due date",
+                modifier = Modifier.size(24.dp),
+            ) {
+                Icon(
+                    imageVector = Icons.Default.Close,
+                    contentDescription = null,
+                    tint = colors.textTertiary,
+                    modifier = Modifier.size(16.dp),
+                )
+            }
+        }
+    }
+}
+
+@Composable
+private fun TaskDetailPriorityRow(currentPriority: Int, onPriorityChange: (Int) -> Unit) {
+    val colors = OS11Theme.colors
+    val spacing = OS11Theme.spacing
+    val type = OS11Theme.type
+
+    Row(
+        modifier = Modifier.fillMaxWidth(),
+        verticalAlignment = Alignment.CenterVertically,
+        horizontalArrangement = Arrangement.spacedBy(spacing.s2),
+    ) {
+        Text(
+            text = "Priority:",
+            style = type.meta.copy(color = colors.textSecondary),
+        )
+        listOf(
+            0 to "None",
+            1 to "Low",
+            2 to "Med",
+            3 to "High",
+            4 to "Crit",
+        ).forEach { (pLevel, label) ->
+            OSChip(
+                label = label,
+                selected = currentPriority == pLevel,
+                onClick = { onPriorityChange(pLevel) },
+            )
+        }
+    }
+}
+
+@Composable
+private fun TaskDetailSubtasksList(
+    subtasks: List<TaskUiModel>,
+    newSubtaskTitle: String,
+    onNewSubtaskTitleChange: (String) -> Unit,
+    onAddSubtask: () -> Unit,
+    onSubtaskCompletedChange: (String, Boolean) -> Unit,
+) {
+    val colors = OS11Theme.colors
+    val spacing = OS11Theme.spacing
+    val type = OS11Theme.type
+
+    Column(
+        modifier = Modifier
+            .fillMaxWidth()
+            .padding(start = spacing.s4, top = spacing.s2),
+    ) {
+        subtasks.forEach { subtask ->
+            Row(
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .padding(vertical = spacing.s1),
+                verticalAlignment = Alignment.CenterVertically,
+            ) {
+                OSCheckbox(
+                    checked = subtask.isCompleted,
+                    onCheckedChange = { onSubtaskCompletedChange(subtask.id, it) },
+                )
+                Spacer(modifier = Modifier.width(spacing.s2))
+                Text(
+                    text = subtask.title,
+                    style = type.body.copy(
+                        color = if (subtask.isCompleted) colors.textTertiary else colors.textPrimary,
+                    ),
+                )
+            }
+        }
+
+        // Inline add subtask input
+        Row(
+            modifier = Modifier
+                .fillMaxWidth()
+                .padding(top = spacing.s2),
+            verticalAlignment = Alignment.CenterVertically,
+        ) {
+            OSTextField(
+                value = newSubtaskTitle,
+                onValueChange = onNewSubtaskTitleChange,
+                modifier = Modifier.weight(1f),
+                placeholder = "Add subtask...",
+            )
+            Spacer(modifier = Modifier.width(spacing.s2))
+            OSIconButton(
+                onClick = onAddSubtask,
+                contentDescription = "Add subtask",
+            ) {
+                Icon(
+                    imageVector = Icons.Default.Add,
+                    contentDescription = null,
+                    tint = colors.accent,
+                )
+            }
+        }
+    }
+}

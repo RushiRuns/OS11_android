@@ -73,6 +73,7 @@ class StartupTimingTest {
         )
         deferredStartupManager = DeferredStartupManager(
             reminderService = reminderService,
+            context = context,
             ioDispatcher = Dispatchers.Unconfined,
         )
 

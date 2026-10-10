@@ -32,4 +32,7 @@ sealed interface OS11Route {
 
     @Serializable
     data object Gallery : OS11Route
+
+    @Serializable
+    data object Trash : OS11Route
 }

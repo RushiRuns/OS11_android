@@ -30,9 +30,13 @@ import androidx.compose.material.icons.filled.MailOutline
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.FloatingActionButton
 import androidx.compose.material3.Icon
+import androidx.compose.material3.SnackbarDuration
+import androidx.compose.material3.SnackbarHostState
+import androidx.compose.material3.SnackbarResult
 import androidx.compose.material3.Text
 import androidx.compose.material3.ripple
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
@@ -46,10 +50,12 @@ import androidx.compose.ui.unit.dp
 import androidx.navigation.NavGraph.Companion.findStartDestination
 import androidx.navigation.compose.currentBackStackEntryAsState
 import androidx.navigation.compose.rememberNavController
+import com.os11.app.service.undo.UndoManager
 import com.os11.app.ui.components.OSGlassMenu
 import com.os11.app.ui.components.OSIconButton
 import com.os11.app.ui.components.OSMenuItem
 import com.os11.app.ui.components.OSSheet
+import com.os11.app.ui.components.OSSnackbarHost
 import com.os11.app.ui.navigation.OS11NavHost
 import com.os11.app.ui.navigation.OS11Route
 import com.os11.app.ui.theme.OS11Theme
@@ -74,7 +80,7 @@ enum class OS11Tab(val route: OS11Route, val title: String, val icon: ImageVecto
  */
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
-fun OS11AppShell(modifier: Modifier = Modifier) {
+fun OS11AppShell(modifier: Modifier = Modifier, undoManager: UndoManager? = null) {
     val navController = rememberNavController()
     val colors = OS11Theme.colors
     val spacing = OS11Theme.spacing
@@ -82,22 +88,26 @@ fun OS11AppShell(modifier: Modifier = Modifier) {
     val type = OS11Theme.type
 
     var showProfileMenu by remember { mutableStateOf(false) }
+    val snackbarHostState = remember { SnackbarHostState() }
+
+    if (undoManager != null) {
+        LaunchedEffect(undoManager) {
+            undoManager.undoEvents.collect { token ->
+                val result = snackbarHostState.showSnackbar(
+                    message = token.actionDescription,
+                    actionLabel = "Undo",
+                    duration = SnackbarDuration.Short,
+                )
+                if (result == SnackbarResult.ActionPerformed) {
+                    undoManager.undo(token.id)
+                }
+            }
+        }
+    }
 
     val navBackStackEntry by navController.currentBackStackEntryAsState()
     val currentRoute = navBackStackEntry?.destination?.route
-
-    val screenTitle = when {
-        currentRoute?.contains("MyDay") == true -> "My Day"
-        currentRoute?.contains("Inbox") == true -> "Inbox"
-        currentRoute?.contains("Planned") == true -> "Planned"
-        currentRoute?.contains("Browse") == true -> "Browse"
-        currentRoute?.contains("Dashboard") == true -> "Dashboard"
-        currentRoute?.contains("Goals") == true -> "Goals"
-        currentRoute?.contains("Pomodoro") == true -> "Pomodoro"
-        currentRoute?.contains("Settings") == true -> "Settings"
-        currentRoute?.contains("Gallery") == true -> "Gallery"
-        else -> "OS11"
-    }
+    val screenTitle = resolveScreenTitle(currentRoute)
 
     Column(
         modifier = modifier
@@ -175,58 +185,29 @@ fun OS11AppShell(modifier: Modifier = Modifier) {
                     contentDescription = "Quick Add",
                 )
             }
+
+            // Snackbar host for Undo actions
+            OSSnackbarHost(
+                hostState = snackbarHostState,
+                modifier = Modifier
+                    .align(Alignment.BottomCenter)
+                    .padding(bottom = spacing.s4),
+            )
         }
 
         // 3. Bottom Bar
-        Row(
-            modifier = Modifier
-                .fillMaxWidth()
-                .height(layout.bottomBarHeight)
-                .background(colors.surfaceSidebar)
-                .border(spacing.px, colors.borderSubtle)
-                .windowInsetsPadding(WindowInsets.navigationBars),
-            verticalAlignment = Alignment.CenterVertically,
-        ) {
-            OS11Tab.entries.forEach { tab ->
-                val isSelected = currentRoute?.contains(tab.name) == true
-                val tabColor = if (isSelected) colors.accent else colors.textSecondary
-                val interactionSource = remember { MutableInteractionSource() }
-
-                Column(
-                    modifier = Modifier
-                        .weight(1f)
-                        .height(layout.bottomBarHeight)
-                        .clickable(
-                            role = Role.Tab,
-                            interactionSource = interactionSource,
-                            indication = ripple(color = colors.surfaceHover),
-                            onClick = {
-                                navController.navigate(tab.route) {
-                                    popUpTo(navController.graph.findStartDestination().id) {
-                                        saveState = true
-                                    }
-                                    launchSingleTop = true
-                                    restoreState = true
-                                }
-                            },
-                        ),
-                    horizontalAlignment = Alignment.CenterHorizontally,
-                    verticalArrangement = Arrangement.Center,
-                ) {
-                    Icon(
-                        imageVector = tab.icon,
-                        contentDescription = tab.title,
-                        tint = tabColor,
-                        modifier = Modifier.size(24.dp),
-                    )
-                    Spacer(modifier = Modifier.height(2.dp))
-                    Text(
-                        text = tab.title,
-                        style = type.meta.copy(color = tabColor),
-                    )
+        OS11BottomNavBar(
+            currentRoute = currentRoute,
+            onNavigate = { route ->
+                navController.navigate(route) {
+                    popUpTo(navController.graph.findStartDestination().id) {
+                        saveState = true
+                    }
+                    launchSingleTop = true
+                    restoreState = true
                 }
-            }
-        }
+            },
+        )
     }
 
     // Profile Menu Modal Sheet
@@ -257,6 +238,13 @@ fun OS11AppShell(modifier: Modifier = Modifier) {
                             },
                         ),
                         OSMenuItem(
+                            title = "Trash",
+                            onClick = {
+                                showProfileMenu = false
+                                navController.navigate(OS11Route.Trash)
+                            },
+                        ),
+                        OSMenuItem(
                             title = "Settings",
                             onClick = {
                                 showProfileMenu = false
@@ -274,5 +262,72 @@ fun OS11AppShell(modifier: Modifier = Modifier) {
                 )
             }
         }
+    }
+}
+
+@Composable
+private fun OS11BottomNavBar(currentRoute: String?, onNavigate: (OS11Route) -> Unit) {
+    val colors = OS11Theme.colors
+    val spacing = OS11Theme.spacing
+    val layout = OS11Theme.layout
+    val type = OS11Theme.type
+
+    Row(
+        modifier = Modifier
+            .fillMaxWidth()
+            .height(layout.bottomBarHeight)
+            .background(colors.surfaceSidebar)
+            .border(spacing.px, colors.borderSubtle)
+            .windowInsetsPadding(WindowInsets.navigationBars),
+        verticalAlignment = Alignment.CenterVertically,
+    ) {
+        OS11Tab.entries.forEach { tab ->
+            val isSelected = currentRoute?.contains(tab.name) == true
+            val tabColor = if (isSelected) colors.accent else colors.textSecondary
+            val interactionSource = remember { MutableInteractionSource() }
+
+            Column(
+                modifier = Modifier
+                    .weight(1f)
+                    .height(layout.bottomBarHeight)
+                    .clickable(
+                        role = Role.Tab,
+                        interactionSource = interactionSource,
+                        indication = ripple(color = colors.surfaceHover),
+                        onClick = { onNavigate(tab.route) },
+                    ),
+                horizontalAlignment = Alignment.CenterHorizontally,
+                verticalArrangement = Arrangement.Center,
+            ) {
+                Icon(
+                    imageVector = tab.icon,
+                    contentDescription = tab.title,
+                    tint = tabColor,
+                    modifier = Modifier.size(24.dp),
+                )
+                Spacer(modifier = Modifier.height(2.dp))
+                Text(
+                    text = tab.title,
+                    style = type.meta.copy(color = tabColor),
+                )
+            }
+        }
+    }
+}
+
+private fun resolveScreenTitle(currentRoute: String?): String {
+    if (currentRoute == null) return "OS11"
+    return when {
+        currentRoute.contains("MyDay") -> "My Day"
+        currentRoute.contains("Inbox") -> "Inbox"
+        currentRoute.contains("Planned") -> "Planned"
+        currentRoute.contains("Browse") -> "Browse"
+        currentRoute.contains("Dashboard") -> "Dashboard"
+        currentRoute.contains("Goals") -> "Goals"
+        currentRoute.contains("Pomodoro") -> "Pomodoro"
+        currentRoute.contains("Settings") -> "Settings"
+        currentRoute.contains("Gallery") -> "Gallery"
+        currentRoute.contains("Trash") -> "Trash"
+        else -> "OS11"
     }
 }

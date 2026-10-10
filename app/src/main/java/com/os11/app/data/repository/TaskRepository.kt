@@ -26,6 +26,9 @@ interface TaskRepository {
     suspend fun trashTask(id: String)
     suspend fun restoreTask(id: String)
     suspend fun deletePermanently(id: String)
+    suspend fun getTrashedTasks(): List<TaskEntity>
+    suspend fun getTrashedTasksOlderThan(cutoffIso: String): List<TaskEntity>
+    suspend fun getSubtasks(parentId: String): List<TaskEntity>
 }
 
 @Suppress("TooManyFunctions")
@@ -82,4 +85,11 @@ internal class TaskRepositoryImpl(
     override suspend fun deletePermanently(id: String) {
         trackedWriter.deleteTask(id)
     }
+
+    override suspend fun getTrashedTasks(): List<TaskEntity> = taskDao.getTrashedTasks()
+
+    override suspend fun getTrashedTasksOlderThan(cutoffIso: String): List<TaskEntity> =
+        taskDao.getTrashedTasksOlderThan(cutoffIso)
+
+    override suspend fun getSubtasks(parentId: String): List<TaskEntity> = taskDao.getSubtasks(parentId)
 }

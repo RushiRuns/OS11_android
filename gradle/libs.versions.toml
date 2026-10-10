@@ -32,8 +32,10 @@ turbine = "1.2.0"
 mockk = "1.13.14"
 robolectric = "4.14.1"
 leakcanary = "2.14"
+jsoup = "1.18.3"
 
 [libraries]
+jsoup = { group = "org.jsoup", name = "jsoup", version.ref = "jsoup" }
 leakcanary-android = { group = "com.squareup.leakcanary", name = "leakcanary-android", version.ref = "leakcanary" }
 androidx-core-ktx = { group = "androidx.core", name = "core-ktx", version.ref = "coreKtx" }
 androidx-appcompat = { group = "androidx.appcompat", name = "appcompat", version.ref = "appcompat" }

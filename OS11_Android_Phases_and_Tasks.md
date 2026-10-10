@@ -167,17 +167,17 @@ The largest foundation phase. Sync readiness is built here or never cheaply.
 
 ## PHASE 5: Core Task Management (Weeks 10-12)
 
-- [ ] Task row (44/52/60dp by density): checkbox, title, second line only when there is something to show, priority bar, tag dots
-- [ ] Task list with `LazyColumn`: keys, content types, immutable UI models, subtask tree flattened on `Default`
-- [ ] Task detail bottom sheet: title, When, tags, notes, subtasks, reminders; sections collapsed by default; empty sections render nothing
-- [ ] Notes editor per the S-2 decision; HTML sanitized with Jsoup on save
-- [ ] Task CRUD through services: create, edit, complete, uncomplete, star, duplicate, trash, restore, permanent delete
-- [ ] Subtasks: add, complete, count "2/5", promote, Indent / Outdent
-- [ ] Trash screen with 30-day purge (WorkManager)
-- [ ] Undo via Snackbar for complete, trash, move, date change
-- [ ] Sort and filter sheet
-- [ ] Task row long-press actions sheet (full action set, built now so later phases add to it)
-- [ ] Empty and error states for every list
+- [x] Task row (44/52/60dp by density): checkbox, title, second line only when there is something to show, priority bar, tag dots
+- [x] Task list with `LazyColumn`: keys, content types, immutable UI models, subtask tree flattened on `Default`
+- [x] Task detail bottom sheet: title, When, tags, notes, subtasks, reminders; sections collapsed by default; empty sections render nothing
+- [x] Notes editor per the S-2 decision; HTML sanitized with Jsoup on save
+- [x] Task CRUD through services: create, edit, complete, uncomplete, star, duplicate, trash, restore, permanent delete
+- [x] Subtasks: add, complete, count "2/5", promote, Indent / Outdent
+- [x] Trash screen with 30-day purge (WorkManager)
+- [x] Undo via Snackbar for complete, trash, move, date change
+- [x] Sort and filter sheet
+- [x] Task row long-press actions sheet (full action set, built now so later phases add to it)
+- [x] Empty and error states for every list
 
 **Done when:** you can use the app as a basic task manager for a day. This is the first dogfood milestone. **Re-estimate the remaining phases here using measured pace.**
 

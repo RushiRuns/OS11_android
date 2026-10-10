@@ -14,6 +14,7 @@ import com.os11.app.ui.features.myday.MyDayScreen
 import com.os11.app.ui.features.planned.PlannedScreen
 import com.os11.app.ui.features.pomodoro.PomodoroScreen
 import com.os11.app.ui.features.settings.SettingsScreen
+import com.os11.app.ui.features.trash.TrashScreen
 
 /**
  * Main application navigation graph with type-safe route destinations.
@@ -55,6 +56,9 @@ fun OS11NavHost(
         }
         composable<OS11Route.Gallery> {
             ComponentGalleryScreen()
+        }
+        composable<OS11Route.Trash> {
+            TrashScreen()
         }
     }
 }
