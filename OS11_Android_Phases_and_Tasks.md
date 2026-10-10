@@ -241,14 +241,14 @@ The largest foundation phase. Sync readiness is built here or never cheaply.
 
 ## PHASE 10: Project Management (Weeks 20-22)
 
-- [ ] Project list view with sections (collapse, reorder, rename)
-- [ ] Board view: pager of section columns, cross-column move by long-press drag or Move to
-- [ ] Timeline view: read-only scroll and zoom with dependencies and milestones
-- [ ] Calendar view (reuse the Planned calendar component)
-- [ ] Table view stored but rendered as List; `default_view` never overwritten
-- [ ] View switcher chips
-- [ ] Dependencies (add, remove, cycle rejection with clear message), milestones, progress ring
-- [ ] Project status and archive; project CSV export
+- [x] Project list view with sections (collapse, reorder, rename)
+- [x] Board view: pager of section columns, cross-column move by long-press drag or Move to
+- [x] Timeline view: read-only scroll and zoom with dependencies and milestones
+- [x] Calendar view (reuse the Planned calendar component)
+- [x] Table view stored but rendered as List; `default_view` never overwritten
+- [x] View switcher chips
+- [x] Dependencies (add, remove, cycle rejection with clear message), milestones, progress ring
+- [x] Project status and archive; project CSV export
 
 **Done when:** a project with 200 tasks scrolls without dropped frames in every view.
 

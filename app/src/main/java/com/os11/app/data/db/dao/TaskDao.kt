@@ -295,6 +295,9 @@ internal interface TaskDao {
     @Query("SELECT * FROM tasks WHERE parent_task_id = :parentId AND is_trashed = 0")
     suspend fun getSubtasks(parentId: String): List<TaskEntity>
 
+    @Query("SELECT * FROM tasks WHERE section_id = :sectionId AND is_trashed = 0")
+    suspend fun getTasksBySection(sectionId: String): List<TaskEntity>
+
     @Insert(onConflict = OnConflictStrategy.REPLACE)
     suspend fun upsert(task: TaskEntity)
 

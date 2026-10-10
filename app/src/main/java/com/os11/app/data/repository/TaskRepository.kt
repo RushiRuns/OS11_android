@@ -34,6 +34,7 @@ interface TaskRepository {
     suspend fun getTrashedTasks(): List<TaskEntity>
     suspend fun getTrashedTasksOlderThan(cutoffIso: String): List<TaskEntity>
     suspend fun getSubtasks(parentId: String): List<TaskEntity>
+    suspend fun getTasksBySection(sectionId: String): List<TaskEntity>
     suspend fun getIncompleteMyDayBefore(today: String): List<TaskEntity>
 }
 
@@ -111,4 +112,6 @@ internal class TaskRepositoryImpl(
         taskDao.getTrashedTasksOlderThan(cutoffIso)
 
     override suspend fun getSubtasks(parentId: String): List<TaskEntity> = taskDao.getSubtasks(parentId)
+
+    override suspend fun getTasksBySection(sectionId: String): List<TaskEntity> = taskDao.getTasksBySection(sectionId)
 }

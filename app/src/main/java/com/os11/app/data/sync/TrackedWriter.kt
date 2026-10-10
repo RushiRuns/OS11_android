@@ -237,6 +237,7 @@ class TrackedWriter(
                 "workspace_id" to FieldWrite(JsonPrimitive(project.workspaceId), tickHlc.raw),
                 "status" to FieldWrite(JsonPrimitive(project.status), tickHlc.raw),
                 "sort_order" to FieldWrite(JsonPrimitive(project.sortOrder), tickHlc.raw),
+                "default_view" to FieldWrite(JsonPrimitive(project.defaultView), tickHlc.raw),
             )
             val clocks = payload.keys.map { field ->
                 SyncFieldClockEntity("projects", project.id, field, tickHlc.raw)

@@ -417,6 +417,17 @@ class TaskService @Inject constructor(
         }
     }
 
+    suspend fun moveTaskToSection(id: String, sectionId: String?): AppResult<UndoToken> = withContext(ioDispatcher) {
+        val existing = taskRepository.getById(id)
+            ?: return@withContext AppResult.err(AppError.NotFound)
+        moveTask(
+            id = id,
+            areaId = existing.areaId,
+            projectId = existing.projectId,
+            sectionId = sectionId,
+        )
+    }
+
     suspend fun updateDueDate(id: String, dueDate: String?, dueTime: String? = null): AppResult<UndoToken> =
         withContext(ioDispatcher) {
             try {

@@ -113,10 +113,10 @@ Record query methods here as they are written, grouped by repository, so a new q
 | `WorkspaceRepository` | `observeAll()`, `getById(id)`, `save(workspace)` | Workspace queries | 3 | Built |
 | `AreaRepository` | `observeAll()`, `getById(id)`, `save(area)`, `delete(id)` | Area queries | 3 | Built |
 | `ProjectRepository` | `observeAll()`, `observeByArea(areaId)`, `getById(id)`, `save(project)`, `delete(id)` | Project queries | 3 | Built |
-| `SectionRepository` | `observeByProject(projectId)`, `getById(id)`, `save(section)`, `delete(id)` | Section queries | 3 | Built |
+| `SectionRepository` | `observeByProject(projectId)`, `getByProject(projectId)`, `getById(id)`, `save(section)`, `delete(id)` | Section queries | 10 | Built |
 | `TagRepository` | `observeAll()`, `getById(id)`, `getByName(name)`, `observeTagsForTask(taskId)`, `getTagsForTasks(taskIds)`, `observeTagsForTasks(taskIds)`, `observeChildTags(parentId)`, `getChildren(parentId)`, `getTaskCountForTag(tagId)`, `getTasksForTag(tagId)`, `save(tag)`, `delete(id)`, `addTagToTask(taskId, tagId)`, `removeTagFromTask(taskId, tagId)`, `repointTasks(fromTagId, toTagId)`, `repointChildTags(oldParentId, newParentId)` | Tag queries, hierarchy & batch loading | 9 | Built |
-| `DependencyRepository` | `getDependenciesForTask(taskId)`, `getAllDependencyPairs()`, `addDependency(...)`, `removeDependency(...)` | Dependency queries | 3 | Built |
-| `MilestoneRepository` | `observeByProject(projectId)`, `getById(id)`, `save(milestone)`, `delete(id)` | Milestone queries | 3 | Built |
+| `DependencyRepository` | `getDependenciesForTask(taskId)`, `getAllDependencyPairs()`, `observeAllDependencyPairs()`, `addDependency(...)`, `removeDependency(...)` | Dependency queries & cycles | 10 | Built |
+| `MilestoneRepository` | `observeByProject(projectId)`, `getByProject(projectId)`, `getById(id)`, `save(milestone)`, `delete(id)` | Milestone queries | 10 | Built |
 | `ReminderRepository` | `observeByTask(taskId)`, `getById(id)`, `save(reminder)`, `delete(id)` | Reminder queries | 3 | Built |
 | `AttachmentRepository` | `observeByTask(taskId)`, `getById(id)`, `save(attachment)`, `delete(id)` | Attachment queries | 3 | Built |
 | `CommentRepository` | `observeByTask(taskId)`, `save(comment)` | Comment queries | 3 | Built |
@@ -161,6 +161,14 @@ Record query methods here as they are written, grouped by repository, so a new q
 | `QuickAddSheet` | Quick Add modal sheet with live NLP, autocomplete, voice input, enter retention | 7 | Built |
 | `SearchScreen` | FTS5 prefix search screen with grouped actions, tasks, snippets, and recents | 7 | Built |
 | `NlpParser` | Offline deterministic NLP parser for dates, times, priority, tags, recurrence, pomodoros | 7 | Built (in `:domain`) |
+| `ProjectListView` | Collapsible, reorderable sections, section actions, tasks in sections | 10 | Built |
+| `ProjectBoardView` | Column pager of sections, cross-column move, horizontal tabs | 10 | Built |
+| `ProjectTimelineView` | Read-only scrollable timeline with zoom toggle (2 or 4 weeks), milestones & dependencies | 10 | Built |
+| `ProjectCalendarView` | Project calendar reusing WeekStrip component | 10 | Built |
+| `ProjectSectionDialogs` | Add and rename section dialogs | 10 | Built |
+| `ProjectMilestonesSheet` | Milestone management modal sheet | 10 | Built |
+| `ProjectDependenciesSheet` | Task dependencies manager with circular dependency cycle error card | 10 | Built |
+| `ProjectService` | Project lifecycle, section CRUD, milestone CRUD, dependency cycle detection, CSV export | 10 | Built |
 
 ## Modifiers and Compose Helpers
 

@@ -60,6 +60,7 @@ internal class ProjectRepositoryImpl(private val db: OS11Database, private val t
 
 interface SectionRepository {
     fun observeByProject(projectId: String): Flow<List<SectionEntity>>
+    suspend fun getByProject(projectId: String): List<SectionEntity>
     suspend fun getById(id: String): SectionEntity?
     suspend fun save(section: SectionEntity): SectionEntity
     suspend fun delete(id: String)
@@ -71,6 +72,8 @@ internal class SectionRepositoryImpl(private val db: OS11Database, private val t
         val dao = db.sectionDao()
         return dao.observeByProject(projectId)
     }
+
+    override suspend fun getByProject(projectId: String): List<SectionEntity> = db.sectionDao().getByProject(projectId)
 
     override suspend fun getById(id: String): SectionEntity? = db.sectionDao().getById(id)
 

@@ -86,6 +86,9 @@ internal interface SectionDao {
     @Query("SELECT * FROM sections WHERE project_id = :projectId ORDER BY sort_order ASC, id ASC")
     fun observeByProject(projectId: String): Flow<List<SectionEntity>>
 
+    @Query("SELECT * FROM sections WHERE project_id = :projectId ORDER BY sort_order ASC, id ASC")
+    suspend fun getByProject(projectId: String): List<SectionEntity>
+
     @Insert(onConflict = OnConflictStrategy.REPLACE)
     suspend fun upsert(section: SectionEntity)
 

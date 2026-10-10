@@ -2,7 +2,11 @@ package com.os11.app.service
 
 import com.os11.app.data.db.entities.ProjectEntity
 import com.os11.app.data.repository.AreaRepository
+import com.os11.app.data.repository.DependencyRepository
+import com.os11.app.data.repository.MilestoneRepository
 import com.os11.app.data.repository.ProjectRepository
+import com.os11.app.data.repository.SectionRepository
+import com.os11.app.data.repository.TaskRepository
 import com.os11.app.service.area.AreaService
 import com.os11.app.service.project.ProjectService
 import com.os11.app.service.undo.UndoManager
@@ -24,6 +28,10 @@ class ProjectAndAreaServiceTest {
 
     private val projectRepository: ProjectRepository = mockk(relaxed = true)
     private val areaRepository: AreaRepository = mockk(relaxed = true)
+    private val sectionRepository: SectionRepository = mockk(relaxed = true)
+    private val milestoneRepository: MilestoneRepository = mockk(relaxed = true)
+    private val dependencyRepository: DependencyRepository = mockk(relaxed = true)
+    private val taskRepository: TaskRepository = mockk(relaxed = true)
     private val undoManager = UndoManager()
     private val clock = TestClock(1_000_000L)
     private val idGenerator = DefaultIdGenerator()
@@ -35,6 +43,10 @@ class ProjectAndAreaServiceTest {
     fun setup() {
         projectService = ProjectService(
             projectRepository = projectRepository,
+            sectionRepository = sectionRepository,
+            milestoneRepository = milestoneRepository,
+            dependencyRepository = dependencyRepository,
+            taskRepository = taskRepository,
             undoManager = undoManager,
             clock = clock,
             idGenerator = idGenerator,

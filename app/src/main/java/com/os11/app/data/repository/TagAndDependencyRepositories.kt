@@ -6,6 +6,7 @@ import com.os11.app.data.db.entities.TagEntity
 import com.os11.app.data.db.entities.TaskTagEntity
 import com.os11.app.data.sync.TrackedWriter
 import kotlinx.coroutines.flow.Flow
+import kotlinx.coroutines.flow.map
 
 @Suppress("TooManyFunctions")
 interface TagRepository {
@@ -71,6 +72,7 @@ internal class TagRepositoryImpl(private val db: OS11Database, private val track
 }
 
 interface DependencyRepository {
+    fun observeAllDependencyPairs(): Flow<List<Pair<String, String>>>
     suspend fun getDependenciesForTask(taskId: String): List<String>
     suspend fun getAllDependencyPairs(): List<Pair<String, String>>
     suspend fun addDependency(taskId: String, dependsOnId: String)
@@ -79,6 +81,13 @@ interface DependencyRepository {
 
 internal class DependencyRepositoryImpl(private val db: OS11Database, private val trackedWriter: TrackedWriter) :
     DependencyRepository {
+    override fun observeAllDependencyPairs(): Flow<List<Pair<String, String>>> {
+        val dao = db.taskDependencyDao()
+        return dao.observeAllDependencyPairs().map { list ->
+            list.map { it.taskId to it.dependsOnId }
+        }
+    }
+
     override suspend fun getDependenciesForTask(taskId: String): List<String> {
         val dao = db.taskDependencyDao()
         return dao.getDependenciesForTask(taskId)

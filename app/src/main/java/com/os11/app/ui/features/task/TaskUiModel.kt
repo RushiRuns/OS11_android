@@ -31,6 +31,7 @@ data class TaskUiModel(
     val tagDots: ImmutableList<TagDotUiModel> = persistentListOf(),
     val indentDepth: Int = 0,
     val parentTaskId: String? = null,
+    val sectionId: String? = null,
     val workspaceId: String = "",
     val sortOrder: Double = 0.0,
 ) {

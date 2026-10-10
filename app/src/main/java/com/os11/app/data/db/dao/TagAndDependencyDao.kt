@@ -100,6 +100,9 @@ internal interface TaskDependencyDao {
     @Query("SELECT task_id, depends_on_id FROM task_dependencies")
     suspend fun getAllDependencyPairs(): List<TaskDependencyEntity>
 
+    @Query("SELECT task_id, depends_on_id FROM task_dependencies")
+    fun observeAllDependencyPairs(): Flow<List<TaskDependencyEntity>>
+
     @Insert(onConflict = OnConflictStrategy.REPLACE)
     suspend fun upsert(dependency: TaskDependencyEntity)
 

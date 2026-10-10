@@ -108,6 +108,7 @@ object TaskTreeFlattener {
             tagDots = persistentListOf(),
             indentDepth = depth,
             parentTaskId = task.parentTaskId,
+            sectionId = task.sectionId,
             workspaceId = task.workspaceId,
             sortOrder = task.sortOrder,
         )
