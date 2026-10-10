@@ -70,4 +70,17 @@ class KonsistArchitectureTest {
                 }
             }
     }
+
+    @Test
+    fun ui_code_never_uses_raw_color_literals() {
+        val colorHexRegex = Regex("""Color\s*\(\s*0x[0-9a-fA-F]+""", RegexOption.IGNORE_CASE)
+        Konsist
+            .scopeFromProduction("app")
+            .files
+            .withPackage("com.os11.app.ui..")
+            .assertFalse { file ->
+                val isTheme = file.hasPackage("com.os11.app.ui.theme..")
+                !isTheme && colorHexRegex.containsMatchIn(file.text)
+            }
+    }
 }

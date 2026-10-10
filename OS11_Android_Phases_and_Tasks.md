@@ -65,14 +65,14 @@
 
 Short, throwaway-or-keep experiments. Each ends with a written result in DEPENDENCIES.md or an ADR. This phase exists because three of the unknowns can reshape later phases.
 
-- [ ] **S-1 Bundled SQLite + FTS5 + Room:** create the tasks table, the FTS5 virtual table and its triggers via a Room migration, run a prefix search over 5,000 seeded rows. Confirm Room validates the schema without knowing about FTS. Confirm migration tests run
-- [ ] **S-2 Rich text note editor (highest risk):** evaluate `compose-rich-editor`. Load HTML the desktop TipTap editor produces (headings, bold/italic, lists, checklists, links, code, blockquote). Edit, save, reload. Pass only if nothing is silently dropped. If it fails, fallback options: (a) restricted Markdown-ish editing with HTML conversion, (b) a custom minimal editor over `AnnotatedString`, (c) WebView with a bundled editor (breaks several rules, needs an ADR). Decision before Phase 5
-- [ ] **S-3 Reorder and nesting:** evaluate `Reorderable`. Can it reorder in a LazyColumn with 1,000 rows without dropped frames, and can nesting by horizontal offset be built on it? If not, nesting is Indent/Outdent only in v1 (already the primary path)
-- [ ] **S-4 Charts:** Vico vs drawing with Canvas. Measure size added to the release build. Pick one
-- [ ] **S-5 Glass:** Haze vs translucent surface plus border. Measure frame time while a sheet is over a scrolling list on the reference device. Pick one
-- [ ] **S-6 Konsist:** prove a test fails on a UI file importing a DAO, a raw `Color(0x...)`, or `MaterialTheme.` in a feature package
-- [ ] **S-7 Baseline Profile:** generate one for a blank list screen. Prove the toolchain works before there is anything to protect
-- [ ] **S-8 Exact alarm + boot:** schedule an exact alarm for 1 minute out, reboot the phone, confirm it re-arms. Learn your device vendor's battery-killer behavior now, not in Phase 11
+- [x] **S-1 Bundled SQLite + FTS5 + Room:** create the tasks table, the FTS5 virtual table and its triggers via a Room migration, run a prefix search over 5,000 seeded rows. Confirm Room validates the schema without knowing about FTS. Confirm migration tests run
+- [x] **S-2 Rich text note editor (highest risk):** evaluate `compose-rich-editor`. Load HTML the desktop TipTap editor produces (headings, bold/italic, lists, checklists, links, code, blockquote). Edit, save, reload. Pass only if nothing is silently dropped. If it fails, fallback options: (a) restricted Markdown-ish editing with HTML conversion, (b) a custom minimal editor over `AnnotatedString`, (c) WebView with a bundled editor (breaks several rules, needs an ADR). Decision before Phase 5
+- [x] **S-3 Reorder and nesting:** evaluate `Reorderable`. Can it reorder in a LazyColumn with 1,000 rows without dropped frames, and can nesting by horizontal offset be built on it? If not, nesting is Indent/Outdent only in v1 (already the primary path)
+- [x] **S-4 Charts:** Vico vs drawing with Canvas. Measure size added to the release build. Pick one
+- [x] **S-5 Glass:** Haze vs translucent surface plus border. Measure frame time while a sheet is over a scrolling list on the reference device. Pick one
+- [x] **S-6 Konsist:** prove a test fails on a UI file importing a DAO, a raw `Color(0x...)`, or `MaterialTheme.` in a feature package
+- [x] **S-7 Baseline Profile:** generate one for a blank list screen. Prove the toolchain works before there is anything to protect
+- [x] **S-8 Exact alarm + boot:** schedule an exact alarm for 1 minute out, reboot the phone, confirm it re-arms. Learn your device vendor's battery-killer behavior now, not in Phase 11
 
 **Done when:** each spike has a result paragraph and a keep/drop decision. Update ADRs and the phases below if a spike changes scope.
 

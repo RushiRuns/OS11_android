@@ -71,6 +71,7 @@ Each of these exists exactly once. A second copy is a bug.
 | `BackupService` | `service/data/` | Daily ZIP backup | 17 | Planned |
 | `NoteSanitizer` | `service/note/` | Jsoup-based HTML sanitizer | 5 | Planned |
 | `SecretStore` | `platform/security/` | Keystore-backed secret storage | 4 | Planned |
+| `AlarmScheduler` | `platform/alarms/AlarmScheduler.kt` | Exact alarm manager wrapper for single next-alarm arming | 1 | Built |
 
 ## Repository Methods
 

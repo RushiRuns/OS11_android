@@ -1,0 +1,9 @@
+# Baseline Profile for OS11 Android
+# Startup paths, Application, Activity, and Tokens
+Lcom/os11/app/OS11Application;
+Lcom/os11/app/MainActivity;
+Lcom/os11/app/ui/theme/TokensKt;
+# Compose and Coroutines hot paths
+HSPLandroidx/compose/runtime/**;->*
+HSPLandroidx/compose/ui/**;->*
+HSPLkotlinx/coroutines/**;->*

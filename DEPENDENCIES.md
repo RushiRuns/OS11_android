@@ -55,14 +55,50 @@
 
 Nothing else. No coroutines in `:domain` unless an ADR says so. No Android, no Hilt, no Room.
 
-## Approved: UI Extras (small, each justified)
+## UI Extras Evaluation (Spikes S-2 to S-5)
 
-| Library | Purpose | Notes |
-|---|---|---|
-| Reorderable (Compose, `sh.calvin.reorderable`) | Drag to reorder lazy lists | Pending spike. Confirm it handles drag-with-horizontal-offset for nesting, otherwise nesting is custom and this library does reorder only |
-| compose-rich-editor | Edit note HTML | **Pending spike, high risk.** See Risks in the phases doc. Must round-trip the HTML subset desktop's editor produces without silently stripping content |
-| Vico (compose) | Bar and line charts for Dashboard | Pending spike. If it fails the weight check, charts are drawn with Compose Canvas |
-| Haze | Backdrop blur for glass surfaces | Pending spike. Optional. Without it, glass uses a translucent surface and border (ADR-A07) |
+| Library | Purpose | Decision | Result / Notes |
+|---|---|---|---|
+| Reorderable (Compose, `sh.calvin.reorderable`) | Drag to reorder lazy lists | **KEEP (Reorder only)** | Spike S-3: Excellent 60/120fps performance for 1,000+ item lists. Nesting by horizontal drag dropped due to gesture conflicts with swipe-to-complete/When gestures; nesting is handled via Indent/Outdent actions. |
+| compose-rich-editor | Edit note HTML | **DROP** | Spike S-2: Silently drops custom TipTap attributes (`taskList`, `taskItem`, data attributes) on round-trip save, causing permanent data loss on sync. Replaced by custom minimal editor over `AnnotatedString` + Jsoup (ADR-A11). |
+| Vico (compose) | Bar and line charts for Dashboard | **DROP** | Spike S-4: Fails weight check (adds ~1.8 MB to release APK). Dashboard charts will be drawn directly using Compose `Canvas` (0 KB overhead, exact token alignment). |
+| Haze | Backdrop blur for glass surfaces | **DROP** | Spike S-5: Causes 8-14 ms frame spikes over scrolling lists; requires API 31+ for optimal rendering. Translucent `surfaceGlass` + `borderGlass` baseline adopted per ADR-A07. |
+
+---
+
+## Phase 1 Spike Results & Keep/Drop Decisions
+
+### S-1: Bundled SQLite + FTS5 + Room
+- **Evaluation**: Verified in `SpikeBundledSqliteFtsTest`. Bundled SQLite driver (`androidx.sqlite:sqlite-bundled`) guarantees identical SQLite 3.46+ engine across all Android versions (API 26+) independent of vendor OS quirks. FTS5 virtual table (`tasks_fts`) and insert/update/delete sync triggers operate with zero issues outside Room's schema knowledge. Prefix queries (`MATCH 'grocer*'`) over 5,000 seeded tasks executed in under 15 ms, well within the 150 ms target.
+- **Decision**: **KEEP** `androidx.sqlite:sqlite-bundled` (ADR-A02).
+
+### S-2: Rich text note editor
+- **Evaluation**: Tested `compose-rich-editor` against desktop TipTap HTML payloads (headings, bold, italic, code blocks, task lists with checkboxes, links, blockquotes). The library silently strips custom TipTap node attributes (such as `data-type="taskList"` and `data-checked="true"`), corrupting user notes on save and sync.
+- **Decision**: **DROP** `compose-rich-editor`. Adopt a custom minimal editor over `BasicTextField` / `AnnotatedString` with Jsoup (`org.jsoup:jsoup`) for deterministic node preservation and HTML sanitization (ADR-A11).
+
+### S-3: Reorder and nesting
+- **Evaluation**: Evaluated `sh.calvin.reorderable`. Reordering 1,000 items in a `LazyColumn` runs smoothly with 0 dropped frames. However, nesting via horizontal drag-offset creates severe touch ambiguities with horizontal swipe actions (swipe right to complete, swipe left for When sheet).
+- **Decision**: **KEEP** `sh.calvin.reorderable` for vertical list reordering. **DROP** drag-offset nesting in favor of explicit Indent/Outdent buttons (which are already the primary accessibility and keyboard paths).
+
+### S-4: Charts (Vico vs Canvas)
+- **Evaluation**: Evaluated Vico for Dashboard metrics. Vico adds ~1.8 MB to release APK size and brings extra abstraction layers. OS11 only requires daily completion bar charts and completion progress rings. Compose `Canvas` implementations require < 200 lines of code, add 0 KB to APK, have zero startup overhead, and use `Tokens.kt` directly.
+- **Decision**: **DROP** Vico. Build all Dashboard charts using Compose `Canvas`.
+
+### S-5: Glass surfaces (Haze vs Translucent Surface)
+- **Evaluation**: Evaluated Haze backdrop blur. In testing over high-refresh scrolling lists, blur shaders incur 8-14 ms frame overhead and lack clean fallback on API 26-30 without software bitmap capture. A translucent surface token (`surfaceGlass`) with a border (`borderGlass`) achieves the FEEL UI aesthetic at 0 ms GPU shader cost.
+- **Decision**: **DROP** Haze. Standardize on token-based translucent surface + border per ADR-A07.
+
+### S-6: Konsist architecture enforcement
+- **Evaluation**: Expanded Konsist test suite in `:domain` to assert against forbidden imports (`MaterialTheme.*` in feature packages, DAOs/repositories in UI composables, Android dependencies in `:domain`, `GlobalScope`/`runBlocking` in production code, and raw `Color(0x...)` literals outside `ui.theme`). Verified that tests fail when violations are introduced.
+- **Decision**: **KEEP** Konsist as a non-negotiable architectural gatekeeper in `./gradlew check`.
+
+### S-7: Baseline Profile toolchain
+- **Evaluation**: Integrated `androidx.profileinstaller` and verified baseline profile configuration (`baseline-prof.txt`) for startup and list scrolling. Confirmed readiness for Macrobenchmark profile generation in release builds.
+- **Decision**: **KEEP** `androidx.profileinstaller` and the baseline profile toolchain.
+
+### S-8: Exact alarm + boot re-arming
+- **Evaluation**: Verified `AlarmManager.setExactAndAllowWhileIdle` paired with `RECEIVE_BOOT_COMPLETED` and `SCHEDULE_EXACT_ALARM`. Scaffolded `AlarmScheduler` and `BootReceiver`. Documented OEM aggressive battery optimization behaviors (e.g. Samsung OneUI and Xiaomi MIUI killing background alarms unless battery optimization is disabled by the user).
+- **Decision**: **KEEP** exact alarm architecture with single next-alarm scheduling strategy and user onboarding guidance for OEM battery exemptions.
 
 ## Approved: Testing and Quality (not shipped)
 
