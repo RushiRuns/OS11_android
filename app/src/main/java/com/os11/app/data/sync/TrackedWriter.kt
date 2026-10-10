@@ -58,7 +58,7 @@ fun interface TrackedWriteListener {
  * 6. Post-commit hooks are fired
  */
 @Suppress("TooManyFunctions", "LongParameterList")
-internal class TrackedWriter(
+class TrackedWriter(
     private val db: OS11Database,
     private val hlcClock: HlcClock,
     private val clock: Clock = SystemClock(),

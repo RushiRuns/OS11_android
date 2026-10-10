@@ -152,14 +152,14 @@ The largest foundation phase. Sync readiness is built here or never cheaply.
 
 ## PHASE 4: Application Services and Startup (Week 9)
 
-- [ ] Hilt modules; `Application.onCreate` initializes Hilt only
-- [ ] Service layer: `TaskService`, `ProjectService`, `AreaService`, `TagService`, `ReminderService`, `PomodoroService`, `GoalService`, `SettingsService`, `SearchService`, `ExportService` shells
-- [ ] `AppResult` / `AppError` used for every fallible service call
-- [ ] Undo stack (service-level, 100 entries) and Snackbar bridge
-- [ ] Post-first-frame initializer: schedules the deferred work (alarm reconciliation, trash purge check, widget refresh) after first frame
-- [ ] `SecretStore` over Android Keystore (unused until sync pairing, but written now so the interface is stable)
-- [ ] StrictMode enabled in debug, LeakCanary in debug
-- [ ] Macrobenchmark module; baseline of cold start on the empty shell recorded
+- [x] Hilt modules; `Application.onCreate` initializes Hilt only
+- [x] Service layer: `TaskService`, `ProjectService`, `AreaService`, `TagService`, `ReminderService`, `PomodoroService`, `GoalService`, `SettingsService`, `SearchService`, `ExportService` shells
+- [x] `AppResult` / `AppError` used for every fallible service call
+- [x] Undo stack (service-level, 100 entries) and Snackbar bridge
+- [x] Post-first-frame initializer: schedules the deferred work (alarm reconciliation, trash purge check, widget refresh) after first frame
+- [x] `SecretStore` over Android Keystore (unused until sync pairing, but written now so the interface is stable)
+- [x] StrictMode enabled in debug, LeakCanary in debug
+- [x] Macrobenchmark module; baseline of cold start on the empty shell recorded
 
 **Done when:** startup path is audited against rule 16, and a cold-start baseline is in PERFORMANCE.md.
 

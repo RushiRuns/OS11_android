@@ -57,6 +57,7 @@ Each of these exists exactly once. A second copy is a bug.
 | `SchedulingTransitions` | `domain/scheduling/SchedulingTransitions.kt` | The 27-row bucket/waiting transition table | 11 | Planned |
 | `DayPlanLayout` | `domain/dayplan/DayPlanLayout.kt` | Snap, clamp, lane assignment for overlapping blocks | 13 | Planned |
 | `DeterministicIds` | `domain/id/IdGenerator.kt` | RFC 4122 UUIDv5 for default workspace/area and recurring occurrences | 3 | Built |
+| `AppResult`, `AppError` | `domain/result/AppResult.kt` | Typed Result error model for all fallible operations | 4 | Built |
 
 ## Application Services (`:app`)
 
@@ -66,14 +67,24 @@ Each of these exists exactly once. A second copy is a bug.
 | `DatabaseInitializer` | `data/db/DatabaseInitializer.kt` | Deterministic seed generator for default workspace, area, settings, modules | 3 | Built |
 | `SeedGenerator` | `data/seed/SeedGenerator.kt` | Benchmark dataset generator for 1,000 and 5,000 tasks | 3 | Built |
 | `ApplyRemoteWriter` | `data/sync/ApplyRemoteWriter.kt` | Remote changes through merge | S1 | Planned |
-| `TaskService` | `service/task/` | Task use cases | 4-5 | Planned |
+| `TaskService` | `service/task/TaskService.kt` | Task aggregate application use cases with undo tokens | 4 | Built |
+| `ProjectService` | `service/project/ProjectService.kt` | Project lifecycle and section use cases | 4 | Built |
+| `AreaService` | `service/area/AreaService.kt` | Area lifecycle use cases | 4 | Built |
+| `TagService` | `service/tag/TagService.kt` | Tag management use cases | 4 | Built |
+| `ReminderService` | `service/reminder/ReminderService.kt` | Reminder scheduling and alarm reconciliation | 4 | Built |
+| `PomodoroService` | `service/pomodoro/PomodoroService.kt` | Pomodoro session tracking use cases | 4 | Built |
+| `GoalService` | `service/goal/GoalService.kt` | Goal tracking use cases | 4 | Built |
+| `SettingsService` | `service/settings/SettingsService.kt` | App preferences use cases | 4 | Built |
+| `SearchService` | `service/search/SearchService.kt` | FTS5 task search use cases | 4 | Built |
+| `ExportService` | `service/export/ExportService.kt` | JSON/CSV export orchestration | 4 | Built |
 | `TaskSchedulingService` | `service/task/` | Sole writer of scheduling fields | 11 | Planned |
 | `ReminderScheduler` | `service/reminder/` | Arms next due alarm; reconciles after writes | 11 | Planned |
-| `UndoManager` | `service/undo/` | Undo stack and Snackbar bridge | 4 | Planned |
-| `ExportService`, `ImportService` | `service/data/` | JSON/CSV round trip | 17 | Planned |
+| `UndoManager` | `service/undo/UndoManager.kt` | Service-level 100-entry undo stack and Snackbar bridge | 4 | Built |
+| `ImportService` | `service/data/` | JSON/CSV import round trip | 17 | Planned |
 | `BackupService` | `service/data/` | Daily ZIP backup | 17 | Planned |
 | `NoteSanitizer` | `service/note/` | Jsoup-based HTML sanitizer | 5 | Planned |
-| `SecretStore` | `platform/security/` | Keystore-backed secret storage | 4 | Planned |
+| `SecretStore` | `platform/security/SecretStore.kt` | Keystore-backed AES-256-GCM secret storage | 4 | Built |
+| `DeferredStartupManager` | `platform/startup/DeferredStartupManager.kt` | Post-first-frame deferred background initializations | 4 | Built |
 | `AlarmScheduler` | `platform/alarms/AlarmScheduler.kt` | Exact alarm manager wrapper for single next-alarm arming | 1 | Built |
 
 ## Repository Methods

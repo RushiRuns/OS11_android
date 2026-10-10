@@ -111,42 +111,42 @@ import com.os11.app.data.db.entities.WorkspaceEntity
     exportSchema = true,
 )
 @Suppress("TooManyFunctions")
-internal abstract class OS11Database : RoomDatabase() {
+abstract class OS11Database : RoomDatabase() {
 
-    abstract fun localIdentityDao(): LocalIdentityDao
-    abstract fun workspaceDao(): WorkspaceDao
-    abstract fun areaDao(): AreaDao
-    abstract fun projectDao(): ProjectDao
-    abstract fun sectionDao(): SectionDao
-    abstract fun taskDao(): TaskDao
-    abstract fun taskDependencyDao(): TaskDependencyDao
-    abstract fun milestoneDao(): MilestoneDao
-    abstract fun tagDao(): TagDao
-    abstract fun taskTagDao(): TaskTagDao
-    abstract fun reminderDao(): ReminderDao
-    abstract fun reminderDeviceStateDao(): ReminderDeviceStateDao
-    abstract fun attachmentDao(): AttachmentDao
-    abstract fun commentDao(): CommentDao
-    abstract fun commentReactionDao(): CommentReactionDao
-    abstract fun pomodoroSessionDao(): PomodoroSessionDao
-    abstract fun goalDao(): GoalDao
-    abstract fun goalLinkDao(): GoalLinkDao
-    abstract fun notificationHistoryDao(): NotificationHistoryDao
-    abstract fun taskHistoryDao(): TaskHistoryDao
-    abstract fun settingDao(): SettingDao
-    abstract fun moduleDao(): ModuleDao
-    abstract fun userDao(): UserDao
-    abstract fun deviceDao(): DeviceDao
-    abstract fun collaborationMemberDao(): CollaborationMemberDao
-    abstract fun syncQueueDao(): SyncQueueDao
-    abstract fun syncFieldClockDao(): SyncFieldClockDao
-    abstract fun syncTombstoneDao(): SyncTombstoneDao
-    abstract fun syncLocalStateDao(): SyncLocalStateDao
-    abstract fun syncPeerStateDao(): SyncPeerStateDao
-    abstract fun syncPendingDao(): SyncPendingDao
-    abstract fun syncConflictLogDao(): SyncConflictLogDao
-    abstract fun countsDao(): CountsDao
-    abstract fun searchDao(): SearchDao
+    internal abstract fun localIdentityDao(): LocalIdentityDao
+    internal abstract fun workspaceDao(): WorkspaceDao
+    internal abstract fun areaDao(): AreaDao
+    internal abstract fun projectDao(): ProjectDao
+    internal abstract fun sectionDao(): SectionDao
+    internal abstract fun taskDao(): TaskDao
+    internal abstract fun taskDependencyDao(): TaskDependencyDao
+    internal abstract fun milestoneDao(): MilestoneDao
+    internal abstract fun tagDao(): TagDao
+    internal abstract fun taskTagDao(): TaskTagDao
+    internal abstract fun reminderDao(): ReminderDao
+    internal abstract fun reminderDeviceStateDao(): ReminderDeviceStateDao
+    internal abstract fun attachmentDao(): AttachmentDao
+    internal abstract fun commentDao(): CommentDao
+    internal abstract fun commentReactionDao(): CommentReactionDao
+    internal abstract fun pomodoroSessionDao(): PomodoroSessionDao
+    internal abstract fun goalDao(): GoalDao
+    internal abstract fun goalLinkDao(): GoalLinkDao
+    internal abstract fun notificationHistoryDao(): NotificationHistoryDao
+    internal abstract fun taskHistoryDao(): TaskHistoryDao
+    internal abstract fun settingDao(): SettingDao
+    internal abstract fun moduleDao(): ModuleDao
+    internal abstract fun userDao(): UserDao
+    internal abstract fun deviceDao(): DeviceDao
+    internal abstract fun collaborationMemberDao(): CollaborationMemberDao
+    internal abstract fun syncQueueDao(): SyncQueueDao
+    internal abstract fun syncFieldClockDao(): SyncFieldClockDao
+    internal abstract fun syncTombstoneDao(): SyncTombstoneDao
+    internal abstract fun syncLocalStateDao(): SyncLocalStateDao
+    internal abstract fun syncPeerStateDao(): SyncPeerStateDao
+    internal abstract fun syncPendingDao(): SyncPendingDao
+    internal abstract fun syncConflictLogDao(): SyncConflictLogDao
+    internal abstract fun countsDao(): CountsDao
+    internal abstract fun searchDao(): SearchDao
 
     companion object {
         const val DATABASE_NAME = "os11.db"

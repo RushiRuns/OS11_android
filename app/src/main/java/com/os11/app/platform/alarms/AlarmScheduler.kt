@@ -5,6 +5,9 @@ import android.app.PendingIntent
 import android.content.Context
 import android.content.Intent
 import android.os.Build
+import dagger.hilt.android.qualifiers.ApplicationContext
+import javax.inject.Inject
+import javax.inject.Singleton
 
 /**
  * Spike S-8: Exact alarm scheduling and reboot re-arming.
@@ -14,7 +17,8 @@ import android.os.Build
  * 2. Pre-check for exact alarm permissions on Android 12+ (SCHEDULE_EXACT_ALARM).
  * 3. Reboot re-arm triggering via BootReceiver.
  */
-class AlarmScheduler(private val context: Context) {
+@Singleton
+class AlarmScheduler @Inject constructor(@param:ApplicationContext private val context: Context) {
 
     private val alarmManager = context.getSystemService(Context.ALARM_SERVICE) as? AlarmManager
 

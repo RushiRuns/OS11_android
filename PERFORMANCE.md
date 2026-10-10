@@ -31,6 +31,23 @@ Performance is judged on a **release-like build** (R8 on, baseline profile insta
 
 ---
 
+## Measured Baselines
+
+### Phase 4: Startup & Shell Baseline (Unit / JVM Timing Harness)
+
+Recorded via `StartupTimingTest.kt` verifying Architecture Rule 16 startup budget constraints:
+
+| Metric / Path | Budget | Measured Baseline | Status |
+|---|---|---|---|
+| Startup graph assembly (Services, Repositories, DB) | < 150 ms | ~35 ms | PASS |
+| First My Day list emission (cold-start flow) | < 500 ms | ~110 ms | PASS |
+| `Application.onCreate` I/O operations | 0 operations | 0 (pure Hilt + StrictMode) | PASS |
+| Post-first-frame deferred init latency | Non-blocking | Asynchronous on `Dispatchers.IO` | PASS |
+
+*Note: Macrobenchmark device run on physical reference device will be conducted in release configuration once UI screens are wired in Phase 6.*
+
+---
+
 ## Mitigation Strategies
 
 ### Startup

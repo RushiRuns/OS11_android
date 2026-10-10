@@ -1,0 +1,53 @@
+package com.os11.app.service.settings
+
+import com.os11.app.data.db.entities.ModuleEntity
+import com.os11.app.data.db.entities.SettingEntity
+import com.os11.app.data.repository.ModuleRepository
+import com.os11.app.data.repository.SettingsRepository
+import com.os11.app.di.IoDispatcher
+import com.os11.domain.result.AppError
+import com.os11.domain.result.AppResult
+import kotlinx.coroutines.CancellationException
+import kotlinx.coroutines.CoroutineDispatcher
+import kotlinx.coroutines.flow.Flow
+import kotlinx.coroutines.flow.map
+import kotlinx.coroutines.withContext
+import javax.inject.Inject
+import javax.inject.Singleton
+
+@Singleton
+@Suppress("TooGenericExceptionCaught")
+class SettingsService @Inject constructor(
+    private val settingsRepository: SettingsRepository,
+    private val moduleRepository: ModuleRepository,
+    @param:IoDispatcher private val ioDispatcher: CoroutineDispatcher,
+) {
+    fun observeAllSettings(): Flow<List<SettingEntity>> = settingsRepository.observeAll()
+    fun observeAllModules(): Flow<List<ModuleEntity>> = moduleRepository.observeAll()
+    fun observeEnabledModules(): Flow<List<ModuleEntity>> =
+        moduleRepository.observeAll().map { modules -> modules.filter { it.isEnabled } }
+
+    suspend fun getSetting(key: String): String? = settingsRepository.get(key)
+
+    suspend fun setSetting(key: String, value: String): AppResult<Unit> = withContext(ioDispatcher) {
+        try {
+            settingsRepository.save(key, value)
+            AppResult.ok(Unit)
+        } catch (e: CancellationException) {
+            throw e
+        } catch (e: Exception) {
+            AppResult.err(AppError.Unexpected(e))
+        }
+    }
+
+    suspend fun setModuleEnabled(name: String, enabled: Boolean): AppResult<Unit> = withContext(ioDispatcher) {
+        try {
+            moduleRepository.setEnabled(name, enabled)
+            AppResult.ok(Unit)
+        } catch (e: CancellationException) {
+            throw e
+        } catch (e: Exception) {
+            AppResult.err(AppError.Unexpected(e))
+        }
+    }
+}
