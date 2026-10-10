@@ -85,17 +85,19 @@ Record query methods here as they are written, grouped by repository, so a new q
 
 | Name | Purpose | Phase | Status |
 |---|---|---|---|
-| `OSButton`, `OSIconButton` | Buttons with 48dp hit area | 2 | Planned |
-| `OSCheckbox` | 20dp visual, 48dp target, spring, strikethrough, haptic | 2 | Planned |
-| `OSTextField`, `OSSearchField` | Text input | 2 | Planned |
-| `OSSheet` | Modal bottom sheet container | 2 | Planned |
-| `OSGlassMenu` | Translucent menu surface | 2 | Planned |
-| `OSChip`, `OSTagDot`, `OSPriorityBar` | Tags and priority | 2 | Planned |
-| `OSSnackbarHost` | Snackbar with Undo | 2 | Planned |
-| `OSEmptyState` | Empty state | 2 | Planned |
-| `OSProgressRing`, `OSProgressBar` | Progress | 2 | Planned |
-| `OSDatePickerSheet`, `OSTimeList` | Date and time selection | 2 | Planned |
-| `OSSwitch`, `OSSegmented` | Settings controls | 2 | Planned |
+| `OSButton`, `OSIconButton` | Buttons with 48dp hit area | 2 | Built |
+| `OSCheckbox` | 20dp visual, 48dp target, spring, strikethrough, haptic | 2 | Built |
+| `OSTextField`, `OSSearchField` | Text input | 2 | Built |
+| `OSSheet` | Modal bottom sheet container | 2 | Built |
+| `OSGlassMenu` | Translucent menu surface | 2 | Built |
+| `OSChip`, `OSTagDot`, `OSPriorityBar` | Tags and priority | 2 | Built |
+| `OSSnackbarHost`, `OSSnackbar` | Snackbar with Undo | 2 | Built |
+| `OSEmptyState` | Empty state | 2 | Built |
+| `OSProgressRing`, `OSProgressBar` | Progress indicators via Canvas | 2 | Built |
+| `OSDatePickerSheet`, `OSTimeList` | Date and time selection | 2 | Built |
+| `OSSwitch`, `OSSegmented` | Settings and view controls | 2 | Built |
+| `OS11AppShell` | Edge-to-edge shell, top bar, bottom bar, FAB | 2 | Built |
+| `ComponentGalleryScreen` | Visual component audit harness | 2 | Built |
 | `TaskRow` | The one task row | 5 | Planned |
 | `TaskActionsSheet` | Long-press action set | 5 | Planned |
 | `ReorderableTaskList` | Shared reorder behavior | 8 | Planned |
@@ -106,10 +108,9 @@ Record query methods here as they are written, grouped by repository, so a new q
 
 | Name | Purpose | Phase | Status |
 |---|---|---|---|
-| `Modifier.os11MainPaneBackground` | Main pane surface | 2 | Built (uncompiled, in `Tokens.kt`) |
-| `Modifier.minTouchTarget` | Enforces 48dp hit area | 2 | Planned |
-| `rememberReducedMotion()` | Reads the system animation scale | 2 | Planned |
-| `Modifier.pressScale` / `springIn` / `critPulse` | The permitted animation sites | 2 | Planned |
+| `Modifier.os11MainPaneBackground` | Main pane surface | 2 | Built (compiled in `Tokens.kt`) |
+| `rememberReducedMotion()` | Reads the system animation scale | 2 | Built (in `ui/util/MotionUtil.kt`) |
+| `OS11AnimationSpecs` | The 4 permitted animation sites and shared specs | 2 | Built (in `ui/theme/Motion.kt`) |
 
 ## Platform Helpers (`platform/`)
 

@@ -519,7 +519,7 @@ object OS11Theme {
 @Composable
 fun OS11Theme(
     accent: Color = OS11DefaultAccent,
-    fontFamily: FontFamily = FontFamily.Default,
+    fontFamily: FontFamily = InterFontFamily,
     fontStep: OS11FontStep = OS11FontStep.Md,
     density: OS11Density = OS11Density.Comfortable,
     reduceMotion: Boolean = false,

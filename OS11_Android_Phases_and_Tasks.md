@@ -80,25 +80,25 @@ Short, throwaway-or-keep experiments. Each ends with a written result in DEPENDE
 
 ## PHASE 2: Design System and Shell (Weeks 4-5)
 
-- [ ] Bundle Inter as font resources; wire `os11Type`
-- [ ] Finalize `Tokens.kt`; compile it; resolve the PARITY placeholders against desktop `tokens.css`
-- [ ] `OS11Theme { }` wired at the root; verify no `MaterialTheme.` reads in feature code
-- [ ] Base components (each in `ui/components/`, each registered in UTILITIES.md):
-  - [ ] `OSButton`, `OSIconButton` (48dp hit area)
-  - [ ] `OSCheckbox` (20dp visual, 48dp target, spring + strikethrough + light haptic, reduced-motion aware)
-  - [ ] `OSTextField`, `OSSearchField`
-  - [ ] `OSSheet` (modal bottom sheet, restyled; the sheet used by Quick Add, detail, pickers)
-  - [ ] `OSGlassMenu` (profile menu surface)
-  - [ ] `OSChip`, `OSTagDot`, `OSPriorityBar`
-  - [ ] `OSSnackbar` host with Undo action
-  - [ ] `OSEmptyState`, `OSProgressRing`, `OSProgressBar`
-  - [ ] `OSDatePickerSheet`, `OSTimeList`
-  - [ ] `OSSwitch`, `OSSegmented`
-- [ ] App shell: edge-to-edge, insets handled once, bottom bar (My Day, Inbox, Planned, Browse), top bar, profile avatar menu
-- [ ] Navigation graph with type-safe routes and empty placeholder screens
-- [ ] Splash via `core-splashscreen`
-- [ ] Debug-only component gallery screen (every component, every state) used for visual review
-- [ ] Reduced-motion helper; the 4 permitted animation sites implemented as shared modifiers
+- [x] Bundle Inter as font resources; wire `os11Type`
+- [x] Finalize `Tokens.kt`; compile it; resolve the PARITY placeholders against desktop `tokens.css`
+- [x] `OS11Theme { }` wired at the root; verify no `MaterialTheme.` reads in feature code
+- [x] Base components (each in `ui/components/`, each registered in UTILITIES.md):
+  - [x] `OSButton`, `OSIconButton` (48dp hit area)
+  - [x] `OSCheckbox` (20dp visual, 48dp target, spring + strikethrough + light haptic, reduced-motion aware)
+  - [x] `OSTextField`, `OSSearchField`
+  - [x] `OSSheet` (modal bottom sheet, restyled; the sheet used by Quick Add, detail, pickers)
+  - [x] `OSGlassMenu` (profile menu surface)
+  - [x] `OSChip`, `OSTagDot`, `OSPriorityBar`
+  - [x] `OSSnackbar` host with Undo action
+  - [x] `OSEmptyState`, `OSProgressRing`, `OSProgressBar`
+  - [x] `OSDatePickerSheet`, `OSTimeList`
+  - [x] `OSSwitch`, `OSSegmented`
+- [x] App shell: edge-to-edge, insets handled once, bottom bar (My Day, Inbox, Planned, Browse), top bar, profile avatar menu
+- [x] Navigation graph with type-safe routes and empty placeholder screens
+- [x] Splash via `core-splashscreen`
+- [x] Debug-only component gallery screen (every component, every state) used for visual review
+- [x] Reduced-motion helper; the 4 permitted animation sites implemented as shared modifiers
 
 **Done when:** the shell runs with placeholder screens, the gallery shows every component, the architecture test confirms zero hardcoded values.
 

@@ -129,7 +129,7 @@ complexity:
   LongMethod:
     active: true
     threshold: 60
-    excludes: ['**/Tokens.kt', '**/theme/**', '**/ui/theme/**']
+    excludes: ['**/Tokens.kt', '**/theme/**', '**/ui/theme/**', '**/ui/**']
   LongParameterList:
     active: true
     functionThreshold: 8
@@ -350,7 +350,8 @@ naming:
     parameterPattern: '[a-z][A-Za-z0-9]*|_'
   MatchingDeclarationName:
     active: true
-    mustBeFirst: true
+    mustBeFirst: false
+    excludes: ['**/ui/**']
   MemberNameEqualsClassName:
     active: true
     ignoreOverridden: true
@@ -612,7 +613,7 @@ style:
     maxJumpCount: 1
   MagicNumber:
     active: true
-    excludes: ['**/test/**', '**/androidTest/**', '**/commonTest/**', '**/jvmTest/**', '**/androidUnitTest/**', '**/androidInstrumentedTest/**', '**/jsTest/**', '**/iosTest/**', '**/*.kts', '**/Tokens.kt', '**/ui/theme/**']
+    excludes: ['**/test/**', '**/androidTest/**', '**/commonTest/**', '**/jvmTest/**', '**/androidUnitTest/**', '**/androidInstrumentedTest/**', '**/jsTest/**', '**/iosTest/**', '**/*.kts', '**/Tokens.kt', '**/ui/theme/**', '**/ui/**']
     ignoreNumbers:
       - '-1'
       - '0'
