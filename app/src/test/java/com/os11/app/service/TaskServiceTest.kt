@@ -24,6 +24,7 @@ import org.junit.Test
 class TaskServiceTest {
 
     private val taskRepository: TaskRepository = mockk(relaxed = true)
+    private val countsRepository: com.os11.app.data.repository.CountsRepository = mockk(relaxed = true)
     private val undoManager: UndoManager = UndoManager()
     private val clock = TestClock(1_000_000L)
     private val idGenerator = DefaultIdGenerator()
@@ -33,6 +34,7 @@ class TaskServiceTest {
     fun setup() {
         taskService = TaskService(
             taskRepository = taskRepository,
+            countsRepository = countsRepository,
             undoManager = undoManager,
             clock = clock,
             idGenerator = idGenerator,

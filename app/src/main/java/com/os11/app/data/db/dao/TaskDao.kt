@@ -174,6 +174,90 @@ internal interface TaskDao {
                bucket, waiting_on as waitingOn, waiting_since as waitingSince, follow_up_date as followUpDate,
                is_trashed as isTrashed, created_at as createdAt, updated_at as updatedAt
         FROM tasks
+        WHERE is_trashed = 0 AND is_completed = 0 AND (is_starred = 1 OR priority >= 3)
+        ORDER BY priority DESC, is_starred DESC, sort_order ASC, id ASC
+        """,
+    )
+    fun observeImportantSlim(): Flow<List<SlimTask>>
+
+    @Query(
+        """
+        SELECT id, title, workspace_id as workspaceId, area_id as areaId, project_id as projectId,
+               section_id as sectionId, parent_task_id as parentTaskId, due_date as dueDate,
+               due_time as dueTime, all_day as allDay, recurrence_rule as recurrenceRule,
+               recurrence_basis as recurrenceBasis, priority, is_starred as isStarred,
+               is_completed as isCompleted, completed_at as completedAt, estimated_minutes as estimatedMinutes,
+               sort_order as sortOrder, my_day_date as myDayDate, pomodoro_count as pomodoroCount,
+               scheduled_start_min as scheduledStartMin, scheduled_duration_min as scheduledDurationMin,
+               bucket, waiting_on as waitingOn, waiting_since as waitingSince, follow_up_date as followUpDate,
+               is_trashed as isTrashed, created_at as createdAt, updated_at as updatedAt
+        FROM tasks
+        WHERE is_trashed = 0 AND due_date IS NOT NULL
+        ORDER BY due_date ASC, due_time ASC, sort_order ASC, id ASC
+        """,
+    )
+    fun observePlannedSlim(): Flow<List<SlimTask>>
+
+    @Query(
+        """
+        SELECT id, title, workspace_id as workspaceId, area_id as areaId, project_id as projectId,
+               section_id as sectionId, parent_task_id as parentTaskId, due_date as dueDate,
+               due_time as dueTime, all_day as allDay, recurrence_rule as recurrenceRule,
+               recurrence_basis as recurrenceBasis, priority, is_starred as isStarred,
+               is_completed as isCompleted, completed_at as completedAt, estimated_minutes as estimatedMinutes,
+               sort_order as sortOrder, my_day_date as myDayDate, pomodoro_count as pomodoroCount,
+               scheduled_start_min as scheduledStartMin, scheduled_duration_min as scheduledDurationMin,
+               bucket, waiting_on as waitingOn, waiting_since as waitingSince, follow_up_date as followUpDate,
+               is_trashed as isTrashed, created_at as createdAt, updated_at as updatedAt
+        FROM tasks
+        WHERE is_trashed = 0 AND is_completed = 1
+        ORDER BY completed_at DESC, id ASC
+        """,
+    )
+    fun observeCompletedSlim(): Flow<List<SlimTask>>
+
+    @Query(
+        """
+        SELECT id, title, workspace_id as workspaceId, area_id as areaId, project_id as projectId,
+               section_id as sectionId, parent_task_id as parentTaskId, due_date as dueDate,
+               due_time as dueTime, all_day as allDay, recurrence_rule as recurrenceRule,
+               recurrence_basis as recurrenceBasis, priority, is_starred as isStarred,
+               is_completed as isCompleted, completed_at as completedAt, estimated_minutes as estimatedMinutes,
+               sort_order as sortOrder, my_day_date as myDayDate, pomodoro_count as pomodoroCount,
+               scheduled_start_min as scheduledStartMin, scheduled_duration_min as scheduledDurationMin,
+               bucket, waiting_on as waitingOn, waiting_since as waitingSince, follow_up_date as followUpDate,
+               is_trashed as isTrashed, created_at as createdAt, updated_at as updatedAt
+        FROM tasks
+        WHERE is_trashed = 0 AND is_completed = 0
+          AND (my_day_date IS NULL OR my_day_date != :today)
+          AND (due_date <= :today OR is_starred = 1 OR priority >= 3)
+        ORDER BY due_date ASC, priority DESC, is_starred DESC, sort_order ASC
+        """,
+    )
+    fun observeMyDaySuggestions(today: String): Flow<List<SlimTask>>
+
+    @Query(
+        """
+        SELECT * FROM tasks
+        WHERE is_trashed = 0 AND is_completed = 0
+          AND my_day_date IS NOT NULL AND my_day_date < :today
+        ORDER BY sort_order ASC, id ASC
+        """,
+    )
+    suspend fun getIncompleteMyDayBefore(today: String): List<TaskEntity>
+
+    @Query(
+        """
+        SELECT id, title, workspace_id as workspaceId, area_id as areaId, project_id as projectId,
+               section_id as sectionId, parent_task_id as parentTaskId, due_date as dueDate,
+               due_time as dueTime, all_day as allDay, recurrence_rule as recurrenceRule,
+               recurrence_basis as recurrenceBasis, priority, is_starred as isStarred,
+               is_completed as isCompleted, completed_at as completedAt, estimated_minutes as estimatedMinutes,
+               sort_order as sortOrder, my_day_date as myDayDate, pomodoro_count as pomodoroCount,
+               scheduled_start_min as scheduledStartMin, scheduled_duration_min as scheduledDurationMin,
+               bucket, waiting_on as waitingOn, waiting_since as waitingSince, follow_up_date as followUpDate,
+               is_trashed as isTrashed, created_at as createdAt, updated_at as updatedAt
+        FROM tasks
         WHERE is_trashed = 1
         ORDER BY trashed_at DESC, id ASC
         """,

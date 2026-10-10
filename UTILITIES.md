@@ -151,7 +151,7 @@ Record query methods here as they are written, grouped by repository, so a new q
 | `TaskSortFilterSheet` | Task sort and filter bottom sheet | 5 | Built |
 | `NoteEditor` | Rich text markdown/HTML note editor | 5 | Built |
 | `ReorderableTaskList` | Shared reorder behavior | 8 | Planned |
-| `WeekStrip` | Collapsible week/month calendar | 6 | Planned |
+| `WeekStrip` | Collapsible week/month calendar | 6 | Built |
 | `ParsePreviewChips` | Quick Add parse preview | 7 | Planned |
 
 ## Modifiers and Compose Helpers

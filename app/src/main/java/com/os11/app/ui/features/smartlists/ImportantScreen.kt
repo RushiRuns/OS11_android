@@ -1,0 +1,270 @@
+package com.os11.app.ui.features.smartlists
+
+import androidx.compose.foundation.background
+import androidx.compose.foundation.layout.Box
+import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.Row
+import androidx.compose.foundation.layout.fillMaxSize
+import androidx.compose.foundation.layout.fillMaxWidth
+import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.lazy.LazyColumn
+import androidx.compose.foundation.lazy.items
+import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.automirrored.outlined.ArrowBack
+import androidx.compose.material.icons.filled.Add
+import androidx.compose.material3.ExperimentalMaterial3Api
+import androidx.compose.material3.Icon
+import androidx.compose.material3.Text
+import androidx.compose.runtime.Composable
+import androidx.compose.runtime.collectAsState
+import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.remember
+import androidx.compose.runtime.setValue
+import androidx.compose.ui.Alignment
+import androidx.compose.ui.Modifier
+import androidx.hilt.navigation.compose.hiltViewModel
+import androidx.lifecycle.ViewModel
+import androidx.lifecycle.viewModelScope
+import com.os11.app.service.area.AreaService
+import com.os11.app.service.project.ProjectService
+import com.os11.app.service.task.TaskService
+import com.os11.app.ui.components.OSEmptyState
+import com.os11.app.ui.components.OSIconButton
+import com.os11.app.ui.components.OSTextField
+import com.os11.app.ui.features.task.TaskActionsSheet
+import com.os11.app.ui.features.task.TaskDetailSheet
+import com.os11.app.ui.features.task.TaskRow
+import com.os11.app.ui.features.task.TaskTreeFlattener
+import com.os11.app.ui.features.task.TaskUiModel
+import com.os11.app.ui.theme.OS11Theme
+import com.os11.domain.id.DeterministicIds
+import com.os11.domain.time.Clock
+import dagger.hilt.android.lifecycle.HiltViewModel
+import kotlinx.collections.immutable.toImmutableList
+import kotlinx.coroutines.flow.SharingStarted
+import kotlinx.coroutines.flow.StateFlow
+import kotlinx.coroutines.flow.combine
+import kotlinx.coroutines.flow.stateIn
+import kotlinx.coroutines.launch
+import javax.inject.Inject
+
+@HiltViewModel
+class ImportantViewModel @Inject constructor(
+    private val taskService: TaskService,
+    private val areaService: AreaService,
+    private val projectService: ProjectService,
+    private val clock: Clock,
+) : ViewModel() {
+
+    private val workspaceId = DeterministicIds.defaultWorkspaceId()
+
+    val tasks: StateFlow<List<TaskUiModel>> = combine(
+        taskService.observeImportantTasks(),
+        areaService.observeAreaItems(workspaceId),
+        projectService.observeProjectItems(workspaceId),
+    ) { tasks, areas, projects ->
+        val projectMap = projects.associate { it.id to it.name }
+        val areaMap = areas.associate { it.id to it.name }
+        TaskTreeFlattener.flatten(
+            tasks = tasks,
+            todayIso = clock.today(),
+            projectNames = projectMap,
+            areaNames = areaMap,
+        ).toImmutableList()
+    }.stateIn(
+        scope = viewModelScope,
+        started = SharingStarted.WhileSubscribed(5_000L),
+        initialValue = emptyList(),
+    )
+
+    fun addTask(title: String) {
+        if (title.isBlank()) return
+        viewModelScope.launch {
+            taskService.createTask(
+                title = title.trim(),
+                workspaceId = workspaceId,
+                priority = 3, // High priority so it appears in Important
+            )
+        }
+    }
+
+    fun setCompleted(taskId: String, completed: Boolean) {
+        viewModelScope.launch { taskService.setCompleted(taskId, completed) }
+    }
+
+    fun toggleStar(taskId: String) {
+        viewModelScope.launch { taskService.toggleStar(taskId) }
+    }
+
+    fun editTask(id: String, title: String, notes: String?, dueDate: String?, priority: Int) {
+        viewModelScope.launch {
+            taskService.editTask(
+                id = id,
+                title = title,
+                notes = notes,
+                dueDate = dueDate,
+                priority = priority,
+            )
+        }
+    }
+
+    fun trashTask(id: String) {
+        viewModelScope.launch { taskService.trashTask(id) }
+    }
+
+    fun addSubtask(parentId: String, title: String) {
+        if (title.isBlank()) return
+        viewModelScope.launch { taskService.addSubtask(parentId, title.trim()) }
+    }
+}
+
+@OptIn(ExperimentalMaterial3Api::class)
+@Composable
+fun ImportantScreen(
+    onNavigateBack: () -> Unit,
+    modifier: Modifier = Modifier,
+    viewModel: ImportantViewModel = hiltViewModel(),
+) {
+    val tasks by viewModel.tasks.collectAsState()
+    val colors = OS11Theme.colors
+    val spacing = OS11Theme.spacing
+    val type = OS11Theme.type
+
+    var quickAddText by remember { mutableStateOf("") }
+    var selectedTaskForDetail by remember { mutableStateOf<TaskUiModel?>(null) }
+    var selectedTaskForActions by remember { mutableStateOf<TaskUiModel?>(null) }
+
+    Column(
+        modifier = modifier
+            .fillMaxSize()
+            .background(colors.surfaceBase),
+    ) {
+        // Top Header
+        Row(
+            modifier = Modifier
+                .fillMaxWidth()
+                .padding(horizontal = spacing.s4, vertical = spacing.s2),
+            verticalAlignment = Alignment.CenterVertically,
+        ) {
+            OSIconButton(onClick = onNavigateBack, contentDescription = "Back") {
+                Icon(
+                    imageVector = Icons.AutoMirrored.Outlined.ArrowBack,
+                    contentDescription = null,
+                    tint = colors.textPrimary,
+                )
+            }
+            Text(
+                text = "Important (${tasks.size})",
+                style = type.subViewTitle.copy(color = colors.textPrimary),
+            )
+        }
+
+        // Inline Quick Add
+        Row(
+            modifier = Modifier
+                .fillMaxWidth()
+                .padding(horizontal = spacing.s4, vertical = spacing.s2),
+            verticalAlignment = Alignment.CenterVertically,
+        ) {
+            OSTextField(
+                value = quickAddText,
+                onValueChange = { quickAddText = it },
+                modifier = Modifier.weight(1f),
+                placeholder = "Add important task...",
+            )
+            OSIconButton(
+                onClick = {
+                    if (quickAddText.isNotBlank()) {
+                        viewModel.addTask(quickAddText.trim())
+                        quickAddText = ""
+                    }
+                },
+                contentDescription = "Add task",
+            ) {
+                Icon(
+                    imageVector = Icons.Default.Add,
+                    contentDescription = null,
+                    tint = colors.accent,
+                )
+            }
+        }
+
+        if (tasks.isEmpty()) {
+            Box(
+                modifier = Modifier
+                    .fillMaxSize()
+                    .padding(spacing.s4),
+                contentAlignment = Alignment.Center,
+            ) {
+                OSEmptyState(
+                    title = "No important tasks",
+                    description = "Starred tasks and high/critical priority tasks will appear here.",
+                )
+            }
+        } else {
+            LazyColumn(modifier = Modifier.fillMaxSize()) {
+                items(items = tasks, key = { it.id }, contentType = { "task_row" }) { task ->
+                    TaskRow(
+                        task = task,
+                        onCompletedChange = { viewModel.setCompleted(task.id, it) },
+                        onClick = { selectedTaskForDetail = task },
+                        onLongClick = { selectedTaskForActions = task },
+                        onStarClick = { viewModel.toggleStar(task.id) },
+                    )
+                }
+            }
+        }
+    }
+
+    selectedTaskForDetail?.let { task ->
+        TaskDetailSheet(
+            title = task.title,
+            notes = null,
+            dueDate = task.dueDate,
+            dueTime = task.dueTime,
+            priority = task.priority,
+            isCompleted = task.isCompleted,
+            subtasks = emptyList(),
+            onTitleChange = { viewModel.editTask(task.id, it, null, task.dueDate, task.priority) },
+            onNotesChange = { viewModel.editTask(task.id, task.title, it, task.dueDate, task.priority) },
+            onDueDateChange = { viewModel.editTask(task.id, task.title, null, it, task.priority) },
+            onPriorityChange = { viewModel.editTask(task.id, task.title, null, task.dueDate, it) },
+            onCompletedChange = { viewModel.setCompleted(task.id, it) },
+            onAddSubtask = { viewModel.addSubtask(task.id, it) },
+            onSubtaskCompletedChange = { id, comp -> viewModel.setCompleted(id, comp) },
+            onDismissRequest = { selectedTaskForDetail = null },
+        )
+    }
+
+    selectedTaskForActions?.let { task ->
+        TaskActionsSheet(
+            task = task,
+            onDismissRequest = { selectedTaskForActions = null },
+            onToggleCompleted = { viewModel.setCompleted(task.id, !task.isCompleted) },
+            onToggleStarred = { viewModel.toggleStar(task.id) },
+            onEdit = {
+                selectedTaskForActions = null
+                selectedTaskForDetail = task
+            },
+            onChangeDate = {
+                selectedTaskForActions = null
+                selectedTaskForDetail = task
+            },
+            onAddSubtask = {
+                selectedTaskForActions = null
+                selectedTaskForDetail = task
+            },
+            onDuplicate = {
+                selectedTaskForActions = null
+            },
+            onIndent = { },
+            onOutdent = { },
+            onPromote = { },
+            onTrash = {
+                selectedTaskForActions = null
+                viewModel.trashTask(task.id)
+            },
+        )
+    }
+}

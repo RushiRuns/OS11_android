@@ -53,9 +53,11 @@ class StartupTimingTest {
         DatabaseInitializer.seedDefaults(db, testClock)
 
         val taskRepository = TaskRepositoryImpl(db, trackedWriter, testClock)
+        val countsRepository = com.os11.app.data.repository.CountsRepositoryImpl(db)
         val undoManager = UndoManager()
         taskService = TaskService(
             taskRepository = taskRepository,
+            countsRepository = countsRepository,
             undoManager = undoManager,
             clock = testClock,
             idGenerator = idGenerator,

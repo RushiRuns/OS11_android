@@ -185,15 +185,15 @@ The largest foundation phase. Sync readiness is built here or never cheaply.
 
 ## PHASE 6: Navigation, Smart Lists, My Day (Weeks 13-14)
 
-- [ ] Browse screen: Important pinned, optional smart lists, modules (Anytime, Someday, Waiting For), Area and Project tree
-- [ ] Area Overview: Tasks row, loose tasks with inline add, project cards
-- [ ] Project screen (list view only for now)
-- [ ] Smart lists: My Day, Inbox, Important, Planned, All Tasks (paged), Completed (paged)
-- [ ] Planned: collapsible week strip plus date-grouped list
-- [ ] My Day: suggestions section, midnight rollover sheet, `day_starts_at` respected
-- [ ] "Move to" picker (Area / Project / Section)
-- [ ] Browse badges via the single counts query
-- [ ] Create, rename, archive, delete flows for Area and Project
+- [x] Browse screen: Important pinned, optional smart lists, modules (Anytime, Someday, Waiting For), Area and Project tree
+- [x] Area Overview: Tasks row, loose tasks with inline add, project cards
+- [x] Project screen (list view only for now)
+- [x] Smart lists: My Day, Inbox, Important, Planned, All Tasks (paged), Completed (paged)
+- [x] Planned: collapsible week strip plus date-grouped list
+- [x] My Day: suggestions section, midnight rollover sheet, `day_starts_at` respected
+- [x] "Move to" picker (Area / Project / Section)
+- [x] Browse badges via the single counts query
+- [x] Create, rename, archive, delete flows for Area and Project
 
 **Done when:** all core four smart lists behave like desktop and counts are correct.
 

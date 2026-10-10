@@ -315,19 +315,25 @@ private fun OS11BottomNavBar(currentRoute: String?, onNavigate: (OS11Route) -> U
     }
 }
 
+private val SCREEN_TITLES = listOf(
+    "MyDay" to "My Day",
+    "Inbox" to "Inbox",
+    "Planned" to "Planned",
+    "Browse" to "Browse",
+    "Dashboard" to "Dashboard",
+    "Goals" to "Goals",
+    "Pomodoro" to "Pomodoro",
+    "Settings" to "Settings",
+    "Gallery" to "Gallery",
+    "Trash" to "Trash",
+    "AreaOverview" to "Area",
+    "ProjectDetail" to "Project",
+    "Important" to "Important",
+    "AllTasks" to "All Tasks",
+    "Completed" to "Completed",
+)
+
 private fun resolveScreenTitle(currentRoute: String?): String {
     if (currentRoute == null) return "OS11"
-    return when {
-        currentRoute.contains("MyDay") -> "My Day"
-        currentRoute.contains("Inbox") -> "Inbox"
-        currentRoute.contains("Planned") -> "Planned"
-        currentRoute.contains("Browse") -> "Browse"
-        currentRoute.contains("Dashboard") -> "Dashboard"
-        currentRoute.contains("Goals") -> "Goals"
-        currentRoute.contains("Pomodoro") -> "Pomodoro"
-        currentRoute.contains("Settings") -> "Settings"
-        currentRoute.contains("Gallery") -> "Gallery"
-        currentRoute.contains("Trash") -> "Trash"
-        else -> "OS11"
-    }
+    return SCREEN_TITLES.firstOrNull { (key, _) -> currentRoute.contains(key) }?.second ?: "OS11"
 }

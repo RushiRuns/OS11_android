@@ -50,4 +50,30 @@ class SettingsService @Inject constructor(
             AppResult.err(AppError.Unexpected(e))
         }
     }
+
+    suspend fun getDayStartsAt(): String {
+        val raw = getSetting("day_starts_at")?.replace("\"", "")?.trim()
+        return if (!raw.isNullOrBlank()) raw else "00:00"
+    }
+
+    suspend fun calculateLogicalToday(now: java.time.ZonedDateTime = java.time.ZonedDateTime.now()): String {
+        val dayStartsAt = getDayStartsAt()
+        val parts = dayStartsAt.split(":")
+        val startHour = parts.getOrNull(0)?.toIntOrNull() ?: 0
+        val startMin = parts.getOrNull(1)?.toIntOrNull() ?: 0
+
+        val startMinutesOfDay = startHour * MINUTES_PER_HOUR + startMin
+        val currentMinutesOfDay = now.hour * MINUTES_PER_HOUR + now.minute
+
+        val logicalDate = if (currentMinutesOfDay < startMinutesOfDay) {
+            now.minusDays(1).toLocalDate()
+        } else {
+            now.toLocalDate()
+        }
+        return logicalDate.toString()
+    }
+
+    companion object {
+        private const val MINUTES_PER_HOUR = 60
+    }
 }

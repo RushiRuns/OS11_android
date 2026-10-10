@@ -12,6 +12,7 @@ import com.os11.domain.time.Clock
 import kotlinx.coroutines.CancellationException
 import kotlinx.coroutines.CoroutineDispatcher
 import kotlinx.coroutines.flow.Flow
+import kotlinx.coroutines.flow.map
 import kotlinx.coroutines.withContext
 import javax.inject.Inject
 import javax.inject.Singleton
@@ -28,6 +29,35 @@ class ProjectService @Inject constructor(
     fun observeAll(workspaceId: String): Flow<List<ProjectEntity>> = projectRepository.observeAll(workspaceId)
     fun observeByArea(areaId: String): Flow<List<ProjectEntity>> = projectRepository.observeByArea(areaId)
     suspend fun getById(id: String): ProjectEntity? = projectRepository.getById(id)
+
+    fun observeProjectItems(workspaceId: String): Flow<List<ProjectItem>> =
+        projectRepository.observeAll(workspaceId).map { list ->
+            list.map { it.toItem() }
+        }
+
+    fun observeProjectItemsByArea(areaId: String): Flow<List<ProjectItem>> =
+        projectRepository.observeByArea(areaId).map { list ->
+            list.map { it.toItem() }
+        }
+
+    suspend fun getProjectItem(id: String): ProjectItem? = projectRepository.getById(id)?.toItem()
+
+    suspend fun updateProjectStatus(id: String, status: String): AppResult<Unit> = withContext(ioDispatcher) {
+        try {
+            val existing = projectRepository.getById(id)
+                ?: return@withContext AppResult.err(AppError.NotFound)
+            val updated = existing.copy(
+                status = status,
+                updatedAt = clock.nowIso(),
+            )
+            projectRepository.save(updated)
+            AppResult.ok(Unit)
+        } catch (e: CancellationException) {
+            throw e
+        } catch (e: Exception) {
+            AppResult.err(AppError.Unexpected(e))
+        }
+    }
 
     suspend fun createProject(
         name: String,
@@ -78,3 +108,18 @@ class ProjectService @Inject constructor(
         }
     }
 }
+
+private fun ProjectEntity.toItem() = ProjectItem(
+    id = id,
+    workspaceId = workspaceId,
+    areaId = areaId,
+    name = name,
+    description = description,
+    color = color,
+    icon = icon,
+    status = status,
+    dueDate = dueDate,
+    defaultView = defaultView,
+    isSomeday = isSomeday,
+    sortOrder = sortOrder,
+)

@@ -2,6 +2,7 @@ package com.os11.app.service.task
 
 import com.os11.app.data.db.dao.SlimTask
 import com.os11.app.data.db.entities.TaskEntity
+import com.os11.app.data.repository.CountsRepository
 import com.os11.app.data.repository.TaskRepository
 import com.os11.app.di.IoDispatcher
 import com.os11.app.service.note.NoteSanitizer
@@ -32,6 +33,7 @@ data class SubtaskProgress(val completed: Int, val total: Int) {
 @Suppress("TooManyFunctions", "TooGenericExceptionCaught")
 class TaskService @Inject constructor(
     private val taskRepository: TaskRepository,
+    private val countsRepository: CountsRepository,
     private val undoManager: UndoManager,
     private val clock: Clock,
     private val idGenerator: IdGenerator,
@@ -56,8 +58,120 @@ class TaskService @Inject constructor(
     fun observeTrashTasks(): Flow<List<TaskItem>> =
         taskRepository.observeTrashSlim().map { list -> list.map { it.toTaskItem() } }
 
+    fun observeImportantTasks(): Flow<List<TaskItem>> =
+        taskRepository.observeImportantSlim().map { list -> list.map { it.toTaskItem() } }
+
+    fun observePlannedTasks(): Flow<List<TaskItem>> =
+        taskRepository.observePlannedSlim().map { list -> list.map { it.toTaskItem() } }
+
+    fun observeCompletedTasks(): Flow<List<TaskItem>> =
+        taskRepository.observeCompletedSlim().map { list -> list.map { it.toTaskItem() } }
+
+    fun observeMyDayTasks(date: String = clock.today()): Flow<List<TaskItem>> =
+        taskRepository.observeMyDaySlim(date).map { list -> list.map { it.toTaskItem() } }
+
+    fun observeMyDaySuggestions(today: String = clock.today()): Flow<List<TaskItem>> =
+        taskRepository.observeMyDaySuggestions(today).map { list -> list.map { it.toTaskItem() } }
+
+    fun observeTasksByProject(projectId: String): Flow<List<TaskItem>> =
+        taskRepository.observeByProjectSlim(projectId).map { list -> list.map { it.toTaskItem() } }
+
+    fun observeTasksByArea(areaId: String): Flow<List<TaskItem>> =
+        taskRepository.observeByAreaSlim(areaId).map { list -> list.map { it.toTaskItem() } }
+
+    fun observeBrowseCounts(today: String = clock.today()): Flow<BrowseCountsItem> =
+        countsRepository.observeBrowseCounts(today).map { counts ->
+            BrowseCountsItem(
+                inboxCount = counts.inboxCount,
+                myDayCount = counts.myDayCount,
+                plannedCount = counts.plannedCount,
+                importantCount = counts.importantCount,
+                anytimeCount = counts.anytimeCount,
+                somedayCount = counts.somedayCount,
+                waitingForCount = counts.waitingForCount,
+                completedCount = counts.completedCount,
+                trashCount = counts.trashCount,
+            )
+        }
+
     fun observeSubtasks(parentId: String): Flow<List<TaskItem>> =
         taskRepository.observeSubtasksSlim(parentId).map { list -> list.map { it.toTaskItem() } }
+
+    suspend fun addToMyDay(taskId: String, date: String = clock.today()): AppResult<UndoToken> =
+        withContext(ioDispatcher) {
+            try {
+                val existing = taskRepository.getById(taskId)
+                    ?: return@withContext AppResult.err(AppError.NotFound)
+                val previousDate = existing.myDayDate
+                val updated = existing.copy(
+                    myDayDate = date,
+                    updatedAt = clock.nowIso(),
+                )
+                taskRepository.saveTask(updated)
+                val token = undoManager.registerUndo("Added to My Day") {
+                    val current = taskRepository.getById(taskId)
+                    if (current != null) {
+                        taskRepository.saveTask(current.copy(myDayDate = previousDate, updatedAt = clock.nowIso()))
+                    }
+                    AppResult.ok(Unit)
+                }
+                AppResult.ok(token)
+            } catch (e: CancellationException) {
+                throw e
+            } catch (e: Exception) {
+                AppResult.err(AppError.Unexpected(e))
+            }
+        }
+
+    suspend fun removeFromMyDay(taskId: String): AppResult<UndoToken> = withContext(ioDispatcher) {
+        try {
+            val existing = taskRepository.getById(taskId)
+                ?: return@withContext AppResult.err(AppError.NotFound)
+            val previousDate = existing.myDayDate
+            val updated = existing.copy(
+                myDayDate = null,
+                updatedAt = clock.nowIso(),
+            )
+            taskRepository.saveTask(updated)
+            val token = undoManager.registerUndo("Removed from My Day") {
+                val current = taskRepository.getById(taskId)
+                if (current != null) {
+                    taskRepository.saveTask(current.copy(myDayDate = previousDate, updatedAt = clock.nowIso()))
+                }
+                AppResult.ok(Unit)
+            }
+            AppResult.ok(token)
+        } catch (e: CancellationException) {
+            throw e
+        } catch (e: Exception) {
+            AppResult.err(AppError.Unexpected(e))
+        }
+    }
+
+    suspend fun getIncompleteYesterdayMyDay(today: String = clock.today()): List<TaskItem> = withContext(ioDispatcher) {
+        taskRepository.getIncompleteMyDayBefore(today).map { it.toTaskItem() }
+    }
+
+    suspend fun performRollover(uncompletedTaskIds: List<String>, targetDate: String?): AppResult<Unit> =
+        withContext(ioDispatcher) {
+            try {
+                val nowIso = clock.nowIso()
+                for (id in uncompletedTaskIds) {
+                    val task = taskRepository.getById(id) ?: continue
+                    taskRepository.saveTask(
+                        task.copy(
+                            myDayDate = targetDate,
+                            updatedAt = nowIso,
+                        ),
+                    )
+                }
+                AppResult.ok(Unit)
+            } catch (e: CancellationException) {
+                throw e
+            } catch (e: Exception) {
+                AppResult.err(AppError.Unexpected(e))
+            }
+        }
 
     suspend fun getTaskItemById(id: String): TaskItem? = withContext(ioDispatcher) {
         taskRepository.getById(id)?.toTaskItem()
@@ -230,6 +344,12 @@ class TaskService @Inject constructor(
         } catch (e: Exception) {
             AppResult.err(AppError.Unexpected(e))
         }
+    }
+
+    suspend fun toggleStar(id: String): AppResult<TaskEntity> = withContext(ioDispatcher) {
+        val existing = taskRepository.getById(id)
+            ?: return@withContext AppResult.err(AppError.NotFound)
+        setStarred(id, !existing.isStarred)
     }
 
     suspend fun duplicateTask(id: String): AppResult<TaskEntity> = withContext(ioDispatcher) {

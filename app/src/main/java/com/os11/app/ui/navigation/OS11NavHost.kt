@@ -5,6 +5,7 @@ import androidx.compose.ui.Modifier
 import androidx.navigation.NavHostController
 import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
+import com.os11.app.ui.features.area.AreaOverviewScreen
 import com.os11.app.ui.features.browse.BrowseScreen
 import com.os11.app.ui.features.dashboard.DashboardScreen
 import com.os11.app.ui.features.gallery.ComponentGalleryScreen
@@ -13,7 +14,11 @@ import com.os11.app.ui.features.inbox.InboxScreen
 import com.os11.app.ui.features.myday.MyDayScreen
 import com.os11.app.ui.features.planned.PlannedScreen
 import com.os11.app.ui.features.pomodoro.PomodoroScreen
+import com.os11.app.ui.features.project.ProjectScreen
 import com.os11.app.ui.features.settings.SettingsScreen
+import com.os11.app.ui.features.smartlists.AllTasksScreen
+import com.os11.app.ui.features.smartlists.CompletedScreen
+import com.os11.app.ui.features.smartlists.ImportantScreen
 import com.os11.app.ui.features.trash.TrashScreen
 
 /**
@@ -40,7 +45,9 @@ fun OS11NavHost(
             PlannedScreen()
         }
         composable<OS11Route.Browse> {
-            BrowseScreen()
+            BrowseScreen(
+                onNavigate = { route -> navController.navigate(route) },
+            )
         }
         composable<OS11Route.Dashboard> {
             DashboardScreen()
@@ -59,6 +66,32 @@ fun OS11NavHost(
         }
         composable<OS11Route.Trash> {
             TrashScreen()
+        }
+        composable<OS11Route.AreaOverview> {
+            AreaOverviewScreen(
+                onNavigateBack = { navController.popBackStack() },
+                onProjectClick = { projectId -> navController.navigate(OS11Route.ProjectDetail(projectId)) },
+            )
+        }
+        composable<OS11Route.ProjectDetail> {
+            ProjectScreen(
+                onNavigateBack = { navController.popBackStack() },
+            )
+        }
+        composable<OS11Route.Important> {
+            ImportantScreen(
+                onNavigateBack = { navController.popBackStack() },
+            )
+        }
+        composable<OS11Route.AllTasks> {
+            AllTasksScreen(
+                onNavigateBack = { navController.popBackStack() },
+            )
+        }
+        composable<OS11Route.Completed> {
+            CompletedScreen(
+                onNavigateBack = { navController.popBackStack() },
+            )
         }
     }
 }

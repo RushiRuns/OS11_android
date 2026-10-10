@@ -35,4 +35,19 @@ sealed interface OS11Route {
 
     @Serializable
     data object Trash : OS11Route
+
+    @Serializable
+    data class AreaOverview(val areaId: String) : OS11Route
+
+    @Serializable
+    data class ProjectDetail(val projectId: String) : OS11Route
+
+    @Serializable
+    data object Important : OS11Route
+
+    @Serializable
+    data object AllTasks : OS11Route
+
+    @Serializable
+    data object Completed : OS11Route
 }

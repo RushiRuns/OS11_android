@@ -369,7 +369,9 @@ data class OS11Type(
     val sectionLabel: TextStyle,
     val statNumber: TextStyle,
     val mono: TextStyle,
-)
+) {
+    val sectionHeader: TextStyle get() = panelTitle
+}
 
 private fun style(
     family: FontFamily,

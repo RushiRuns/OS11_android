@@ -12,6 +12,7 @@ import com.os11.domain.time.Clock
 import kotlinx.coroutines.CancellationException
 import kotlinx.coroutines.CoroutineDispatcher
 import kotlinx.coroutines.flow.Flow
+import kotlinx.coroutines.flow.map
 import kotlinx.coroutines.withContext
 import javax.inject.Inject
 import javax.inject.Singleton
@@ -27,6 +28,13 @@ class AreaService @Inject constructor(
 ) {
     fun observeAll(workspaceId: String): Flow<List<AreaEntity>> = areaRepository.observeAll(workspaceId)
     suspend fun getById(id: String): AreaEntity? = areaRepository.getById(id)
+
+    fun observeAreaItems(workspaceId: String): Flow<List<AreaItem>> =
+        areaRepository.observeAll(workspaceId).map { list ->
+            list.map { it.toItem() }
+        }
+
+    suspend fun getAreaItem(id: String): AreaItem? = areaRepository.getById(id)?.toItem()
 
     suspend fun createArea(
         name: String,
@@ -77,3 +85,13 @@ class AreaService @Inject constructor(
         }
     }
 }
+
+private fun AreaEntity.toItem() = AreaItem(
+    id = id,
+    workspaceId = workspaceId,
+    name = name,
+    icon = icon,
+    color = color,
+    sortOrder = sortOrder,
+    isDefault = isDefault,
+)

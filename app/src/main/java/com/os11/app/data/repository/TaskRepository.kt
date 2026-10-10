@@ -19,6 +19,10 @@ interface TaskRepository {
     fun observeByAreaSlim(areaId: String): Flow<List<SlimTask>>
     fun observeSubtasksSlim(parentId: String): Flow<List<SlimTask>>
     fun observeMyDaySlim(date: String): Flow<List<SlimTask>>
+    fun observeImportantSlim(): Flow<List<SlimTask>>
+    fun observePlannedSlim(): Flow<List<SlimTask>>
+    fun observeCompletedSlim(): Flow<List<SlimTask>>
+    fun observeMyDaySuggestions(today: String): Flow<List<SlimTask>>
     fun observeTrashSlim(): Flow<List<SlimTask>>
     fun observeActiveTaskCount(): Flow<Int>
 
@@ -29,6 +33,7 @@ interface TaskRepository {
     suspend fun getTrashedTasks(): List<TaskEntity>
     suspend fun getTrashedTasksOlderThan(cutoffIso: String): List<TaskEntity>
     suspend fun getSubtasks(parentId: String): List<TaskEntity>
+    suspend fun getIncompleteMyDayBefore(today: String): List<TaskEntity>
 }
 
 @Suppress("TooManyFunctions")
@@ -56,9 +61,20 @@ internal class TaskRepositoryImpl(
 
     override fun observeMyDaySlim(date: String): Flow<List<SlimTask>> = taskDao.observeMyDaySlim(date)
 
+    override fun observeImportantSlim(): Flow<List<SlimTask>> = taskDao.observeImportantSlim()
+
+    override fun observePlannedSlim(): Flow<List<SlimTask>> = taskDao.observePlannedSlim()
+
+    override fun observeCompletedSlim(): Flow<List<SlimTask>> = taskDao.observeCompletedSlim()
+
+    override fun observeMyDaySuggestions(today: String): Flow<List<SlimTask>> = taskDao.observeMyDaySuggestions(today)
+
     override fun observeTrashSlim(): Flow<List<SlimTask>> = taskDao.observeTrashSlim()
 
     override fun observeActiveTaskCount(): Flow<Int> = taskDao.observeActiveTaskCount()
+
+    override suspend fun getIncompleteMyDayBefore(today: String): List<TaskEntity> =
+        taskDao.getIncompleteMyDayBefore(today)
 
     override suspend fun saveTask(task: TaskEntity): TaskEntity = trackedWriter.writeTask(task)
 
