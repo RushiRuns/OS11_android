@@ -30,6 +30,7 @@ profileinstaller = "1.4.1"
 konsist = "0.17.3"
 turbine = "1.2.0"
 mockk = "1.13.14"
+robolectric = "4.14.1"
 
 [libraries]
 androidx-core-ktx = { group = "androidx.core", name = "core-ktx", version.ref = "coreKtx" }
@@ -79,6 +80,7 @@ compose-ui-test-manifest = { group = "androidx.compose.ui", name = "ui-test-mani
 kotlinx-coroutines-test = { group = "org.jetbrains.kotlinx", name = "kotlinx-coroutines-test", version.ref = "coroutines" }
 turbine = { group = "app.cash.turbine", name = "turbine", version.ref = "turbine" }
 mockk = { group = "io.mockk", name = "mockk", version.ref = "mockk" }
+robolectric = { group = "org.robolectric", name = "robolectric", version.ref = "robolectric" }
 room-testing = { group = "androidx.room", name = "room-testing", version.ref = "room" }
 konsist = { group = "com.lemonappdev", name = "konsist", version.ref = "konsist" }
 

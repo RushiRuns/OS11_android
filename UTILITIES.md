@@ -43,25 +43,28 @@ Each of these exists exactly once. A second copy is a bug.
 
 | Name | Location | Purpose | Phase | Status |
 |---|---|---|---|---|
-| `Hlc` | `domain/sync/Hlc.kt` | Parse, format, compare, tick, receive hybrid clocks | 3 | Planned |
-| `mergeField` | `domain/sync/Merge.kt` | Per-field last-write-wins by merge group | 3 | Planned |
-| `MergeGroups` | `domain/sync/MergeGroups.kt` | Field-to-group table from SYNC.md | 3 | Planned |
-| `Change`, `FieldWrite` | `domain/sync/Change.kt` | Wire and outbox types, serializable | 3 | Planned |
-| `FractionalIndex` | `domain/ordering/FractionalIndex.kt` | `between`, `atStart`, `atEnd` | 3 | Planned |
-| `TaskValidation` | `domain/task/TaskValidation.kt` | Title, dates, estimate rules | 3 | Planned |
-| `DependencyCheck` | `domain/task/DependencyCheck.kt` | Direct and transitive cycle detection | 3 | Planned |
-| `ParentCycleCheck` | `domain/task/ParentCycleCheck.kt` | Subtask nesting cycle detection | 3 | Planned |
+| `Clock`, `SystemClock`, `TestClock` | `domain/time/Clock.kt` | Deterministic time abstractions for domain and tests | 3 | Built |
+| `Hlc`, `DefaultHlcClock` | `domain/logic/sync/Hlc.kt` | Parse, format, compare, tick, receive hybrid clocks (<13 wall>-<4 counter>-<8 dev>) | 3 | Built |
+| `mergeField`, `MergeResult` | `domain/logic/sync/Merge.kt` | Per-field last-write-wins by merge group with tombstone resurrection rules | 3 | Built |
+| `MergeGroups` | `domain/logic/sync/MergeGroups.kt` | Field-to-group table from SYNC.md section 5 | 3 | Built |
+| `Change`, `FieldWrite`, `Operation` | `domain/logic/sync/Change.kt` | Wire and outbox types, serializable via kotlinx.serialization | 3 | Built |
+| `FractionalIndex` | `domain/logic/ordering/FractionalIndex.kt` | Fractional indexing `between`, `atStart`, `atEnd` with 53-bit mantissa precision safety | 3 | Built |
+| `TaskValidation` | `domain/logic/validation/TaskValidation.kt` | Title, dates, bucket/due_date conflict, bounds, and priority rules | 3 | Built |
+| `DependencyCycleCheck` | `domain/logic/validation/CycleChecks.kt` | Direct and transitive task dependency cycle detection (DFS) | 3 | Built |
+| `ParentCycleCheck` | `domain/logic/validation/CycleChecks.kt` | Subtask nesting cycle detection (DFS) | 3 | Built |
 | `NlpParser` | `domain/nlp/NlpParser.kt` | Quick Add text to structured fields | 7 | Planned |
 | `RecurrenceEngine` | `domain/recurrence/RecurrenceEngine.kt` | Next occurrence, fixed and after-completion | 11 | Planned |
 | `SchedulingTransitions` | `domain/scheduling/SchedulingTransitions.kt` | The 27-row bucket/waiting transition table | 11 | Planned |
 | `DayPlanLayout` | `domain/dayplan/DayPlanLayout.kt` | Snap, clamp, lane assignment for overlapping blocks | 13 | Planned |
-| `DeterministicIds` | `domain/id/DeterministicIds.kt` | UUIDv5 for default workspace/area and occurrences | 3 | Planned |
+| `DeterministicIds` | `domain/id/IdGenerator.kt` | RFC 4122 UUIDv5 for default workspace/area and recurring occurrences | 3 | Built |
 
 ## Application Services (`:app`)
 
 | Name | Location | Purpose | Phase | Status |
 |---|---|---|---|---|
-| `TrackedWriter` | `data/sync/TrackedWriter.kt` | Data + field clocks + outbox in one transaction | 3 | Planned |
+| `TrackedWriter` | `data/sync/TrackedWriter.kt` | Room transaction = data row + field clocks + outbox + history + hooks + cascade tombstones | 3 | Built |
+| `DatabaseInitializer` | `data/db/DatabaseInitializer.kt` | Deterministic seed generator for default workspace, area, settings, modules | 3 | Built |
+| `SeedGenerator` | `data/seed/SeedGenerator.kt` | Benchmark dataset generator for 1,000 and 5,000 tasks | 3 | Built |
 | `ApplyRemoteWriter` | `data/sync/ApplyRemoteWriter.kt` | Remote changes through merge | S1 | Planned |
 | `TaskService` | `service/task/` | Task use cases | 4-5 | Planned |
 | `TaskSchedulingService` | `service/task/` | Sole writer of scheduling fields | 11 | Planned |
@@ -79,7 +82,38 @@ Record query methods here as they are written, grouped by repository, so a new q
 
 | Repository | Method | Returns | Phase | Status |
 |---|---|---|---|---|
-| (none yet) | | | | |
+| `TaskRepository` | `observeById(id)` | `Flow<TaskEntity?>` | 3 | Built |
+| `TaskRepository` | `getById(id)` | `TaskEntity?` | 3 | Built |
+| `TaskRepository` | `observeAllSlim()` | `Flow<List<SlimTask>>` | 3 | Built |
+| `TaskRepository` | `observeInboxSlim()` | `Flow<List<SlimTask>>` | 3 | Built |
+| `TaskRepository` | `observeByProjectSlim(projectId)` | `Flow<List<SlimTask>>` | 3 | Built |
+| `TaskRepository` | `observeByAreaSlim(areaId)` | `Flow<List<SlimTask>>` | 3 | Built |
+| `TaskRepository` | `observeSubtasksSlim(parentId)` | `Flow<List<SlimTask>>` | 3 | Built |
+| `TaskRepository` | `observeMyDaySlim(date)` | `Flow<List<SlimTask>>` | 3 | Built |
+| `TaskRepository` | `observeTrashSlim()` | `Flow<List<SlimTask>>` | 3 | Built |
+| `TaskRepository` | `observeActiveTaskCount()` | `Flow<Int>` | 3 | Built |
+| `TaskRepository` | `saveTask(task)` | `TaskEntity` | 3 | Built |
+| `TaskRepository` | `trashTask(id)` | `Unit` | 3 | Built |
+| `TaskRepository` | `restoreTask(id)` | `Unit` | 3 | Built |
+| `TaskRepository` | `deletePermanently(id)` | `Unit` | 3 | Built |
+| `WorkspaceRepository` | `observeAll()`, `getById(id)`, `save(workspace)` | Workspace queries | 3 | Built |
+| `AreaRepository` | `observeAll()`, `getById(id)`, `save(area)`, `delete(id)` | Area queries | 3 | Built |
+| `ProjectRepository` | `observeAll()`, `observeByArea(areaId)`, `getById(id)`, `save(project)`, `delete(id)` | Project queries | 3 | Built |
+| `SectionRepository` | `observeByProject(projectId)`, `getById(id)`, `save(section)`, `delete(id)` | Section queries | 3 | Built |
+| `TagRepository` | `observeAll()`, `getById(id)`, `getByName(name)`, `observeTagsForTask(taskId)`, `getTagsForTasks(taskIds)`, `observeTagsForTasks(taskIds)`, `save(tag)`, `delete(id)`, `addTagToTask(taskId, tagId)`, `removeTagFromTask(taskId, tagId)` | Tag queries & batch loading | 3 | Built |
+| `DependencyRepository` | `getDependenciesForTask(taskId)`, `getAllDependencyPairs()`, `addDependency(...)`, `removeDependency(...)` | Dependency queries | 3 | Built |
+| `MilestoneRepository` | `observeByProject(projectId)`, `getById(id)`, `save(milestone)`, `delete(id)` | Milestone queries | 3 | Built |
+| `ReminderRepository` | `observeByTask(taskId)`, `getById(id)`, `save(reminder)`, `delete(id)` | Reminder queries | 3 | Built |
+| `AttachmentRepository` | `observeByTask(taskId)`, `getById(id)`, `save(attachment)`, `delete(id)` | Attachment queries | 3 | Built |
+| `CommentRepository` | `observeByTask(taskId)`, `save(comment)` | Comment queries | 3 | Built |
+| `PomodoroRepository` | `observeAll()`, `observeByTask(taskId)`, `save(session)` | Pomodoro queries | 3 | Built |
+| `GoalRepository` | `observeAll()`, `getById(id)`, `save(goal)`, `delete(id)` | Goal queries | 3 | Built |
+| `SettingsRepository` | `observeAll()`, `getByKey(key)`, `set(key, value)`, `delete(key)` | Setting queries | 3 | Built |
+| `ModuleRepository` | `observeAll()`, `observeEnabled()`, `setModuleEnabled(id, enabled)` | Module queries | 3 | Built |
+| `NotificationRepository`| `observeRecent()`, `recordNotification(history)` | Notification queries | 3 | Built |
+| `HistoryRepository` | `observeByTask(taskId)`, `purgeOlderThan(cutoffIso)` | Task history queries | 3 | Built |
+| `SearchRepository` | `searchTasks(query, limit)` | FTS5 ranked tasks | 3 | Built |
+| `CountsRepository` | `observeBrowseCounts(today)` | Single-query browse badge counts | 3 | Built |
 
 ## Shared Composables (`ui/components/`)
 

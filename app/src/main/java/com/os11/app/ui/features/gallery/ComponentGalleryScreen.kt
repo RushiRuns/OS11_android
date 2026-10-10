@@ -349,10 +349,7 @@ fun ComponentGalleryScreen(modifier: Modifier = Modifier) {
 }
 
 @Composable
-private fun GallerySection(
-    title: String,
-    content: @Composable () -> Unit,
-) {
+private fun GallerySection(title: String, content: @Composable () -> Unit) {
     val colors = OS11Theme.colors
     val spacing = OS11Theme.spacing
     val type = OS11Theme.type

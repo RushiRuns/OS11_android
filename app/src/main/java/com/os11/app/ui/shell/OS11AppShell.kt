@@ -55,11 +55,7 @@ import com.os11.app.ui.navigation.OS11Route
 import com.os11.app.ui.theme.OS11Theme
 import com.os11.app.ui.theme.os11MainPaneBackground
 
-enum class OS11Tab(
-    val route: OS11Route,
-    val title: String,
-    val icon: ImageVector,
-) {
+enum class OS11Tab(val route: OS11Route, val title: String, val icon: ImageVector) {
     MyDay(OS11Route.MyDay, "My Day", Icons.Default.Home),
     Inbox(OS11Route.Inbox, "Inbox", Icons.Default.MailOutline),
     Planned(OS11Route.Planned, "Planned", Icons.Default.DateRange),

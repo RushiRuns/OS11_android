@@ -20,11 +20,7 @@ enum class OSTagDotVariant {
  * Tag / Project indicator dot component.
  */
 @Composable
-fun OSTagDot(
-    color: Color,
-    modifier: Modifier = Modifier,
-    variant: OSTagDotVariant = OSTagDotVariant.TaskRow,
-) {
+fun OSTagDot(color: Color, modifier: Modifier = Modifier, variant: OSTagDotVariant = OSTagDotVariant.TaskRow) {
     val layout = OS11Theme.layout
     val dotSize = when (variant) {
         OSTagDotVariant.TaskRow -> layout.tagDot

@@ -29,11 +29,7 @@ import com.os11.app.ui.theme.OS11Theme
  * 15-minute time picker row list.
  */
 @Composable
-fun OSTimeList(
-    selectedTime: String?,
-    onTimeSelected: (String) -> Unit,
-    modifier: Modifier = Modifier,
-) {
+fun OSTimeList(selectedTime: String?, onTimeSelected: (String) -> Unit, modifier: Modifier = Modifier) {
     val colors = OS11Theme.colors
     val spacing = OS11Theme.spacing
     val radius = OS11Theme.radius
@@ -92,11 +88,7 @@ fun OSTimeList(
  */
 @OptIn(androidx.compose.material3.ExperimentalMaterial3Api::class)
 @Composable
-fun OSDatePickerSheet(
-    onDismissRequest: () -> Unit,
-    onDateSelected: (String) -> Unit,
-    modifier: Modifier = Modifier,
-) {
+fun OSDatePickerSheet(onDismissRequest: () -> Unit, onDateSelected: (String) -> Unit, modifier: Modifier = Modifier) {
     val spacing = OS11Theme.spacing
     val type = OS11Theme.type
     val colors = OS11Theme.colors

@@ -110,41 +110,41 @@ The largest foundation phase. Sync readiness is built here or never cheaply.
 
 ### Database
 
-- [ ] Room entities and DAOs for every table in SCHEMA.md, **including** sync tables, local-identity, Phase 2 stubs
-- [ ] Bundled SQLite driver configured: WAL, `synchronous = NORMAL`, foreign keys on
-- [ ] Migration 1 as hand-written SQL where Room cannot express it: partial indexes, FTS5 table, FTS triggers, constraints
-- [ ] Exported Room schema committed; migration test harness
-- [ ] Seeds: default workspace and default area with deterministic UUIDv5 IDs; settings defaults per the Android seed table; modules defaults
+- [x] Room entities and DAOs for every table in SCHEMA.md, **including** sync tables, local-identity, Phase 2 stubs
+- [x] Bundled SQLite driver configured: WAL, `synchronous = NORMAL`, foreign keys on
+- [x] Migration 1 as hand-written SQL where Room cannot express it: partial indexes, FTS5 table, FTS triggers, constraints
+- [x] Exported Room schema committed; migration test harness
+- [x] Seeds: default workspace and default area with deterministic UUIDv5 IDs; settings defaults per the Android seed table; modules defaults
 
 ### Domain (`:domain`, pure Kotlin)
 
-- [ ] `Hlc` (parse, format, compare, tick, receive) with property tests
-- [ ] `Clock`, `IdGenerator` (random UUID, UUIDv5) interfaces
-- [ ] Task validation, fractional indexing (`between`, `atStart`, `atEnd`, extremes)
-- [ ] Dependency cycle check, parent-cycle check
-- [ ] Merge groups table and `FieldWrite` / `Change` types and serialization
-- [ ] Merge function `mergeField(local, incoming)` with convergence property tests (commutative, associative, idempotent)
+- [x] `Hlc` (parse, format, compare, tick, receive) with property tests
+- [x] `Clock`, `IdGenerator` (random UUID, UUIDv5) interfaces
+- [x] Task validation, fractional indexing (`between`, `atStart`, `atEnd`, extremes)
+- [x] Dependency cycle check, parent-cycle check
+- [x] Merge groups table and `FieldWrite` / `Change` types and serialization
+- [x] Merge function `mergeField(local, incoming)` with convergence property tests (commutative, associative, idempotent)
 
 ### Write path
 
-- [ ] `TrackedWriter`: one Room transaction = data row + field clocks + outbox row + history row; post-commit side-effect hook
-- [ ] Every repository write goes through it. Konsist test: no DAO write is callable outside `TrackedWriter`
-- [ ] Outbox is written even though nothing drains it yet; pruning rule for an unpaired device (outbox must not grow forever; define the cap and compaction in SYNC.md if not already clear)
-- [ ] Tombstone writes, cascade tombstones, resurrection check
+- [x] `TrackedWriter`: one Room transaction = data row + field clocks + outbox row + history row; post-commit side-effect hook
+- [x] Every repository write goes through it. Konsist test: no DAO write is callable outside `TrackedWriter`
+- [x] Outbox is written even though nothing drains it yet; pruning rule for an unpaired device (outbox must not grow forever; define the cap and compaction in SYNC.md if not already clear)
+- [x] Tombstone writes, cascade tombstones, resurrection check
 
 ### Repositories
 
-- [ ] One repository per aggregate: workspace, area, project, section, task, dependency, milestone, tag, reminder, attachment, comment, pomodoro, goal, notification, history, settings, module
-- [ ] Slim list projections (no `notes` column in list queries)
-- [ ] Batched tag loading for visible task windows
-- [ ] Search repository (FTS5), counts repository (single query for all Browse badges)
+- [x] One repository per aggregate: workspace, area, project, section, task, dependency, milestone, tag, reminder, attachment, comment, pomodoro, goal, notification, history, settings, module
+- [x] Slim list projections (no `notes` column in list queries)
+- [x] Batched tag loading for visible task windows
+- [x] Search repository (FTS5), counts repository (single query for all Browse badges)
 
 ### Tests
 
-- [ ] Repository tests on in-memory Room
-- [ ] Migration test from schema version 1 (and the framework for later versions)
-- [ ] Seed generator (debug only): 1,000 and 5,000 tasks across areas, projects, tags, subtasks, reminders
-- [ ] Timing test: tracked write P95 against the target
+- [x] Repository tests on in-memory Room
+- [x] Migration test from schema version 1 (and the framework for later versions)
+- [x] Seed generator (debug only): 1,000 and 5,000 tasks across areas, projects, tags, subtasks, reminders
+- [x] Timing test: tracked write P95 against the target
 
 **Done when:** a task can be created, edited, trashed and restored through `TrackedWriter` in tests, with the right clocks and outbox rows, and the 5,000-task seed loads.
 

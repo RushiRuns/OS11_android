@@ -17,6 +17,7 @@ spotless {
             mapOf(
                 "ktlint_standard_property-naming" to "disabled",
                 "ktlint_standard_function-naming" to "disabled",
+                "max_line_length" to "120",
             ),
         )
     }

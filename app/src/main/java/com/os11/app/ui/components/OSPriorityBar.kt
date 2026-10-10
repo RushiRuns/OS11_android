@@ -31,10 +31,7 @@ enum class OSPriority {
  * 2. Critical priority pulses (alpha only, reduced-motion aware).
  */
 @Composable
-fun OSPriorityBar(
-    priority: OSPriority,
-    modifier: Modifier = Modifier,
-) {
+fun OSPriorityBar(priority: OSPriority, modifier: Modifier = Modifier) {
     if (priority == OSPriority.None) return
 
     val colors = OS11Theme.colors

@@ -28,10 +28,7 @@ import com.os11.app.ui.theme.OS11Theme
  * Custom OS11 Snackbar banner adhering to design tokens and reversible action pattern (Undo).
  */
 @Composable
-fun OSSnackbar(
-    snackbarData: SnackbarData,
-    modifier: Modifier = Modifier,
-) {
+fun OSSnackbar(snackbarData: SnackbarData, modifier: Modifier = Modifier) {
     val colors = OS11Theme.colors
     val spacing = OS11Theme.spacing
     val radius = OS11Theme.radius
@@ -84,10 +81,7 @@ fun OSSnackbar(
  * SnackbarHost wired to the custom OSSnackbar design.
  */
 @Composable
-fun OSSnackbarHost(
-    hostState: SnackbarHostState,
-    modifier: Modifier = Modifier,
-) {
+fun OSSnackbarHost(hostState: SnackbarHostState, modifier: Modifier = Modifier) {
     SnackbarHost(
         hostState = hostState,
         modifier = modifier.padding(OS11Theme.spacing.s4),

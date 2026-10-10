@@ -38,11 +38,7 @@ data class OSMenuItem(
  * Used by Profile Avatar Menu, popovers, and quick selector menus.
  */
 @Composable
-fun OSGlassMenu(
-    items: List<OSMenuItem>,
-    modifier: Modifier = Modifier,
-    header: (@Composable () -> Unit)? = null,
-) {
+fun OSGlassMenu(items: List<OSMenuItem>, modifier: Modifier = Modifier, header: (@Composable () -> Unit)? = null) {
     val colors = OS11Theme.colors
     val spacing = OS11Theme.spacing
     val radius = OS11Theme.radius

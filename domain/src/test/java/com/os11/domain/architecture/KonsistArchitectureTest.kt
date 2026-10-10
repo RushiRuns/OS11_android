@@ -83,4 +83,18 @@ class KonsistArchitectureTest {
                 !isTheme && colorHexRegex.containsMatchIn(file.text)
             }
     }
+
+    @Test
+    fun no_dao_writes_called_outside_TrackedWriter() {
+        Konsist
+            .scopeFromProduction("app")
+            .files
+            .withPackage("com.os11.app.data.repository..")
+            .assertFalse { file ->
+                val text = file.text
+                text.contains("Dao().upsert") ||
+                    text.contains("Dao().delete") ||
+                    text.contains("Dao().enqueue")
+            }
+    }
 }

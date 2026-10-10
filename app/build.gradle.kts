@@ -54,9 +54,14 @@ spotless {
             mapOf(
                 "ktlint_standard_property-naming" to "disabled",
                 "ktlint_standard_function-naming" to "disabled",
+                "max_line_length" to "120",
             ),
         )
     }
+}
+
+ksp {
+    arg("room.schemaLocation", "$projectDir/schemas")
 }
 
 detekt {
@@ -111,6 +116,9 @@ dependencies {
     testImplementation(libs.kotlinx.coroutines.test)
     testImplementation(libs.turbine)
     testImplementation(libs.mockk)
+    testImplementation(libs.androidx.junit)
+    testImplementation(libs.robolectric)
+    testImplementation(libs.room.testing)
     testImplementation(libs.konsist)
 
     androidTestImplementation(libs.androidx.junit)
