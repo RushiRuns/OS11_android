@@ -20,7 +20,7 @@ internal class SearchRepositoryImpl(private val db: OS11Database) : SearchReposi
 
         val sql = """
             SELECT t.* FROM tasks t
-            JOIN tasks_fts ON tasks_fts.id = t.id
+            JOIN tasks_fts ON tasks_fts.rowid = t.rowid
             WHERE tasks_fts MATCH ? AND t.is_trashed = 0
             ORDER BY bm25(tasks_fts)
             LIMIT ?

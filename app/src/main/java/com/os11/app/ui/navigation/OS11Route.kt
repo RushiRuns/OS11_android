@@ -50,4 +50,7 @@ sealed interface OS11Route {
 
     @Serializable
     data object Completed : OS11Route
+
+    @Serializable
+    data object Search : OS11Route
 }

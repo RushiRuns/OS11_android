@@ -201,12 +201,12 @@ The largest foundation phase. Sync readiness is built here or never cheaply.
 
 ## PHASE 7: Quick Add, NLP, Search (Weeks 15-16)
 
-- [ ] Kotlin NLP parser in `:domain`, debounced and cancellable
-- [ ] Shared JSON test vectors exported from the **desktop** parser; the Kotlin parser passes all of them. Where it cannot, record the divergence in ANDROID_VS_DESKTOP.md
-- [ ] Quick Add sheet: parse preview chips, `@Area` `/Project` `#tag` autocomplete, context-aware defaults, stays open after Enter
-- [ ] FAB, voice input via system recognizer
-- [ ] Search screen: FTS5 prefix search, grouped results with snippets, Actions group
-- [ ] Recent searches (device-local)
+- [x] Kotlin NLP parser in `:domain`, debounced and cancellable
+- [x] Shared JSON test vectors exported from the **desktop** parser; the Kotlin parser passes all of them. Where it cannot, record the divergence in ANDROID_VS_DESKTOP.md
+- [x] Quick Add sheet: parse preview chips, `@Area` `/Project` `#tag` autocomplete, context-aware defaults, stays open after Enter
+- [x] FAB, voice input via system recognizer
+- [x] Search screen: FTS5 prefix search, grouped results with snippets, Actions group
+- [x] Recent searches (device-local)
 
 **Done when:** all shared vectors pass and search on the 5,000-task seed is under target.
 

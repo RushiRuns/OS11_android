@@ -93,5 +93,11 @@ fun OS11NavHost(
                 onNavigateBack = { navController.popBackStack() },
             )
         }
+        composable<OS11Route.Search> {
+            com.os11.app.ui.features.search.SearchScreen(
+                onNavigateBack = { navController.popBackStack() },
+                onNavigate = { route -> navController.navigate(route) },
+            )
+        }
     }
 }

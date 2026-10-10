@@ -151,8 +151,10 @@ Record query methods here as they are written, grouped by repository, so a new q
 | `TaskSortFilterSheet` | Task sort and filter bottom sheet | 5 | Built |
 | `NoteEditor` | Rich text markdown/HTML note editor | 5 | Built |
 | `ReorderableTaskList` | Shared reorder behavior | 8 | Planned |
-| `WeekStrip` | Collapsible week/month calendar | 6 | Built |
-| `ParsePreviewChips` | Quick Add parse preview | 7 | Planned |
+| `ParsePreviewChips` | Quick Add parse preview chips (dates, priority, area, project, tags, recurrence, pomodoros) | 7 | Built |
+| `QuickAddSheet` | Quick Add modal sheet with live NLP, autocomplete, voice input, enter retention | 7 | Built |
+| `SearchScreen` | FTS5 prefix search screen with grouped actions, tasks, snippets, and recents | 7 | Built |
+| `NlpParser` | Offline deterministic NLP parser for dates, times, priority, tags, recurrence, pomodoros | 7 | Built (in `:domain`) |
 
 ## Modifiers and Compose Helpers
 

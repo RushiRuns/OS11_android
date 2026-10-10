@@ -27,6 +27,7 @@ import androidx.compose.material.icons.filled.Add
 import androidx.compose.material.icons.filled.DateRange
 import androidx.compose.material.icons.filled.Home
 import androidx.compose.material.icons.filled.MailOutline
+import androidx.compose.material.icons.filled.Search
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.FloatingActionButton
 import androidx.compose.material3.Icon
@@ -88,6 +89,7 @@ fun OS11AppShell(modifier: Modifier = Modifier, undoManager: UndoManager? = null
     val type = OS11Theme.type
 
     var showProfileMenu by remember { mutableStateOf(false) }
+    var showQuickAddSheet by remember { mutableStateOf(false) }
     val snackbarHostState = remember { SnackbarHostState() }
 
     if (undoManager != null) {
@@ -134,6 +136,18 @@ fun OS11AppShell(modifier: Modifier = Modifier, undoManager: UndoManager? = null
                 verticalAlignment = Alignment.CenterVertically,
                 horizontalArrangement = Arrangement.spacedBy(spacing.s1),
             ) {
+                // Search Button
+                OSIconButton(
+                    onClick = { navController.navigate(OS11Route.Search) },
+                    contentDescription = "Search",
+                ) {
+                    Icon(
+                        imageVector = Icons.Default.Search,
+                        contentDescription = null,
+                        tint = colors.textSecondary,
+                    )
+                }
+
                 // Profile Avatar Button
                 OSIconButton(
                     onClick = { showProfileMenu = true },
@@ -171,7 +185,7 @@ fun OS11AppShell(modifier: Modifier = Modifier, undoManager: UndoManager? = null
 
             // FAB for Quick Add
             FloatingActionButton(
-                onClick = { /* Quick Add Sheet */ },
+                onClick = { showQuickAddSheet = true },
                 modifier = Modifier
                     .align(Alignment.BottomEnd)
                     .padding(spacing.s4)
@@ -263,6 +277,13 @@ fun OS11AppShell(modifier: Modifier = Modifier, undoManager: UndoManager? = null
             }
         }
     }
+
+    // Quick Add Modal Sheet
+    if (showQuickAddSheet) {
+        com.os11.app.ui.features.quickadd.QuickAddSheet(
+            onDismissRequest = { showQuickAddSheet = false },
+        )
+    }
 }
 
 @Composable
@@ -331,6 +352,7 @@ private val SCREEN_TITLES = listOf(
     "Important" to "Important",
     "AllTasks" to "All Tasks",
     "Completed" to "Completed",
+    "Search" to "Search",
 )
 
 private fun resolveScreenTitle(currentRoute: String?): String {
