@@ -349,11 +349,11 @@ Hardest platform phase. Start with the 27-row table.
 
 ## PHASE 18: Android Surfaces (Weeks 34-35)
 
-- [ ] Home-screen widgets (Glance): My Day list, Quick Add button
-- [ ] Quick Settings tile for Quick Add
-- [ ] Share target (text and URL)
-- [ ] App shortcuts (long-press launcher icon)
-- [ ] Widget update throttling
+- [x] Home-screen widgets (Glance): My Day list, Quick Add button
+- [x] Quick Settings tile for Quick Add
+- [x] Share target (text and URL)
+- [x] App shortcuts (long-press launcher icon)
+- [x] Widget update throttling
 
 **Done when:** a task can be captured from the launcher, shade, and share sheet without opening the app first.
 

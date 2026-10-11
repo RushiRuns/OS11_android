@@ -33,7 +33,60 @@
 
                 <category android:name="android.intent.category.LAUNCHER" />
             </intent-filter>
+
+            <!-- Share target for text and URLs -->
+            <intent-filter>
+                <action android:name="android.intent.action.SEND" />
+                <category android:name="android.intent.category.DEFAULT" />
+                <data android:mimeType="text/plain" />
+                <data android:mimeType="text/*" />
+            </intent-filter>
+
+            <!-- Quick Add action from shortcuts, tile, and widgets -->
+            <intent-filter>
+                <action android:name="com.os11.app.action.QUICK_ADD" />
+                <category android:name="android.intent.category.DEFAULT" />
+            </intent-filter>
+
+            <meta-data
+                android:name="android.app.shortcuts"
+                android:resource="@xml/shortcuts" />
         </activity>
+
+        <!-- Quick Settings Tile -->
+        <service
+            android:name=".platform.tiles.QuickAddTileService"
+            android:icon="@drawable/ic_quick_add"
+            android:label="@string/quick_add"
+            android:permission="android.permission.BIND_QUICK_SETTINGS_TILE"
+            android:exported="true">
+            <intent-filter>
+                <action android:name="android.service.quicksettings.action.QS_TILE" />
+            </intent-filter>
+        </service>
+
+        <!-- Home-screen Widgets (Glance) -->
+        <receiver
+            android:name=".platform.widgets.MyDayWidgetReceiver"
+            android:exported="true">
+            <intent-filter>
+                <action android:name="android.appwidget.action.APPWIDGET_UPDATE" />
+            </intent-filter>
+            <meta-data
+                android:name="android.appwidget.provider"
+                android:resource="@xml/my_day_widget_info" />
+        </receiver>
+
+        <receiver
+            android:name=".platform.widgets.QuickAddWidgetReceiver"
+            android:exported="true">
+            <intent-filter>
+                <action android:name="android.appwidget.action.APPWIDGET_UPDATE" />
+            </intent-filter>
+            <meta-data
+                android:name="android.appwidget.provider"
+                android:resource="@xml/quick_add_widget_info" />
+        </receiver>
 
         <receiver
             android:name=".platform.alarms.AlarmReceiver"

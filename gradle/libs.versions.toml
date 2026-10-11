@@ -37,8 +37,12 @@ jsoup = "1.18.3"
 reorderable = "3.1.0"
 recur = "0.17.1"
 coil = "2.7.0"
+glance = "1.1.1"
 
 [libraries]
+androidx-glance = { group = "androidx.glance", name = "glance", version.ref = "glance" }
+androidx-glance-appwidget = { group = "androidx.glance", name = "glance-appwidget", version.ref = "glance" }
+androidx-glance-material3 = { group = "androidx.glance", name = "glance-material3", version.ref = "glance" }
 coil-compose = { group = "io.coil-kt", name = "coil-compose", version.ref = "coil" }
 lib-recur = { group = "org.dmfs", name = "lib-recur", version.ref = "recur" }
 reorderable = { group = "sh.calvin.reorderable", name = "reorderable", version.ref = "reorderable" }

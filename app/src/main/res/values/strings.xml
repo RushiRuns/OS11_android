@@ -1,3 +1,10 @@
 <resources>
     <string name="app_name">OS11</string>
+    <string name="quick_add">Quick Add</string>
+    <string name="my_day">My Day</string>
+    <string name="pomodoro">Pomodoro</string>
+    <string name="widget_my_day_name">My Day</string>
+    <string name="widget_my_day_description">Today\'s tasks and progress</string>
+    <string name="widget_quick_add_name">Quick Add</string>
+    <string name="widget_quick_add_description">Capture a new task quickly</string>
 </resources>

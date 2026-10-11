@@ -1,5 +1,6 @@
 package com.os11.app
 
+import android.content.Intent
 import android.os.Bundle
 import android.view.WindowManager
 import androidx.activity.compose.setContent
@@ -44,10 +45,15 @@ class MainActivity : FragmentActivity() {
     @Inject
     lateinit var settingsService: SettingsService
 
+    private val quickAddLaunchText = kotlinx.coroutines.flow.MutableStateFlow<String?>(null)
+    private val initialRoute = kotlinx.coroutines.flow.MutableStateFlow<com.os11.app.ui.navigation.OS11Route?>(null)
+
     override fun onCreate(savedInstanceState: Bundle?) {
         installSplashScreen()
         super.onCreate(savedInstanceState)
         enableEdgeToEdge()
+
+        handleIntent(intent)
 
         // Observe secure screen setting (FLAG_SECURE)
         lifecycleScope.launch {
@@ -73,6 +79,8 @@ class MainActivity : FragmentActivity() {
             }
 
             val isLocked by appLockManager.isLocked.collectAsState()
+            val quickAddText by quickAddLaunchText.collectAsState()
+            val targetRoute by initialRoute.collectAsState()
 
             OS11Theme(
                 accent = accent,
@@ -87,12 +95,48 @@ class MainActivity : FragmentActivity() {
                         },
                     )
                 } else {
-                    OS11AppShell(undoManager = undoManager)
+                    OS11AppShell(
+                        undoManager = undoManager,
+                        quickAddLaunchText = quickAddText,
+                        initialRoute = targetRoute,
+                        onDismissQuickAdd = { quickAddLaunchText.value = null },
+                    )
                 }
             }
 
             LaunchedEffect(Unit) {
                 deferredStartupManager.onFirstFrameRendered()
+            }
+        }
+    }
+
+    override fun onNewIntent(intent: Intent) {
+        super.onNewIntent(intent)
+        setIntent(intent)
+        handleIntent(intent)
+    }
+
+    private fun handleIntent(incomingIntent: Intent?) {
+        if (incomingIntent == null) return
+        when (incomingIntent.action) {
+            Intent.ACTION_SEND -> {
+                val text = incomingIntent.getStringExtra(Intent.EXTRA_TEXT).orEmpty()
+                val subject = incomingIntent.getStringExtra(Intent.EXTRA_SUBJECT).orEmpty()
+                val content = when {
+                    subject.isNotBlank() && text.isNotBlank() && subject != text -> "$subject $text"
+                    text.isNotBlank() -> text
+                    else -> subject
+                }
+                quickAddLaunchText.value = content
+            }
+            com.os11.app.platform.shortcuts.AppShortcutManager.ACTION_QUICK_ADD -> {
+                quickAddLaunchText.value = ""
+            }
+            com.os11.app.platform.shortcuts.AppShortcutManager.ACTION_MY_DAY -> {
+                initialRoute.value = com.os11.app.ui.navigation.OS11Route.MyDay
+            }
+            com.os11.app.platform.shortcuts.AppShortcutManager.ACTION_POMODORO -> {
+                initialRoute.value = com.os11.app.ui.navigation.OS11Route.Pomodoro
             }
         }
     }

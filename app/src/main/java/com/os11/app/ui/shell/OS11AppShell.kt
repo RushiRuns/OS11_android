@@ -86,7 +86,13 @@ enum class OS11Tab(val route: OS11Route, val title: String, val icon: ImageVecto
  */
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
-fun OS11AppShell(modifier: Modifier = Modifier, undoManager: UndoManager? = null) {
+fun OS11AppShell(
+    modifier: Modifier = Modifier,
+    undoManager: UndoManager? = null,
+    quickAddLaunchText: String? = null,
+    initialRoute: OS11Route? = null,
+    onDismissQuickAdd: () -> Unit = {},
+) {
     val navController = rememberNavController()
     val colors = OS11Theme.colors
     val spacing = OS11Theme.spacing
@@ -95,6 +101,25 @@ fun OS11AppShell(modifier: Modifier = Modifier, undoManager: UndoManager? = null
 
     var showProfileMenu by remember { mutableStateOf(false) }
     var showQuickAddSheet by remember { mutableStateOf(false) }
+
+    LaunchedEffect(quickAddLaunchText) {
+        if (quickAddLaunchText != null) {
+            showQuickAddSheet = true
+        }
+    }
+
+    LaunchedEffect(initialRoute) {
+        if (initialRoute != null) {
+            navController.navigate(initialRoute) {
+                popUpTo(navController.graph.findStartDestination().id) {
+                    saveState = true
+                }
+                launchSingleTop = true
+                restoreState = true
+            }
+        }
+    }
+
     val snackbarHostState = remember { SnackbarHostState() }
     val pomodoroViewModel: PomodoroViewModel = hiltViewModel()
     val pomodoroTimerState by pomodoroViewModel.rawTimerState.collectAsState()
@@ -324,7 +349,11 @@ fun OS11AppShell(modifier: Modifier = Modifier, undoManager: UndoManager? = null
     // Quick Add Modal Sheet
     if (showQuickAddSheet) {
         com.os11.app.ui.features.quickadd.QuickAddSheet(
-            onDismissRequest = { showQuickAddSheet = false },
+            initialText = quickAddLaunchText.orEmpty(),
+            onDismissRequest = {
+                showQuickAddSheet = false
+                onDismissQuickAdd()
+            },
         )
     }
 }

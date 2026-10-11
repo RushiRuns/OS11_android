@@ -54,6 +54,7 @@ import com.os11.app.ui.theme.OS11Theme
 fun QuickAddSheet(
     onDismissRequest: () -> Unit,
     modifier: Modifier = Modifier,
+    initialText: String = "",
     defaultAreaId: String? = null,
     defaultProjectId: String? = null,
     viewModel: QuickAddViewModel = hiltViewModel(),
@@ -74,6 +75,12 @@ fun QuickAddSheet(
             if (!spoken.isNullOrBlank()) {
                 viewModel.onVoiceResult(spoken)
             }
+        }
+    }
+
+    LaunchedEffect(initialText) {
+        if (initialText.isNotBlank()) {
+            viewModel.onTextChanged(initialText)
         }
     }
 
