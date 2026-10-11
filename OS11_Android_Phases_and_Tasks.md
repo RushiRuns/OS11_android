@@ -301,9 +301,9 @@ Hardest platform phase. Start with the 27-row table.
 
 ## PHASE 14: Dashboard (Week 29)
 
-- [ ] Stat cards, completion bar, distribution chart, trend, activity heatmap (per S-4)
-- [ ] Date range chips; stats via aggregate queries, never row loading
-- [ ] CSV export through the share sheet
+- [x] Stat cards, completion bar, distribution chart, trend, activity heatmap (per S-4)
+- [x] Date range chips; stats via aggregate queries, never row loading
+- [x] CSV export through the share sheet
 
 **Done when:** the dashboard loads under 300 ms on the 5,000-task seed.
 

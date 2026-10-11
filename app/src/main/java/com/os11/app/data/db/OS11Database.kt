@@ -11,6 +11,7 @@ import com.os11.app.data.db.dao.CollaborationMemberDao
 import com.os11.app.data.db.dao.CommentDao
 import com.os11.app.data.db.dao.CommentReactionDao
 import com.os11.app.data.db.dao.CountsDao
+import com.os11.app.data.db.dao.DashboardDao
 import com.os11.app.data.db.dao.DeviceDao
 import com.os11.app.data.db.dao.GoalDao
 import com.os11.app.data.db.dao.GoalLinkDao
@@ -147,6 +148,7 @@ abstract class OS11Database : RoomDatabase() {
     internal abstract fun syncConflictLogDao(): SyncConflictLogDao
     internal abstract fun countsDao(): CountsDao
     internal abstract fun searchDao(): SearchDao
+    internal abstract fun dashboardDao(): DashboardDao
 
     companion object {
         const val DATABASE_NAME = "os11.db"

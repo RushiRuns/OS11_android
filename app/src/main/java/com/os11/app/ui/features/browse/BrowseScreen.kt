@@ -197,6 +197,10 @@ fun BrowseScreen(
                     horizontalArrangement = Arrangement.spacedBy(spacing.s2),
                 ) {
                     OSChip(
+                        label = "Dashboard",
+                        onClick = { onNavigate(OS11Route.Dashboard) },
+                    )
+                    OSChip(
                         label = "Day Plan",
                         onClick = { onNavigate(OS11Route.DayPlan) },
                     )

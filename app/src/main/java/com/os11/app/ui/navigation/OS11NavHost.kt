@@ -58,7 +58,9 @@ fun OS11NavHost(
             )
         }
         composable<OS11Route.Dashboard> {
-            DashboardScreen()
+            DashboardScreen(
+                onNavigateBack = { navController.popBackStack() },
+            )
         }
         composable<OS11Route.Goals> {
             GoalsScreen()

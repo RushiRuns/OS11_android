@@ -131,6 +131,7 @@ Record query methods here as they are written, grouped by repository, so a new q
 | `HistoryRepository` | `observeByTask(taskId)`, `purgeOlderThan(cutoffIso)` | Task history queries | 3 | Built |
 | `SearchRepository` | `searchTasks(query, limit)` | FTS5 ranked tasks | 3 | Built |
 | `CountsRepository` | `observeBrowseCounts(today)` | Single-query browse badge counts | 3 | Built |
+| `DashboardRepository` | `observeOverviewStats()`, `observePriorityDistribution()`, `observeDailyCompletions()` | Aggregate analytics queries | 14 | Built |
 
 ## Shared Composables (`ui/components/`)
 
@@ -181,6 +182,8 @@ Record query methods here as they are written, grouped by repository, so a new q
 | `DayPlanLaneCalculator` | Interval graph coloring algorithm assigning overlapping day plan blocks to concurrent lanes | 13 | Built |
 | `GoalsScreen` | Goals cards with streak pills, progress bars, one-thumb quick progress logging, resource pickers | 13 | Built |
 | `GoalService` | Goal CRUD, device-local streak tracking (same day/consecutive/reset), task and project linking | 13 | Built |
+| `DashboardScreen` | Analytics dashboard with stat cards, Canvas priority distribution, Canvas daily trend, Canvas activity heatmap | 14 | Built |
+| `DashboardService` | Aggregate metric flows, date range normalization, 12-week heatmap grid generator, RFC 4180 CSV export | 14 | Built |
 
 ## Modifiers and Compose Helpers
 

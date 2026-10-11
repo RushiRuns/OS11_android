@@ -9,6 +9,8 @@ import com.os11.app.data.repository.CommentRepository
 import com.os11.app.data.repository.CommentRepositoryImpl
 import com.os11.app.data.repository.CountsRepository
 import com.os11.app.data.repository.CountsRepositoryImpl
+import com.os11.app.data.repository.DashboardRepository
+import com.os11.app.data.repository.DashboardRepositoryImpl
 import com.os11.app.data.repository.DependencyRepository
 import com.os11.app.data.repository.DependencyRepositoryImpl
 import com.os11.app.data.repository.GoalRepository
@@ -144,4 +146,8 @@ object RepositoryModule {
     @Provides
     @Singleton
     fun provideCountsRepository(db: OS11Database): CountsRepository = CountsRepositoryImpl(db)
+
+    @Provides
+    @Singleton
+    fun provideDashboardRepository(db: OS11Database): DashboardRepository = DashboardRepositoryImpl(db)
 }
