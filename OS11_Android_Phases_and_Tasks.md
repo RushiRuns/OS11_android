@@ -324,11 +324,11 @@ Hardest platform phase. Start with the 27-row table.
 
 ## PHASE 16: Settings, Modules, App Lock (Weeks 31-32)
 
-- [ ] Settings screens: appearance (accent, font size, density), notifications, modules and presets, data, privacy, about
-- [ ] Module toggles (device-local) and profile presets
-- [ ] Biometric app lock with PIN fallback; lock on background after a delay; optional secure-screen flag
-- [ ] Synced-settings allowlist honored in the writer (7 keys)
-- [ ] Haptics toggle
+- [x] Settings screens: appearance (accent, font size, density), notifications, modules and presets, data, privacy, about
+- [x] Module toggles (device-local) and profile presets
+- [x] Biometric app lock with PIN fallback; lock on background after a delay; optional secure-screen flag
+- [x] Synced-settings allowlist honored in the writer (7 keys)
+- [x] Haptics toggle
 
 **Done when:** disabling a module removes it from Browse, search actions and shortcuts.
 

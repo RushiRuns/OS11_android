@@ -187,6 +187,9 @@ Record query methods here as they are written, grouped by repository, so a new q
 | `AttachmentStrip` | Horizontal scrolling attachment strip with Coil thumbnails, link sheet, and remove action | 15 | Built |
 | `AttachmentService` | Attachment file copy, link attachment, metadata tracking, disk cleanup, and blob state updates | 15 | Built |
 | `AttachmentStorageManager` | App-private storage manager, WebP thumbnail generation on IO, shareable URI generation, file removal | 15 | Built |
+| `SettingsScreen` | Hub screen with navigation to Appearance, Notifications, Modules, Data, Privacy, and About | 16 | Built |
+| `SettingsService` | Reactive settings flow, device-local module toggles, profile presets, appearance/security preferences | 16 | Built |
+| `AppLockScreen` | Glass overlay lock screen for BiometricPrompt or PIN authentication | 16 | Built |
 
 ## Modifiers and Compose Helpers
 
@@ -208,7 +211,9 @@ Record query methods here as they are written, grouped by repository, so a new q
 | `PomodoroReceiver` | Handles Pomodoro completion alarms & notification actions (pause, resume, stop, next) | 12 | Built |
 | `OS11NotificationChannels` | Channel definitions and initialization | 9 | Built |
 | `NotificationPlatformDispatcher` | Platform system notification dispatcher with permission checks | 9 | Built |
-| `HapticsGateway` | Wraps `Vibrator`/`HapticFeedback` | 2 | Planned |
+| `HapticsGateway` | Wraps `Vibrator`/`VibratorManager` respecting device-local `haptics_enabled` setting | 16 | Built |
+| `AppLockManager` | App lock lifecycle state, background timeout check, and BiometricPrompt invocation | 16 | Built |
+| `AppShortcutManager` | Dynamic launcher shortcut manager synchronizing with enabled modules | 16 | Built |
 | `FilePicker` | SAF OpenDocument activity result launcher | 15 | Built |
 
 ---

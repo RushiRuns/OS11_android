@@ -34,6 +34,24 @@ sealed interface OS11Route {
     data object Settings : OS11Route
 
     @Serializable
+    data object SettingsAppearance : OS11Route
+
+    @Serializable
+    data object SettingsNotifications : OS11Route
+
+    @Serializable
+    data object SettingsModules : OS11Route
+
+    @Serializable
+    data object SettingsData : OS11Route
+
+    @Serializable
+    data object SettingsPrivacy : OS11Route
+
+    @Serializable
+    data object SettingsAbout : OS11Route
+
+    @Serializable
     data object Gallery : OS11Route
 
     @Serializable

@@ -187,4 +187,78 @@ class TrackedWriterTest {
         assertTrue(allOutbox.any { it.entity == "tasks" && it.entityId == taskId && it.operation == "delete" })
         assertTrue(allOutbox.any { it.entity == "reminders" && it.entityId == reminderId && it.operation == "delete" })
     }
+
+    @Test
+    fun writeSetting_with_allowlisted_keys_creates_sync_clock_and_outbox() = runBlocking {
+        // Clear existing outbox from seed
+        val existing = db.syncQueueDao().getNextBatch(100)
+        if (existing.isNotEmpty()) {
+            db.syncQueueDao().deleteSeqLessThanOrEqual(existing.maxOf { it.seq })
+        }
+
+        // Exactly the 7 allowlisted keys
+        assertEquals(7, TrackedWriter.SYNCED_SETTINGS_ALLOWLIST.size)
+
+        for (key in TrackedWriter.SYNCED_SETTINGS_ALLOWLIST) {
+            val value = "\"test_value_$key\""
+            trackedWriter.writeSetting(key, value)
+
+            // 1. Data row written
+            assertEquals(value, db.settingDao().getValue(key))
+
+            // 2. Field clock written
+            val clock = db.syncFieldClockDao().getClock("settings", key, "value")
+            assertNotNull("Clock should exist for allowlisted key: $key", clock)
+
+            // 3. Outbox row written
+            val outbox = db.syncQueueDao().getNextBatch(100)
+            assertTrue(
+                "Outbox should have entry for allowlisted key: $key",
+                outbox.any {
+                    it.entity == "settings" && it.entityId == key && it.operation == "upsert"
+                },
+            )
+        }
+    }
+
+    @Test
+    fun writeSetting_with_device_local_keys_does_not_create_sync_clock_or_outbox() = runBlocking {
+        // Clear existing outbox from seed
+        val existing = db.syncQueueDao().getNextBatch(100)
+        if (existing.isNotEmpty()) {
+            db.syncQueueDao().deleteSeqLessThanOrEqual(existing.maxOf { it.seq })
+        }
+
+        val localKeys = listOf(
+            "accent_color",
+            "font_size",
+            "density",
+            "app_lock_enabled",
+            "secure_screen",
+            "haptics_enabled",
+            "reduce_motion",
+        )
+
+        for (key in localKeys) {
+            assertFalse(TrackedWriter.SYNCED_SETTINGS_ALLOWLIST.contains(key))
+            val value = "\"local_value_$key\""
+            trackedWriter.writeSetting(key, value)
+
+            // 1. Data row written
+            assertEquals(value, db.settingDao().getValue(key))
+
+            // 2. Field clock NOT written
+            val clock = db.syncFieldClockDao().getClock("settings", key, "value")
+            assertNull("Clock must NOT exist for device-local key: $key", clock)
+
+            // 3. Outbox row NOT written
+            val outbox = db.syncQueueDao().getNextBatch(100)
+            assertFalse(
+                "Outbox must NOT have entry for device-local key: $key",
+                outbox.any {
+                    it.entity == "settings" && it.entityId == key
+                },
+            )
+        }
+    }
 }

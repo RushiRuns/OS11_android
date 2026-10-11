@@ -6,6 +6,7 @@ import com.os11.app.service.area.AreaItem
 import com.os11.app.service.area.AreaService
 import com.os11.app.service.project.ProjectItem
 import com.os11.app.service.project.ProjectService
+import com.os11.app.service.settings.SettingsService
 import com.os11.app.service.tag.TagItem
 import com.os11.app.service.tag.TagService
 import com.os11.app.service.task.BrowseCountsItem
@@ -32,6 +33,7 @@ data class BrowseUiState(
     val looseProjects: List<ProjectItem> = emptyList(),
     val tags: List<TagItem> = emptyList(),
     val projectTaskCounts: Map<String, Int> = emptyMap(),
+    val enabledModules: Set<String> = emptySet(),
     val showCreateAreaDialog: Boolean = false,
     val showCreateProjectDialog: Boolean = false,
     val showCreateTagDialog: Boolean = false,
@@ -44,6 +46,7 @@ class BrowseViewModel @Inject constructor(
     private val areaService: AreaService,
     private val projectService: ProjectService,
     private val tagService: TagService,
+    private val settingsService: SettingsService,
     private val clock: Clock,
 ) : ViewModel() {
 
@@ -64,6 +67,7 @@ class BrowseViewModel @Inject constructor(
         val projects: List<ProjectItem>,
         val allTasks: List<TaskItem>,
         val tags: List<TagItem>,
+        val enabledModules: Set<String>,
     )
 
     private val areasFlow = areaService.observeAreaItems(workspaceId)
@@ -71,15 +75,20 @@ class BrowseViewModel @Inject constructor(
     private val allTasksFlow = taskService.observeAllTasks()
     private val countsFlow = taskService.observeBrowseCounts(clock.today())
     private val tagsFlow = tagService.observeTagItems()
+    private val enabledModulesFlow = settingsService.observeEnabledModuleNames()
 
     private val browseDataFlow = combine(
-        countsFlow,
-        areasFlow,
-        projectsFlow,
-        allTasksFlow,
-        tagsFlow,
-    ) { counts, areas, projects, allTasks, tags ->
-        BrowseData(counts, areas, projects, allTasks, tags)
+        combine(countsFlow, areasFlow, projectsFlow) { counts, areas, projects -> Triple(counts, areas, projects) },
+        combine(allTasksFlow, tagsFlow, enabledModulesFlow) { tasks, tags, modules -> Triple(tasks, tags, modules) },
+    ) { first, second ->
+        BrowseData(
+            counts = first.first,
+            areas = first.second,
+            projects = first.third,
+            allTasks = second.first,
+            tags = second.second,
+            enabledModules = second.third,
+        )
     }
 
     val uiState: StateFlow<BrowseUiState> = combine(
@@ -120,6 +129,7 @@ class BrowseViewModel @Inject constructor(
             looseProjects = looseProjects.toImmutableList(),
             tags = data.tags.toImmutableList(),
             projectTaskCounts = projectTaskCounts,
+            enabledModules = data.enabledModules,
             showCreateAreaDialog = showAreaDlg,
             showCreateProjectDialog = showProjDlg,
             showCreateTagDialog = showTagDlg,

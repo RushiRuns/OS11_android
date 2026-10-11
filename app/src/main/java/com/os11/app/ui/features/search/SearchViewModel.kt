@@ -3,6 +3,7 @@ package com.os11.app.ui.features.search
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.os11.app.service.search.SearchService
+import com.os11.app.service.settings.SettingsService
 import com.os11.app.service.task.TaskItem
 import com.os11.app.service.task.TaskService
 import com.os11.app.ui.navigation.OS11Route
@@ -48,6 +49,7 @@ data class SearchUiState(
 class SearchViewModel @Inject constructor(
     private val searchService: SearchService,
     private val taskService: TaskService,
+    private val settingsService: SettingsService,
 ) : ViewModel() {
 
     private val _query = MutableStateFlow("")
@@ -55,19 +57,19 @@ class SearchViewModel @Inject constructor(
 
     private val isSearchingState = MutableStateFlow(false)
     private val recentSearchesFlow = searchService.observeRecentSearches()
-
     private val taskResultsState = MutableStateFlow<List<SearchTaskSnippet>>(emptyList())
+    private val enabledModulesFlow = settingsService.observeEnabledModuleNames()
 
     val uiState: StateFlow<SearchUiState> = combine(
-        _query,
-        isSearchingState,
-        taskResultsState,
-        recentSearchesFlow,
-    ) { currentQuery, searching, tasks, recents ->
+        combine(_query, isSearchingState) { q, searching -> Pair(q, searching) },
+        combine(taskResultsState, recentSearchesFlow, enabledModulesFlow) { tasks, recents, modules ->
+            Triple(tasks, recents, modules)
+        },
+    ) { (currentQuery, searching), (tasks, recents, modules) ->
         SearchUiState(
             query = currentQuery,
             isSearching = searching,
-            actions = buildActions(currentQuery),
+            actions = buildActions(currentQuery, modules),
             tasks = tasks,
             recentSearches = recents,
         )
@@ -156,7 +158,7 @@ class SearchViewModel @Inject constructor(
         return "$prefix${notes.substring(start, end)}$suffix"
     }
 
-    private fun buildActions(currentQuery: String): List<SearchActionItem> {
+    internal fun buildActions(currentQuery: String, enabledModules: Set<String>): List<SearchActionItem> {
         val trimmed = currentQuery.trim().lowercase()
         if (trimmed.isEmpty()) return emptyList()
 
@@ -172,9 +174,10 @@ class SearchViewModel @Inject constructor(
             ),
         )
 
-        // 2. Navigation Actions matching query
+        // 2. Navigation Actions matching query, gated by enabled modules
         STATIC_NAVIGATION_TARGETS.forEach { target ->
-            if (target.matches(trimmed)) {
+            val moduleAllowed = target.requiredModule == null || enabledModules.contains(target.requiredModule)
+            if (moduleAllowed && target.matches(trimmed)) {
                 results.add(
                     SearchActionItem(
                         id = target.id,
@@ -190,7 +193,13 @@ class SearchViewModel @Inject constructor(
         return results
     }
 
-    private data class NavTarget(val id: String, val title: String, val keywords: List<String>, val route: OS11Route) {
+    private data class NavTarget(
+        val id: String,
+        val title: String,
+        val keywords: List<String>,
+        val route: OS11Route,
+        val requiredModule: String? = null,
+    ) {
         fun matches(query: String): Boolean = keywords.any { it.contains(query) || query.contains(it) }
     }
 
@@ -201,7 +210,7 @@ class SearchViewModel @Inject constructor(
         private const val SNIPPET_PADDING = 24
 
         private val STATIC_NAVIGATION_TARGETS = listOf(
-            NavTarget("nav_myday", "Go to My Day", listOf("my day", "today", "day"), OS11Route.MyDay),
+            NavTarget("nav_myday", "Go to My Day", listOf("my day", "today", "day"), OS11Route.MyDay, "my_day"),
             NavTarget("nav_inbox", "Go to Inbox", listOf("inbox", "incoming", "mail"), OS11Route.Inbox),
             NavTarget(
                 "nav_planned",
@@ -229,9 +238,29 @@ class SearchViewModel @Inject constructor(
                 "Go to Dashboard",
                 listOf("dashboard", "stats", "overview"),
                 OS11Route.Dashboard,
+                requiredModule = "dashboard",
             ),
-            NavTarget("nav_pomodoro", "Go to Pomodoro", listOf("pomodoro", "timer", "focus"), OS11Route.Pomodoro),
-            NavTarget("nav_goals", "Go to Goals", listOf("goals", "milestones", "targets"), OS11Route.Goals),
+            NavTarget(
+                "nav_pomodoro",
+                "Go to Pomodoro",
+                listOf("pomodoro", "timer", "focus"),
+                OS11Route.Pomodoro,
+                requiredModule = "pomodoro",
+            ),
+            NavTarget(
+                "nav_goals",
+                "Go to Goals",
+                listOf("goals", "milestones", "targets"),
+                OS11Route.Goals,
+                requiredModule = "goals_habits",
+            ),
+            NavTarget(
+                "nav_dayplan",
+                "Go to Day Plan",
+                listOf("day plan", "timeline", "agenda"),
+                OS11Route.DayPlan,
+                requiredModule = "agenda",
+            ),
         )
     }
 }

@@ -92,6 +92,16 @@ class TrackedWriter(
             "scheduled_start_min", "scheduled_duration_min", "bucket", "waiting_on", "waiting_since",
             "follow_up_date", "reviewed_at", "is_trashed", "trashed_at",
         )
+
+        val SYNCED_SETTINGS_ALLOWLIST: Set<String> = setOf(
+            "day_starts_at",
+            "pomodoro_work_minutes",
+            "pomodoro_break_minutes",
+            "pomodoro_long_break_minutes",
+            "pomodoro_sessions_before_long_break",
+            "waiting_stale_days",
+            "follow_up_notify_time",
+        )
     }
 
     // --- Task Writes ---
@@ -589,16 +599,23 @@ class TrackedWriter(
     }
 
     suspend fun writeSetting(key: String, value: String) {
-        db.withTransaction {
-            val tickHlc = hlcClock.tick()
-            db.settingDao().upsert(SettingEntity(key, value))
-            val payload = mapOf("value" to FieldWrite(JsonPrimitive(value), tickHlc.raw))
-            db.syncFieldClockDao().upsert(SyncFieldClockEntity("settings", key, "value", tickHlc.raw))
-            enqueueOutbox("settings", key, Operation.UPSERT, json.encodeToString(payload))
-            db.syncLocalStateDao().set(SyncLocalStateEntity(id = 1, lastHlc = tickHlc.raw))
-            pruneOutboxIfNeeded()
+        val isSynced = SYNCED_SETTINGS_ALLOWLIST.contains(key)
+        if (isSynced) {
+            db.withTransaction {
+                val tickHlc = hlcClock.tick()
+                db.settingDao().upsert(SettingEntity(key, value))
+                val payload = mapOf("value" to FieldWrite(JsonPrimitive(value), tickHlc.raw))
+                db.syncFieldClockDao().upsert(SyncFieldClockEntity("settings", key, "value", tickHlc.raw))
+                enqueueOutbox("settings", key, Operation.UPSERT, json.encodeToString(payload))
+                db.syncLocalStateDao().set(SyncLocalStateEntity(id = 1, lastHlc = tickHlc.raw))
+                pruneOutboxIfNeeded()
+            }
+            notifyCommitted("settings", key, Operation.UPSERT)
+        } else {
+            db.withTransaction {
+                db.settingDao().upsert(SettingEntity(key, value))
+            }
         }
-        notifyCommitted("settings", key, Operation.UPSERT)
     }
 
     suspend fun writeNotification(item: NotificationHistoryEntity) {

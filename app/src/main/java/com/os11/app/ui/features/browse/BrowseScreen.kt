@@ -93,193 +93,240 @@ fun BrowseScreen(
         }
 
         item(key = "smart_lists_content") {
+            val smartCards = remember(state.counts, state.enabledModules, colors) {
+                buildList {
+                    add(
+                        SmartCardInfo(
+                            title = "Important",
+                            count = state.counts.importantCount,
+                            icon = Icons.Filled.Star,
+                            iconTint = colors.priorityMedium,
+                            route = OS11Route.Important,
+                        ),
+                    )
+                    if ("my_day" in state.enabledModules) {
+                        add(
+                            SmartCardInfo(
+                                title = "My Day",
+                                count = state.counts.myDayCount,
+                                icon = Icons.Outlined.Home,
+                                iconTint = colors.accent,
+                                route = OS11Route.MyDay,
+                            ),
+                        )
+                    }
+                    add(
+                        SmartCardInfo(
+                            title = "Inbox",
+                            count = state.counts.inboxCount,
+                            icon = Icons.Outlined.MailOutline,
+                            iconTint = colors.textSecondary,
+                            route = OS11Route.Inbox,
+                        ),
+                    )
+                    add(
+                        SmartCardInfo(
+                            title = "Planned",
+                            count = state.counts.plannedCount,
+                            icon = Icons.Outlined.DateRange,
+                            iconTint = colors.textSecondary,
+                            route = OS11Route.Planned,
+                        ),
+                    )
+                    add(
+                        SmartCardInfo(
+                            title = "All Tasks",
+                            count = state.counts.inboxCount + state.counts.plannedCount,
+                            icon = Icons.AutoMirrored.Outlined.List,
+                            iconTint = colors.textSecondary,
+                            route = OS11Route.AllTasks,
+                        ),
+                    )
+                    add(
+                        SmartCardInfo(
+                            title = "Completed",
+                            count = state.counts.completedCount,
+                            icon = Icons.Outlined.CheckCircle,
+                            iconTint = colors.accent,
+                            route = OS11Route.Completed,
+                        ),
+                    )
+                }
+            }
+
             Column(verticalArrangement = Arrangement.spacedBy(spacing.s2)) {
-                Row(
-                    modifier = Modifier.fillMaxWidth(),
-                    horizontalArrangement = Arrangement.spacedBy(spacing.s2),
-                ) {
-                    SmartListCard(
-                        title = "Important",
-                        count = state.counts.importantCount,
-                        icon = Icons.Filled.Star,
-                        iconTint = colors.priorityMedium,
-                        onClick = { onNavigate(OS11Route.Important) },
-                        modifier = Modifier.weight(1f),
-                    )
-                    SmartListCard(
-                        title = "My Day",
-                        count = state.counts.myDayCount,
-                        icon = Icons.Outlined.Home,
-                        iconTint = colors.accent,
-                        onClick = { onNavigate(OS11Route.MyDay) },
-                        modifier = Modifier.weight(1f),
-                    )
-                }
-
-                Row(
-                    modifier = Modifier.fillMaxWidth(),
-                    horizontalArrangement = Arrangement.spacedBy(spacing.s2),
-                ) {
-                    SmartListCard(
-                        title = "Inbox",
-                        count = state.counts.inboxCount,
-                        icon = Icons.Outlined.MailOutline,
-                        iconTint = colors.textSecondary,
-                        onClick = { onNavigate(OS11Route.Inbox) },
-                        modifier = Modifier.weight(1f),
-                    )
-                    SmartListCard(
-                        title = "Planned",
-                        count = state.counts.plannedCount,
-                        icon = Icons.Outlined.DateRange,
-                        iconTint = colors.textSecondary,
-                        onClick = { onNavigate(OS11Route.Planned) },
-                        modifier = Modifier.weight(1f),
-                    )
-                }
-
-                Row(
-                    modifier = Modifier.fillMaxWidth(),
-                    horizontalArrangement = Arrangement.spacedBy(spacing.s2),
-                ) {
-                    SmartListCard(
-                        title = "All Tasks",
-                        count = state.counts.inboxCount + state.counts.plannedCount,
-                        icon = Icons.AutoMirrored.Outlined.List,
-                        iconTint = colors.textSecondary,
-                        onClick = { onNavigate(OS11Route.AllTasks) },
-                        modifier = Modifier.weight(1f),
-                    )
-                    SmartListCard(
-                        title = "Completed",
-                        count = state.counts.completedCount,
-                        icon = Icons.Outlined.CheckCircle,
-                        iconTint = colors.accent,
-                        onClick = { onNavigate(OS11Route.Completed) },
-                        modifier = Modifier.weight(1f),
-                    )
+                smartCards.chunked(2).forEach { rowCards ->
+                    Row(
+                        modifier = Modifier.fillMaxWidth(),
+                        horizontalArrangement = Arrangement.spacedBy(spacing.s2),
+                    ) {
+                        for (card in rowCards) {
+                            SmartListCard(
+                                title = card.title,
+                                count = card.count,
+                                icon = card.icon,
+                                iconTint = card.iconTint,
+                                onClick = { onNavigate(card.route) },
+                                modifier = Modifier.weight(1f),
+                            )
+                        }
+                        if (rowCards.size == 1) {
+                            Spacer(modifier = Modifier.weight(1f))
+                        }
+                    }
                 }
             }
         }
 
         // 2. Modules Section
-        item(key = "modules_header") {
-            Text(
-                text = "Modules",
-                style = type.sectionHeader.copy(color = colors.textPrimary),
-            )
-        }
+        val hasAnyBucketModule = "anytime" in state.enabledModules ||
+            "someday" in state.enabledModules ||
+            "waiting_for" in state.enabledModules
+        val hasAnyFeatureModule = "dashboard" in state.enabledModules ||
+            "agenda" in state.enabledModules ||
+            "goals_habits" in state.enabledModules ||
+            "pomodoro" in state.enabledModules
 
-        item(key = "modules_content") {
-            Column(verticalArrangement = Arrangement.spacedBy(spacing.s2)) {
-                Row(
-                    modifier = Modifier.fillMaxWidth(),
-                    horizontalArrangement = Arrangement.spacedBy(spacing.s2),
-                ) {
-                    ModuleBadgeChip(
-                        title = "Anytime",
-                        count = state.counts.anytimeCount,
-                        onClick = { onNavigate(OS11Route.BucketList("anytime")) },
-                    )
-                    ModuleBadgeChip(
-                        title = "Someday",
-                        count = state.counts.somedayCount,
-                        onClick = { onNavigate(OS11Route.BucketList("someday")) },
-                    )
-                    ModuleBadgeChip(
-                        title = "Waiting For",
-                        count = state.counts.waitingForCount,
-                        onClick = { onNavigate(OS11Route.BucketList("waiting")) },
-                    )
-                }
-                Row(
-                    modifier = Modifier.fillMaxWidth(),
-                    horizontalArrangement = Arrangement.spacedBy(spacing.s2),
-                ) {
-                    OSChip(
-                        label = "Dashboard",
-                        onClick = { onNavigate(OS11Route.Dashboard) },
-                    )
-                    OSChip(
-                        label = "Day Plan",
-                        onClick = { onNavigate(OS11Route.DayPlan) },
-                    )
-                    OSChip(
-                        label = "Goals",
-                        onClick = { onNavigate(OS11Route.Goals) },
-                    )
-                    OSChip(
-                        label = "Pomodoro",
-                        onClick = { onNavigate(OS11Route.Pomodoro) },
-                    )
+        if (hasAnyBucketModule || hasAnyFeatureModule) {
+            item(key = "modules_header") {
+                Text(
+                    text = "Modules",
+                    style = type.sectionHeader.copy(color = colors.textPrimary),
+                )
+            }
+
+            item(key = "modules_content") {
+                Column(verticalArrangement = Arrangement.spacedBy(spacing.s2)) {
+                    if (hasAnyBucketModule) {
+                        Row(
+                            modifier = Modifier.fillMaxWidth(),
+                            horizontalArrangement = Arrangement.spacedBy(spacing.s2),
+                        ) {
+                            if ("anytime" in state.enabledModules) {
+                                ModuleBadgeChip(
+                                    title = "Anytime",
+                                    count = state.counts.anytimeCount,
+                                    onClick = { onNavigate(OS11Route.BucketList("anytime")) },
+                                )
+                            }
+                            if ("someday" in state.enabledModules) {
+                                ModuleBadgeChip(
+                                    title = "Someday",
+                                    count = state.counts.somedayCount,
+                                    onClick = { onNavigate(OS11Route.BucketList("someday")) },
+                                )
+                            }
+                            if ("waiting_for" in state.enabledModules) {
+                                ModuleBadgeChip(
+                                    title = "Waiting For",
+                                    count = state.counts.waitingForCount,
+                                    onClick = { onNavigate(OS11Route.BucketList("waiting")) },
+                                )
+                            }
+                        }
+                    }
+
+                    if (hasAnyFeatureModule) {
+                        Row(
+                            modifier = Modifier.fillMaxWidth(),
+                            horizontalArrangement = Arrangement.spacedBy(spacing.s2),
+                        ) {
+                            if ("dashboard" in state.enabledModules) {
+                                OSChip(
+                                    label = "Dashboard",
+                                    onClick = { onNavigate(OS11Route.Dashboard) },
+                                )
+                            }
+                            if ("agenda" in state.enabledModules) {
+                                OSChip(
+                                    label = "Day Plan",
+                                    onClick = { onNavigate(OS11Route.DayPlan) },
+                                )
+                            }
+                            if ("goals_habits" in state.enabledModules) {
+                                OSChip(
+                                    label = "Goals",
+                                    onClick = { onNavigate(OS11Route.Goals) },
+                                )
+                            }
+                            if ("pomodoro" in state.enabledModules) {
+                                OSChip(
+                                    label = "Pomodoro",
+                                    onClick = { onNavigate(OS11Route.Pomodoro) },
+                                )
+                            }
+                        }
+                    }
                 }
             }
         }
 
         // 3. Areas & Projects Tree
-        item(key = "areas_header") {
-            Row(
-                modifier = Modifier.fillMaxWidth(),
-                verticalAlignment = Alignment.CenterVertically,
-                horizontalArrangement = Arrangement.SpaceBetween,
-            ) {
-                Text(
-                    text = "Areas & Projects",
-                    style = type.sectionHeader.copy(color = colors.textPrimary),
-                )
-                Row(horizontalArrangement = Arrangement.spacedBy(spacing.s1)) {
-                    OSIconButton(
-                        onClick = viewModel::openCreateAreaDialog,
-                        contentDescription = "New Area",
-                    ) {
-                        Icon(
-                            imageVector = Icons.Default.Add,
-                            contentDescription = null,
-                            tint = colors.accent,
-                        )
-                    }
-                    OSButton(
-                        onClick = viewModel::openCreateProjectDialog,
-                        variant = OSButtonVariant.Secondary,
-                    ) {
-                        Text("+ Project")
+        if ("project_management" in state.enabledModules) {
+            item(key = "areas_header") {
+                Row(
+                    modifier = Modifier.fillMaxWidth(),
+                    verticalAlignment = Alignment.CenterVertically,
+                    horizontalArrangement = Arrangement.SpaceBetween,
+                ) {
+                    Text(
+                        text = "Areas & Projects",
+                        style = type.sectionHeader.copy(color = colors.textPrimary),
+                    )
+                    Row(horizontalArrangement = Arrangement.spacedBy(spacing.s1)) {
+                        OSIconButton(
+                            onClick = viewModel::openCreateAreaDialog,
+                            contentDescription = "New Area",
+                        ) {
+                            Icon(
+                                imageVector = Icons.Default.Add,
+                                contentDescription = null,
+                                tint = colors.accent,
+                            )
+                        }
+                        OSButton(
+                            onClick = viewModel::openCreateProjectDialog,
+                            variant = OSButtonVariant.Secondary,
+                        ) {
+                            Text("+ Project")
+                        }
                     }
                 }
             }
-        }
 
-        // Areas list
-        items(
-            items = state.areasWithProjects,
-            key = { "area_${it.area.id}" },
-        ) { areaWithProjects ->
-            AreaCard(
-                areaWithProjects = areaWithProjects,
-                projectTaskCounts = state.projectTaskCounts,
-                onAreaClick = { onNavigate(OS11Route.AreaOverview(areaWithProjects.area.id)) },
-                onProjectClick = { projectId -> onNavigate(OS11Route.ProjectDetail(projectId)) },
-            )
-        }
-
-        // Loose projects (projects without an area)
-        if (state.looseProjects.isNotEmpty()) {
-            item(key = "loose_projects_header") {
-                Text(
-                    text = "No Area",
-                    style = type.meta.copy(color = colors.textSecondary),
-                    modifier = Modifier.padding(top = spacing.s2),
+            // Areas list
+            items(
+                items = state.areasWithProjects,
+                key = { "area_${it.area.id}" },
+            ) { areaWithProjects ->
+                AreaCard(
+                    areaWithProjects = areaWithProjects,
+                    projectTaskCounts = state.projectTaskCounts,
+                    onAreaClick = { onNavigate(OS11Route.AreaOverview(areaWithProjects.area.id)) },
+                    onProjectClick = { projectId -> onNavigate(OS11Route.ProjectDetail(projectId)) },
                 )
             }
-            items(
-                items = state.looseProjects,
-                key = { "loose_proj_${it.id}" },
-            ) { project ->
-                val count = state.projectTaskCounts[project.id] ?: 0
-                ProjectRow(
-                    project = project,
-                    taskCount = count,
-                    onClick = { onNavigate(OS11Route.ProjectDetail(project.id)) },
-                )
+
+            // Loose projects (projects without an area)
+            if (state.looseProjects.isNotEmpty()) {
+                item(key = "loose_projects_header") {
+                    Text(
+                        text = "No Area",
+                        style = type.meta.copy(color = colors.textSecondary),
+                        modifier = Modifier.padding(top = spacing.s2),
+                    )
+                }
+                items(
+                    items = state.looseProjects,
+                    key = { "loose_proj_${it.id}" },
+                ) { project ->
+                    val count = state.projectTaskCounts[project.id] ?: 0
+                    ProjectRow(
+                        project = project,
+                        taskCount = count,
+                        onClick = { onNavigate(OS11Route.ProjectDetail(project.id)) },
+                    )
+                }
             }
         }
 
@@ -499,6 +546,14 @@ fun BrowseScreen(
         }
     }
 }
+
+private data class SmartCardInfo(
+    val title: String,
+    val count: Int,
+    val icon: ImageVector,
+    val iconTint: Color,
+    val route: OS11Route,
+)
 
 @Composable
 private fun SmartListCard(

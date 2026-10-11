@@ -16,6 +16,12 @@ import com.os11.app.ui.features.myday.MyDayScreen
 import com.os11.app.ui.features.planned.PlannedScreen
 import com.os11.app.ui.features.pomodoro.PomodoroScreen
 import com.os11.app.ui.features.project.ProjectScreen
+import com.os11.app.ui.features.settings.SettingsAboutScreen
+import com.os11.app.ui.features.settings.SettingsAppearanceScreen
+import com.os11.app.ui.features.settings.SettingsDataScreen
+import com.os11.app.ui.features.settings.SettingsModulesScreen
+import com.os11.app.ui.features.settings.SettingsNotificationsScreen
+import com.os11.app.ui.features.settings.SettingsPrivacyScreen
 import com.os11.app.ui.features.settings.SettingsScreen
 import com.os11.app.ui.features.smartlists.AllTasksScreen
 import com.os11.app.ui.features.smartlists.CompletedScreen
@@ -72,6 +78,27 @@ fun OS11NavHost(
             SettingsScreen(
                 onNavigate = { route -> navController.navigate(route) },
             )
+        }
+        composable<OS11Route.SettingsAppearance> {
+            SettingsAppearanceScreen(onNavigateBack = { navController.popBackStack() })
+        }
+        composable<OS11Route.SettingsNotifications> {
+            SettingsNotificationsScreen(
+                onNavigateBack = { navController.popBackStack() },
+                onNavigate = { route -> navController.navigate(route) },
+            )
+        }
+        composable<OS11Route.SettingsModules> {
+            SettingsModulesScreen(onNavigateBack = { navController.popBackStack() })
+        }
+        composable<OS11Route.SettingsData> {
+            SettingsDataScreen(onNavigateBack = { navController.popBackStack() })
+        }
+        composable<OS11Route.SettingsPrivacy> {
+            SettingsPrivacyScreen(onNavigateBack = { navController.popBackStack() })
+        }
+        composable<OS11Route.SettingsAbout> {
+            SettingsAboutScreen(onNavigateBack = { navController.popBackStack() })
         }
         composable<OS11Route.Gallery> {
             ComponentGalleryScreen()
