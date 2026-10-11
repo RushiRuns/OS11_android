@@ -462,13 +462,15 @@ class TrackedWriter(
         db.withTransaction {
             val tickHlc = hlcClock.tick()
             db.attachmentDao().upsert(attachment)
-            val payload = mapOf(
-                "task_id" to FieldWrite(JsonPrimitive(attachment.taskId), tickHlc.raw),
-                "filename" to FieldWrite(JsonPrimitive(attachment.filename), tickHlc.raw),
-                "original_name" to FieldWrite(JsonPrimitive(attachment.originalName), tickHlc.raw),
-                "mime_type" to FieldWrite(JsonPrimitive(attachment.mimeType), tickHlc.raw),
-                "size_bytes" to FieldWrite(JsonPrimitive(attachment.sizeBytes), tickHlc.raw),
-            )
+            val payload = buildMap {
+                put("task_id", FieldWrite(JsonPrimitive(attachment.taskId), tickHlc.raw))
+                put("filename", FieldWrite(JsonPrimitive(attachment.filename), tickHlc.raw))
+                put("original_name", FieldWrite(JsonPrimitive(attachment.originalName), tickHlc.raw))
+                put("mime_type", FieldWrite(JsonPrimitive(attachment.mimeType), tickHlc.raw))
+                put("size_bytes", FieldWrite(JsonPrimitive(attachment.sizeBytes), tickHlc.raw))
+                put("is_link", FieldWrite(JsonPrimitive(attachment.isLink), tickHlc.raw))
+                attachment.linkUrl?.let { put("link_url", FieldWrite(JsonPrimitive(it), tickHlc.raw)) }
+            }
             val clocks = payload.keys.map { field ->
                 SyncFieldClockEntity("attachments", attachment.id, field, tickHlc.raw)
             }

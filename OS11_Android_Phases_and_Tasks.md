@@ -311,12 +311,12 @@ Hardest platform phase. Start with the 27-row table.
 
 ## PHASE 15: Attachments (Week 30)
 
-- [ ] SAF file picker; copy into app-private storage; metadata row without a path column (per SCHEMA.md)
-- [ ] Link attachments
-- [ ] Thumbnails generated once on IO, loaded via Coil
-- [ ] Attachment strip, open via intent chooser, remove
-- [ ] File removed from disk when the task is permanently deleted
-- [ ] `blob_state` local tracking (ready for sync blob transfer)
+- [x] SAF file picker; copy into app-private storage; metadata row without a path column (per SCHEMA.md)
+- [x] Link attachments
+- [x] Thumbnails generated once on IO, loaded via Coil
+- [x] Attachment strip, open via intent chooser, remove
+- [x] File removed from disk when the task is permanently deleted
+- [x] `blob_state` local tracking (ready for sync blob transfer)
 
 **Done when:** deleting a task leaves no orphan files.
 

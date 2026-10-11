@@ -1,7 +1,12 @@
 package com.os11.app.ui.features.task
 
+import android.content.Context
+import android.content.Intent
+import android.net.Uri
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
+import com.os11.app.service.attachment.AttachmentItem
+import com.os11.app.service.attachment.AttachmentService
 import com.os11.app.service.tag.TagItem
 import com.os11.app.service.tag.TagService
 import com.os11.app.service.task.TaskItem
@@ -21,6 +26,7 @@ import kotlinx.coroutines.flow.combine
 import kotlinx.coroutines.flow.map
 import kotlinx.coroutines.flow.stateIn
 import kotlinx.coroutines.launch
+import java.io.File
 import javax.inject.Inject
 
 /**
@@ -33,6 +39,7 @@ class TaskViewModel @Inject constructor(
     private val taskService: TaskService,
     private val tagService: TagService,
     private val clock: Clock,
+    private val attachmentService: AttachmentService? = null,
 ) : ViewModel() {
 
     private val _sortOption = MutableStateFlow(TaskSortOption.Manual)
@@ -50,6 +57,9 @@ class TaskViewModel @Inject constructor(
     private val _detailTags = MutableStateFlow<ImmutableList<TagItem>>(persistentListOf())
     val detailTags: StateFlow<ImmutableList<TagItem>> = _detailTags.asStateFlow()
 
+    private val _detailAttachments = MutableStateFlow<ImmutableList<AttachmentItem>>(persistentListOf())
+    val detailAttachments: StateFlow<ImmutableList<AttachmentItem>> = _detailAttachments.asStateFlow()
+
     val allTags: StateFlow<ImmutableList<TagItem>> = tagService.observeTagItems()
         .map { it.toImmutableList() }
         .stateIn(
@@ -59,6 +69,7 @@ class TaskViewModel @Inject constructor(
         )
 
     private var detailTagsJob: Job? = null
+    private var detailAttachmentsJob: Job? = null
 
     private val _selectedActionsTask = MutableStateFlow<TaskUiModel?>(null)
     val selectedActionsTask: StateFlow<TaskUiModel?> = _selectedActionsTask.asStateFlow()
@@ -122,15 +133,19 @@ class TaskViewModel @Inject constructor(
             _selectedDetailTask.value = item
             loadSubtasksForDetail(taskId)
             loadTagsForDetail(taskId)
+            loadAttachmentsForDetail(taskId)
         }
     }
 
     fun closeDetail() {
         detailTagsJob?.cancel()
         detailTagsJob = null
+        detailAttachmentsJob?.cancel()
+        detailAttachmentsJob = null
         _selectedDetailTask.value = null
         _detailSubtasks.value = persistentListOf()
         _detailTags.value = persistentListOf()
+        _detailAttachments.value = persistentListOf()
     }
 
     private fun loadTagsForDetail(taskId: String) {
@@ -159,6 +174,52 @@ class TaskViewModel @Inject constructor(
                 )
                 _detailSubtasks.value = flattened.toImmutableList()
             }
+        }
+    }
+
+    private fun loadAttachmentsForDetail(taskId: String) {
+        detailAttachmentsJob?.cancel()
+        detailAttachmentsJob = viewModelScope.launch {
+            attachmentService?.observeAttachments(taskId)?.collect { items ->
+                _detailAttachments.value = items.toImmutableList()
+            }
+        }
+    }
+
+    fun addFileAttachment(taskId: String, uri: Uri, originalName: String? = null, mimeType: String? = null) {
+        viewModelScope.launch {
+            attachmentService?.addFileAttachment(taskId, uri, originalName, mimeType)
+        }
+    }
+
+    fun addLinkAttachment(taskId: String, url: String, title: String? = null) {
+        viewModelScope.launch {
+            attachmentService?.addLinkAttachment(taskId, url, title)
+        }
+    }
+
+    fun deleteAttachment(attachmentId: String) {
+        viewModelScope.launch {
+            attachmentService?.deleteAttachment(attachmentId)
+        }
+    }
+
+    fun openAttachment(item: AttachmentItem, context: Context) {
+        try {
+            if (item.isLink && !item.linkUrl.isNullOrBlank()) {
+                val intent = Intent(Intent.ACTION_VIEW, Uri.parse(item.linkUrl))
+                context.startActivity(Intent.createChooser(intent, "Open Link"))
+            } else if (!item.isLink && item.filePath != null) {
+                val file = File(item.filePath)
+                val shareableUri = attachmentService?.getShareableUri(file) ?: return
+                val intent = Intent(Intent.ACTION_VIEW).apply {
+                    setDataAndType(shareableUri, item.mimeType)
+                    addFlags(Intent.FLAG_GRANT_READ_URI_PERMISSION)
+                }
+                context.startActivity(Intent.createChooser(intent, "Open with"))
+            }
+        } catch (_: Exception) {
+            // Ignored if no matching activity handles intent
         }
     }
 

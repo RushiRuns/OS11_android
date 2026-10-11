@@ -87,6 +87,7 @@ dependencies {
     implementation(libs.androidx.profileinstaller)
     implementation(libs.jsoup)
     implementation(libs.reorderable)
+    implementation(libs.coil.compose)
 
     // Compose
     implementation(platform(libs.compose.bom))

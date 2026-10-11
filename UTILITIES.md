@@ -184,6 +184,9 @@ Record query methods here as they are written, grouped by repository, so a new q
 | `GoalService` | Goal CRUD, device-local streak tracking (same day/consecutive/reset), task and project linking | 13 | Built |
 | `DashboardScreen` | Analytics dashboard with stat cards, Canvas priority distribution, Canvas daily trend, Canvas activity heatmap | 14 | Built |
 | `DashboardService` | Aggregate metric flows, date range normalization, 12-week heatmap grid generator, RFC 4180 CSV export | 14 | Built |
+| `AttachmentStrip` | Horizontal scrolling attachment strip with Coil thumbnails, link sheet, and remove action | 15 | Built |
+| `AttachmentService` | Attachment file copy, link attachment, metadata tracking, disk cleanup, and blob state updates | 15 | Built |
+| `AttachmentStorageManager` | App-private storage manager, WebP thumbnail generation on IO, shareable URI generation, file removal | 15 | Built |
 
 ## Modifiers and Compose Helpers
 
@@ -206,7 +209,7 @@ Record query methods here as they are written, grouped by repository, so a new q
 | `OS11NotificationChannels` | Channel definitions and initialization | 9 | Built |
 | `NotificationPlatformDispatcher` | Platform system notification dispatcher with permission checks | 9 | Built |
 | `HapticsGateway` | Wraps `Vibrator`/`HapticFeedback` | 2 | Planned |
-| `FilePicker` | SAF contracts | 15 | Planned |
+| `FilePicker` | SAF OpenDocument activity result launcher | 15 | Built |
 
 ---
 

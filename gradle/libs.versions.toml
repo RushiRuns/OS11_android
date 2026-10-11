@@ -35,8 +35,10 @@ leakcanary = "2.14"
 jsoup = "1.18.3"
 reorderable = "3.1.0"
 recur = "0.17.1"
+coil = "2.7.0"
 
 [libraries]
+coil-compose = { group = "io.coil-kt", name = "coil-compose", version.ref = "coil" }
 lib-recur = { group = "org.dmfs", name = "lib-recur", version.ref = "recur" }
 reorderable = { group = "sh.calvin.reorderable", name = "reorderable", version.ref = "reorderable" }
 jsoup = { group = "org.jsoup", name = "jsoup", version.ref = "jsoup" }

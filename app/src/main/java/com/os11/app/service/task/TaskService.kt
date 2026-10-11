@@ -2,6 +2,7 @@ package com.os11.app.service.task
 
 import com.os11.app.data.db.dao.SlimTask
 import com.os11.app.data.db.entities.TaskEntity
+import com.os11.app.data.files.AttachmentStorageManager
 import com.os11.app.data.repository.CountsRepository
 import com.os11.app.data.repository.TaskRepository
 import com.os11.app.di.IoDispatcher
@@ -39,6 +40,7 @@ class TaskService @Inject constructor(
     private val idGenerator: IdGenerator,
     @param:IoDispatcher private val ioDispatcher: CoroutineDispatcher,
     private val taskSchedulingService: TaskSchedulingService? = null,
+    private val attachmentStorageManager: AttachmentStorageManager? = null,
 ) {
     fun observeById(id: String): Flow<TaskEntity?> = taskRepository.observeById(id)
     fun observeAllSlim(): Flow<List<SlimTask>> = taskRepository.observeAllSlim()
@@ -752,6 +754,7 @@ class TaskService @Inject constructor(
     suspend fun deletePermanently(id: String): AppResult<Unit> = withContext(ioDispatcher) {
         try {
             taskRepository.deletePermanently(id)
+            attachmentStorageManager?.deleteTaskAttachments(id)
             AppResult.ok(Unit)
         } catch (e: CancellationException) {
             throw e
@@ -765,6 +768,7 @@ class TaskService @Inject constructor(
             val trashed = taskRepository.getTrashedTasks()
             for (task in trashed) {
                 taskRepository.deletePermanently(task.id)
+                attachmentStorageManager?.deleteTaskAttachments(task.id)
             }
             AppResult.ok(trashed.size)
         } catch (e: CancellationException) {
@@ -779,6 +783,7 @@ class TaskService @Inject constructor(
             val expired = taskRepository.getTrashedTasksOlderThan(cutoffIso)
             for (task in expired) {
                 taskRepository.deletePermanently(task.id)
+                attachmentStorageManager?.deleteTaskAttachments(task.id)
             }
             AppResult.ok(expired.size)
         } catch (e: CancellationException) {

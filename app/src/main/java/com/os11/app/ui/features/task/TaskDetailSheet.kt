@@ -41,6 +41,7 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.semantics.Role
 import androidx.compose.ui.unit.dp
+import com.os11.app.service.attachment.AttachmentItem
 import com.os11.app.service.tag.TagItem
 import com.os11.app.ui.components.OSCheckbox
 import com.os11.app.ui.components.OSChip
@@ -88,6 +89,11 @@ fun TaskDetailSheet(
     reminders: List<ReminderUiModel> = emptyList(),
     onAddReminder: ((String) -> Unit)? = null,
     onDeleteReminder: ((String) -> Unit)? = null,
+    attachments: List<AttachmentItem> = emptyList(),
+    onAddFileAttachment: ((android.net.Uri) -> Unit)? = null,
+    onAddLinkAttachment: ((url: String, title: String?) -> Unit)? = null,
+    onOpenAttachment: ((AttachmentItem) -> Unit)? = null,
+    onDeleteAttachment: ((String) -> Unit)? = null,
     onDismissRequest: () -> Unit,
     modifier: Modifier = Modifier,
 ) {
@@ -100,11 +106,19 @@ fun TaskDetailSheet(
     var currentPriority by remember(priority) { mutableIntStateOf(priority) }
     var showDatePicker by remember { mutableStateOf(false) }
     var showTagPicker by remember { mutableStateOf(false) }
+    var showAddLinkDialog by remember { mutableStateOf(false) }
 
     var isNotesExpanded by remember { mutableStateOf(!notes.isNullOrBlank()) }
     var isSubtasksExpanded by remember { mutableStateOf(subtasks.isNotEmpty()) }
     var isRemindersExpanded by remember(reminders.isNotEmpty()) { mutableStateOf(reminders.isNotEmpty()) }
+    var isAttachmentsExpanded by remember(attachments.isNotEmpty()) { mutableStateOf(attachments.isNotEmpty()) }
     var newSubtaskTitle by remember { mutableStateOf("") }
+
+    val filePickerLauncher = androidx.activity.compose.rememberLauncherForActivityResult(
+        contract = androidx.activity.result.contract.ActivityResultContracts.OpenDocument(),
+    ) { uri ->
+        uri?.let { onAddFileAttachment?.invoke(it) }
+    }
 
     OSSheet(
         onDismissRequest = onDismissRequest,
@@ -223,6 +237,27 @@ fun TaskDetailSheet(
                 onDeleteReminder = onDeleteReminder,
             )
 
+            Spacer(modifier = Modifier.height(spacing.s4))
+
+            // Attachments Section (Progressive disclosure: collapsed if empty)
+            AttachmentStrip(
+                attachments = attachments,
+                isExpanded = isAttachmentsExpanded,
+                onToggleExpand = { isAttachmentsExpanded = !isAttachmentsExpanded },
+                onAddFileClick = {
+                    filePickerLauncher.launch(arrayOf("*/*"))
+                },
+                onAddLinkClick = {
+                    showAddLinkDialog = true
+                },
+                onOpenAttachment = { item ->
+                    onOpenAttachment?.invoke(item)
+                },
+                onDeleteAttachment = { id ->
+                    onDeleteAttachment?.invoke(id)
+                },
+            )
+
             Spacer(modifier = Modifier.height(spacing.s6))
         }
     }
@@ -252,6 +287,15 @@ fun TaskDetailSheet(
                 onCreateTag?.invoke(name, parentId)
             },
             onDismissRequest = { showTagPicker = false },
+        )
+    }
+
+    if (showAddLinkDialog) {
+        AddLinkSheet(
+            onDismissRequest = { showAddLinkDialog = false },
+            onAddLink = { url, title ->
+                onAddLinkAttachment?.invoke(url, title)
+            },
         )
     }
 }

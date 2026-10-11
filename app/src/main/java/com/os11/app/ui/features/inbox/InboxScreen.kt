@@ -62,6 +62,7 @@ fun InboxScreen(modifier: Modifier = Modifier, viewModel: TaskViewModel = hiltVi
     val selectedDetail by viewModel.selectedDetailTask.collectAsStateWithLifecycle()
     val detailSubtasks by viewModel.detailSubtasks.collectAsStateWithLifecycle()
     val detailTags by viewModel.detailTags.collectAsStateWithLifecycle()
+    val detailAttachments by viewModel.detailAttachments.collectAsStateWithLifecycle()
     val allTags by viewModel.allTags.collectAsStateWithLifecycle()
     val selectedActionTask by viewModel.selectedActionsTask.collectAsStateWithLifecycle()
     val isSelectionMode by viewModel.isSelectionMode.collectAsStateWithLifecycle()
@@ -152,6 +153,7 @@ fun InboxScreen(modifier: Modifier = Modifier, viewModel: TaskViewModel = hiltVi
             detail = detail,
             detailSubtasks = detailSubtasks,
             detailTags = detailTags,
+            detailAttachments = detailAttachments,
             allTags = allTags,
             viewModel = viewModel,
         )
@@ -320,9 +322,11 @@ private fun InboxDetailSheetDelegate(
     detail: com.os11.app.service.task.TaskItem,
     detailSubtasks: List<TaskUiModel>,
     detailTags: List<TagItem>,
+    detailAttachments: List<com.os11.app.service.attachment.AttachmentItem>,
     allTags: List<TagItem>,
     viewModel: TaskViewModel,
 ) {
+    val context = androidx.compose.ui.platform.LocalContext.current
     TaskDetailSheet(
         title = detail.title,
         notes = detail.notes,
@@ -333,6 +337,7 @@ private fun InboxDetailSheetDelegate(
         subtasks = detailSubtasks,
         tags = detailTags,
         allTags = allTags,
+        attachments = detailAttachments,
         onTitleChange = { newTitle -> viewModel.updateTitle(detail.id, newTitle) },
         onNotesChange = { newNotes -> viewModel.updateNotes(detail.id, newNotes) },
         onDueDateChange = { newDueDate -> viewModel.updateDueDate(detail.id, newDueDate) },
@@ -345,6 +350,10 @@ private fun InboxDetailSheetDelegate(
         onAddTag = { tagId -> viewModel.addTagToTask(detail.id, tagId) },
         onRemoveTag = { tagId -> viewModel.removeTagFromTask(detail.id, tagId) },
         onCreateTag = { name, parentId -> viewModel.createTagAndAddToTask(detail.id, name, parentId) },
+        onAddFileAttachment = { uri -> viewModel.addFileAttachment(detail.id, uri) },
+        onAddLinkAttachment = { url, title -> viewModel.addLinkAttachment(detail.id, url, title) },
+        onOpenAttachment = { item -> viewModel.openAttachment(item, context) },
+        onDeleteAttachment = { id -> viewModel.deleteAttachment(id) },
         onDismissRequest = { viewModel.closeDetail() },
     )
 }
