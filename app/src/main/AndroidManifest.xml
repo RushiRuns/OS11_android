@@ -44,6 +44,10 @@
             android:exported="false" />
 
         <receiver
+            android:name=".platform.alarms.PomodoroReceiver"
+            android:exported="false" />
+
+        <receiver
             android:name=".platform.alarms.BootReceiver"
             android:exported="false">
             <intent-filter>

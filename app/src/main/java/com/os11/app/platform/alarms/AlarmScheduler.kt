@@ -85,8 +85,62 @@ class AlarmScheduler @Inject constructor(@param:ApplicationContext private val c
         }
     }
 
+    /**
+     * Schedules an exact alarm for Pomodoro session end (ADR-A09).
+     */
+    fun schedulePomodoroAlarm(triggerAtMillis: Long) {
+        if (alarmManager == null) return
+
+        val intent = Intent(context, PomodoroReceiver::class.java).apply {
+            action = ACTION_FIRE_POMODORO
+        }
+
+        val pendingIntent = PendingIntent.getBroadcast(
+            context,
+            POMODORO_ALARM_REQUEST_CODE,
+            intent,
+            PendingIntent.FLAG_UPDATE_CURRENT or PendingIntent.FLAG_IMMUTABLE,
+        )
+
+        if (canScheduleExactAlarms()) {
+            alarmManager.setExactAndAllowWhileIdle(
+                AlarmManager.RTC_WAKEUP,
+                triggerAtMillis,
+                pendingIntent,
+            )
+        } else {
+            alarmManager.setAndAllowWhileIdle(
+                AlarmManager.RTC_WAKEUP,
+                triggerAtMillis,
+                pendingIntent,
+            )
+        }
+    }
+
+    /**
+     * Cancels an active Pomodoro end alarm.
+     */
+    fun cancelPomodoroAlarm() {
+        if (alarmManager == null) return
+        val intent = Intent(context, PomodoroReceiver::class.java).apply {
+            action = ACTION_FIRE_POMODORO
+        }
+        val pendingIntent = PendingIntent.getBroadcast(
+            context,
+            POMODORO_ALARM_REQUEST_CODE,
+            intent,
+            PendingIntent.FLAG_NO_CREATE or PendingIntent.FLAG_IMMUTABLE,
+        )
+        if (pendingIntent != null) {
+            alarmManager.cancel(pendingIntent)
+            pendingIntent.cancel()
+        }
+    }
+
     companion object {
         const val ACTION_FIRE_REMINDER = "com.os11.app.platform.alarms.FIRE_REMINDER"
         const val EXTRA_REMINDER_ID = "extra_reminder_id"
+        const val ACTION_FIRE_POMODORO = "com.os11.app.platform.alarms.FIRE_POMODORO"
+        const val POMODORO_ALARM_REQUEST_CODE = 99991
     }
 }

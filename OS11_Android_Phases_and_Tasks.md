@@ -276,11 +276,11 @@ Hardest platform phase. Start with the 27-row table.
 
 ## PHASE 12: Pomodoro (Week 26)
 
-- [ ] Pomodoro screen: ring, linked task, controls, session dots
-- [ ] Timer state derived from stored start timestamp; end is an exact alarm
-- [ ] Ongoing notification with chronometer; in-app pill
-- [ ] Session records, `pomodoro_count` (device-local), long break after N sessions
-- [ ] Survives process death and screen off
+- [x] Pomodoro screen: ring, linked task, controls, session dots
+- [x] Timer state derived from stored start timestamp; end is an exact alarm
+- [x] Ongoing notification with chronometer; in-app pill
+- [x] Session records, `pomodoro_count` (device-local), long break after N sessions
+- [x] Survives process death and screen off
 
 **Done when:** a session started, app swiped away, still ends on time with the right notification.
 

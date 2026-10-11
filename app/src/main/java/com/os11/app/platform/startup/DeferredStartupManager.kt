@@ -3,6 +3,7 @@ package com.os11.app.platform.startup
 import android.content.Context
 import com.os11.app.di.IoDispatcher
 import com.os11.app.platform.work.TrashPurgeWorker
+import com.os11.app.service.pomodoro.PomodoroService
 import com.os11.app.service.reminder.ReminderService
 import dagger.hilt.android.qualifiers.ApplicationContext
 import kotlinx.coroutines.CancellationException
@@ -18,6 +19,7 @@ import javax.inject.Singleton
 @Suppress("TooGenericExceptionCaught")
 class DeferredStartupManager @Inject constructor(
     private val reminderService: ReminderService,
+    private val pomodoroService: PomodoroService,
     @param:ApplicationContext private val context: Context,
     @param:IoDispatcher private val ioDispatcher: CoroutineDispatcher,
 ) {
@@ -33,6 +35,7 @@ class DeferredStartupManager @Inject constructor(
             try {
                 // 1. Reconcile exact reminder alarms with OS AlarmManager
                 reminderService.reconcileAlarms()
+                pomodoroService?.reconcileTimerAfterReboot()
 
                 // 2. Perform 30-day trash retention inspection
                 performTrashPurgeCheck()

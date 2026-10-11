@@ -40,6 +40,8 @@ interface TaskRepository {
     fun observeWaitingSlim(): Flow<List<SlimTask>>
     suspend fun getWaitingTasks(): List<TaskEntity>
     suspend fun getTasksByBucket(bucket: String): List<TaskEntity>
+    suspend fun incrementPomodoroCount(taskId: String)
+    suspend fun updatePomodoroCount(taskId: String, count: Int)
 }
 
 @Suppress("TooManyFunctions")
@@ -126,4 +128,12 @@ internal class TaskRepositoryImpl(
     override suspend fun getWaitingTasks(): List<TaskEntity> = taskDao.getWaitingTasks()
 
     override suspend fun getTasksByBucket(bucket: String): List<TaskEntity> = taskDao.getTasksByBucket(bucket)
+
+    override suspend fun incrementPomodoroCount(taskId: String) {
+        trackedWriter.incrementTaskPomodoroCount(taskId)
+    }
+
+    override suspend fun updatePomodoroCount(taskId: String, count: Int) {
+        trackedWriter.updateTaskPomodoroCount(taskId, count)
+    }
 }

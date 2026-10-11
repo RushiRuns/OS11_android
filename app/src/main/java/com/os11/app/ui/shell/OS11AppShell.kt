@@ -39,6 +39,7 @@ import androidx.compose.material3.Text
 import androidx.compose.material3.ripple
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
+import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
@@ -49,6 +50,7 @@ import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.vector.ImageVector
 import androidx.compose.ui.semantics.Role
 import androidx.compose.ui.unit.dp
+import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.navigation.NavGraph.Companion.findStartDestination
 import androidx.navigation.compose.currentBackStackEntryAsState
 import androidx.navigation.compose.rememberNavController
@@ -58,6 +60,8 @@ import com.os11.app.ui.components.OSIconButton
 import com.os11.app.ui.components.OSMenuItem
 import com.os11.app.ui.components.OSSheet
 import com.os11.app.ui.components.OSSnackbarHost
+import com.os11.app.ui.components.PomodoroPill
+import com.os11.app.ui.features.pomodoro.PomodoroViewModel
 import com.os11.app.ui.navigation.OS11NavHost
 import com.os11.app.ui.navigation.OS11Route
 import com.os11.app.ui.theme.OS11Theme
@@ -92,6 +96,8 @@ fun OS11AppShell(modifier: Modifier = Modifier, undoManager: UndoManager? = null
     var showProfileMenu by remember { mutableStateOf(false) }
     var showQuickAddSheet by remember { mutableStateOf(false) }
     val snackbarHostState = remember { SnackbarHostState() }
+    val pomodoroViewModel: PomodoroViewModel = hiltViewModel()
+    val pomodoroTimerState by pomodoroViewModel.rawTimerState.collectAsState()
 
     if (undoManager != null) {
         LaunchedEffect(undoManager) {
@@ -182,6 +188,16 @@ fun OS11AppShell(modifier: Modifier = Modifier, undoManager: UndoManager? = null
                     }
                 }
             }
+        }
+
+        // Pomodoro In-App Pill (ADR-A09)
+        if (pomodoroTimerState.isActive && currentRoute?.contains("Pomodoro") != true) {
+            PomodoroPill(
+                state = pomodoroTimerState,
+                onClick = { navController.navigate(OS11Route.Pomodoro) },
+                onTogglePause = { pomodoroViewModel.togglePlayPause() },
+                onStop = { pomodoroViewModel.resetTimer() },
+            )
         }
 
         // 2. Main Content

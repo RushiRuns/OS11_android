@@ -74,8 +74,25 @@ class StartupTimingTest {
             idGenerator = idGenerator,
             ioDispatcher = Dispatchers.Unconfined,
         )
+        val pomodoroRepository = com.os11.app.data.repository.PomodoroRepositoryImpl(db, trackedWriter)
+        val settingsRepository = com.os11.app.data.repository.SettingsRepositoryImpl(db, trackedWriter)
+        val notificationRepository = com.os11.app.data.repository.NotificationRepositoryImpl(db, trackedWriter)
+        val notificationDispatcher = com.os11.app.platform.notifications.SystemNotificationPlatformDispatcher(context)
+        val pomodoroService = com.os11.app.service.pomodoro.PomodoroService(
+            context = context,
+            pomodoroRepository = pomodoroRepository,
+            taskRepository = taskRepository,
+            settingsRepository = settingsRepository,
+            notificationRepository = notificationRepository,
+            alarmScheduler = alarmScheduler,
+            notificationDispatcher = notificationDispatcher,
+            clock = testClock,
+            idGenerator = idGenerator,
+            ioDispatcher = Dispatchers.Unconfined,
+        )
         deferredStartupManager = DeferredStartupManager(
             reminderService = reminderService,
+            pomodoroService = pomodoroService,
             context = context,
             ioDispatcher = Dispatchers.Unconfined,
         )

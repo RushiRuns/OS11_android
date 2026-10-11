@@ -94,6 +94,8 @@ internal class CommentRepositoryImpl(private val db: OS11Database, private val t
 interface PomodoroRepository {
     fun observeAll(): Flow<List<PomodoroSessionEntity>>
     fun observeByTask(taskId: String): Flow<List<PomodoroSessionEntity>>
+    fun observeTodayCompletedCount(sinceIso: String): Flow<Int>
+    fun observeTodayFocusSeconds(sinceIso: String): Flow<Int>
     suspend fun save(session: PomodoroSessionEntity): PomodoroSessionEntity
 }
 
@@ -105,6 +107,12 @@ internal class PomodoroRepositoryImpl(private val db: OS11Database, private val 
         val dao = db.pomodoroSessionDao()
         return dao.observeByTask(taskId)
     }
+
+    override fun observeTodayCompletedCount(sinceIso: String): Flow<Int> =
+        db.pomodoroSessionDao().observeTodayCompletedCount(sinceIso)
+
+    override fun observeTodayFocusSeconds(sinceIso: String): Flow<Int> =
+        db.pomodoroSessionDao().observeTodayFocusSeconds(sinceIso)
 
     override suspend fun save(session: PomodoroSessionEntity): PomodoroSessionEntity {
         val written = trackedWriter.writePomodoroSession(session)

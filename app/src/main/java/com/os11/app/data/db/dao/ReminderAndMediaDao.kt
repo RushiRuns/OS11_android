@@ -125,6 +125,15 @@ internal interface PomodoroSessionDao {
     @Query("SELECT * FROM pomodoro_sessions ORDER BY started_at DESC")
     fun observeAll(): Flow<List<PomodoroSessionEntity>>
 
+    @Query("SELECT COUNT(*) FROM pomodoro_sessions WHERE was_completed = 1 AND started_at >= :sinceIso")
+    fun observeTodayCompletedCount(sinceIso: String): Flow<Int>
+
+    @Query(
+        "SELECT COALESCE(SUM(duration_seconds), 0) FROM pomodoro_sessions " +
+            "WHERE was_completed = 1 AND started_at >= :sinceIso",
+    )
+    fun observeTodayFocusSeconds(sinceIso: String): Flow<Int>
+
     @Insert(onConflict = OnConflictStrategy.REPLACE)
     suspend fun upsert(session: PomodoroSessionEntity)
 }

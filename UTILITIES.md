@@ -174,6 +174,9 @@ Record query methods here as they are written, grouped by repository, so a new q
 | `ProjectService` | Project lifecycle, section CRUD, milestone CRUD, dependency cycle detection, CSV export | 10 | Built |
 | `BucketTasksScreen` | Dedicated smart list screen for Anytime, Someday, and Waiting For lists | 11 | Built |
 | `BatteryOptimizationGuidanceScreen` | Vendor battery-optimization guidance and system settings deep links | 11 | Built |
+| `PomodoroScreen` | Pomodoro screen with ring gauge, linked task card, session dots, settings & task pickers | 12 | Built |
+| `PomodoroPill` | In-app persistent pill bar indicating active Pomodoro status & remaining time | 12 | Built |
+| `PomodoroService` | Exact alarm & timestamp-derived Pomodoro timer service with persistence & history | 12 | Built |
 
 ## Modifiers and Compose Helpers
 
@@ -192,6 +195,7 @@ Record query methods here as they are written, grouped by repository, so a new q
 | `ReminderActionReceiver` | Broadcast receiver for notification actions (Complete, Snooze) | 11 | Built |
 | `BootReceiver` | Re-arms alarms on device boot or time changes | 11 | Built |
 | `AlarmReceiver` | Dispatches reminder notifications when AlarmManager alarms fire | 11 | Built |
+| `PomodoroReceiver` | Handles Pomodoro completion alarms & notification actions (pause, resume, stop, next) | 12 | Built |
 | `OS11NotificationChannels` | Channel definitions and initialization | 9 | Built |
 | `NotificationPlatformDispatcher` | Platform system notification dispatcher with permission checks | 9 | Built |
 | `HapticsGateway` | Wraps `Vibrator`/`HapticFeedback` | 2 | Planned |

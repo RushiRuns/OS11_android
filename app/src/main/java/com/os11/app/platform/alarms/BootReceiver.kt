@@ -3,6 +3,7 @@ package com.os11.app.platform.alarms
 import android.content.BroadcastReceiver
 import android.content.Context
 import android.content.Intent
+import com.os11.app.service.pomodoro.PomodoroService
 import com.os11.app.service.reminder.ReminderService
 import dagger.hilt.android.AndroidEntryPoint
 import kotlinx.coroutines.CoroutineScope
@@ -11,7 +12,7 @@ import kotlinx.coroutines.launch
 import javax.inject.Inject
 
 /**
- * Re-arms scheduled reminder alarms following device reboot, package update,
+ * Re-arms scheduled reminder alarms and Pomodoro timer following device reboot, package update,
  * device clock adjustment, or time-zone change.
  */
 @AndroidEntryPoint
@@ -19,6 +20,9 @@ class BootReceiver : BroadcastReceiver() {
 
     @Inject
     lateinit var reminderService: ReminderService
+
+    @Inject
+    lateinit var pomodoroService: PomodoroService
 
     override fun onReceive(context: Context, intent: Intent) {
         val action = intent.action ?: return
@@ -33,6 +37,7 @@ class BootReceiver : BroadcastReceiver() {
             CoroutineScope(Dispatchers.IO).launch {
                 try {
                     reminderService.reconcileAlarms()
+                    pomodoroService.reconcileTimerAfterReboot()
                 } finally {
                     pendingResult.finish()
                 }

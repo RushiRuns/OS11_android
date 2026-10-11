@@ -617,6 +617,18 @@ class TrackedWriter(
         db.reminderDeviceStateDao().upsert(state)
     }
 
+    suspend fun incrementTaskPomodoroCount(taskId: String) {
+        db.withTransaction {
+            db.taskDao().incrementPomodoroCount(taskId)
+        }
+    }
+
+    suspend fun updateTaskPomodoroCount(taskId: String, count: Int) {
+        db.withTransaction {
+            db.taskDao().updatePomodoroCount(taskId, count)
+        }
+    }
+
     suspend fun purgeTaskHistory(cutoffIso: String) {
         db.taskHistoryDao().purgeOlderThan(cutoffIso)
     }

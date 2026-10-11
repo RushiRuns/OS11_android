@@ -340,6 +340,12 @@ internal interface TaskDao {
     @Query("SELECT * FROM tasks WHERE bucket = :bucket AND is_trashed = 0 AND is_completed = 0")
     suspend fun getTasksByBucket(bucket: String): List<TaskEntity>
 
+    @Query("UPDATE tasks SET pomodoro_count = pomodoro_count + 1 WHERE id = :taskId")
+    suspend fun incrementPomodoroCount(taskId: String)
+
+    @Query("UPDATE tasks SET pomodoro_count = :count WHERE id = :taskId")
+    suspend fun updatePomodoroCount(taskId: String, count: Int)
+
     @Insert(onConflict = OnConflictStrategy.REPLACE)
     suspend fun upsert(task: TaskEntity)
 

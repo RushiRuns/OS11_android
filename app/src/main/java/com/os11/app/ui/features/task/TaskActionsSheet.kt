@@ -14,6 +14,7 @@ import androidx.compose.material.icons.automirrored.outlined.ArrowBack
 import androidx.compose.material.icons.automirrored.outlined.ArrowForward
 import androidx.compose.material.icons.automirrored.outlined.List
 import androidx.compose.material.icons.filled.Home
+import androidx.compose.material.icons.filled.PlayArrow
 import androidx.compose.material.icons.filled.Star
 import androidx.compose.material.icons.outlined.CheckCircle
 import androidx.compose.material.icons.outlined.DateRange
@@ -55,6 +56,7 @@ fun TaskActionsSheet(
     modifier: Modifier = Modifier,
     onSelect: (() -> Unit)? = null,
     onSkipOccurrence: (() -> Unit)? = null,
+    onStartPomodoro: (() -> Unit)? = null,
 ) {
     val colors = OS11Theme.colors
     val spacing = OS11Theme.spacing
@@ -130,6 +132,17 @@ fun TaskActionsSheet(
                     onClick = {
                         onDismissRequest()
                         onSkipOccurrence()
+                    },
+                )
+            }
+
+            if (onStartPomodoro != null) {
+                ActionItem(
+                    icon = Icons.Filled.PlayArrow,
+                    title = "Start Pomodoro focus",
+                    onClick = {
+                        onDismissRequest()
+                        onStartPomodoro()
                     },
                 )
             }
