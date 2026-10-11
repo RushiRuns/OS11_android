@@ -340,6 +340,9 @@ internal interface TaskDao {
     @Query("SELECT * FROM tasks WHERE bucket = :bucket AND is_trashed = 0 AND is_completed = 0")
     suspend fun getTasksByBucket(bucket: String): List<TaskEntity>
 
+    @Query("SELECT * FROM tasks ORDER BY created_at ASC, id ASC")
+    suspend fun getAll(): List<TaskEntity>
+
     @Query("UPDATE tasks SET pomodoro_count = pomodoro_count + 1 WHERE id = :taskId")
     suspend fun incrementPomodoroCount(taskId: String)
 

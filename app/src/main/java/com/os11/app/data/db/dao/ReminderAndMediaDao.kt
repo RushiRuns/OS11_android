@@ -24,6 +24,9 @@ internal interface ReminderDao {
     @Query("SELECT * FROM reminders WHERE task_id = :taskId")
     suspend fun getByTask(taskId: String): List<ReminderEntity>
 
+    @Query("SELECT * FROM reminders ORDER BY remind_at ASC")
+    suspend fun getAll(): List<ReminderEntity>
+
     @Query(
         """
         SELECT r.* FROM reminders r
@@ -124,6 +127,9 @@ internal interface PomodoroSessionDao {
 
     @Query("SELECT * FROM pomodoro_sessions ORDER BY started_at DESC")
     fun observeAll(): Flow<List<PomodoroSessionEntity>>
+
+    @Query("SELECT * FROM pomodoro_sessions ORDER BY started_at ASC")
+    suspend fun getAll(): List<PomodoroSessionEntity>
 
     @Query("SELECT COUNT(*) FROM pomodoro_sessions WHERE was_completed = 1 AND started_at >= :sinceIso")
     fun observeTodayCompletedCount(sinceIso: String): Flow<Int>

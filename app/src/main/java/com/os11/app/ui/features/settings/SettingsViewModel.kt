@@ -1,12 +1,15 @@
 package com.os11.app.ui.features.settings
 
+import android.content.Context
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.os11.app.platform.biometrics.AppLockManager
 import com.os11.app.platform.shortcuts.AppShortcutManager
 import com.os11.app.service.area.AreaService
+import com.os11.app.service.backup.BackupService
 import com.os11.app.service.project.ProjectService
 import com.os11.app.service.settings.AppearanceSettings
+import com.os11.app.service.settings.BackupSettings
 import com.os11.app.service.settings.ModuleItem
 import com.os11.app.service.settings.NotificationSettings
 import com.os11.app.service.settings.ProfilePreset
@@ -15,7 +18,9 @@ import com.os11.app.service.settings.SettingsService
 import com.os11.app.service.tag.TagService
 import com.os11.app.service.task.TaskService
 import com.os11.domain.id.DeterministicIds
+import com.os11.domain.result.AppResult
 import dagger.hilt.android.lifecycle.HiltViewModel
+import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.SharingStarted
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.combine
@@ -34,16 +39,19 @@ data class SettingsUiState(
     val appearance: AppearanceSettings = AppearanceSettings(),
     val notification: NotificationSettings = NotificationSettings(),
     val security: SecuritySettings = SecuritySettings(),
+    val backup: BackupSettings = BackupSettings(),
     val modules: List<ModuleItem> = emptyList(),
     val activePreset: String = "custom",
     val dataCounts: SettingsDataCounts = SettingsDataCounts(),
     val canAuthenticate: Boolean = false,
+    val statusMessage: String? = null,
 )
 
 @HiltViewModel
-@Suppress("TooManyFunctions")
+@Suppress("TooManyFunctions", "LongParameterList")
 class SettingsViewModel @Inject constructor(
     private val settingsService: SettingsService,
+    private val backupService: BackupService,
     private val appLockManager: AppLockManager,
     private val appShortcutManager: AppShortcutManager,
     private val taskService: TaskService,
@@ -53,6 +61,7 @@ class SettingsViewModel @Inject constructor(
 ) : ViewModel() {
 
     private val workspaceId = DeterministicIds.defaultWorkspaceId()
+    private val statusMessage = MutableStateFlow<String?>(null)
 
     private val countsFlow = combine(
         taskService.observeAllTasks(),
@@ -87,15 +96,19 @@ class SettingsViewModel @Inject constructor(
     val uiState: StateFlow<SettingsUiState> = combine(
         appearanceAndSecurityFlow,
         modulesAndCountsFlow,
-    ) { (appearance, notification, security), (modules, preset, counts) ->
+        settingsService.observeBackupSettings(),
+        statusMessage,
+    ) { (appearance, notification, security), (modules, preset, counts), backup, statusMsg ->
         SettingsUiState(
             appearance = appearance,
             notification = notification,
             security = security,
+            backup = backup,
             modules = modules,
             activePreset = preset,
             dataCounts = counts,
             canAuthenticate = appLockManager.canAuthenticate(),
+            statusMessage = statusMsg,
         )
     }.stateIn(
         scope = viewModelScope,
@@ -186,5 +199,95 @@ class SettingsViewModel @Inject constructor(
             val enabledSet = preset.moduleMap.filter { it.value }.keys
             appShortcutManager.updateShortcuts(enabledSet)
         }
+    }
+
+    fun exportJson(onResult: (String) -> Unit) {
+        viewModelScope.launch {
+            when (val result = backupService.exportToJson()) {
+                is AppResult.Ok -> {
+                    statusMessage.value = "JSON export generated successfully"
+                    onResult(result.value)
+                }
+                is AppResult.Err -> {
+                    statusMessage.value = "Failed to export JSON: ${result.error.userMessage()}"
+                }
+            }
+        }
+    }
+
+    fun exportCsv(onResult: (String) -> Unit) {
+        viewModelScope.launch {
+            when (val result = backupService.exportToCsv()) {
+                is AppResult.Ok -> {
+                    statusMessage.value = "CSV export generated successfully"
+                    onResult(result.value)
+                }
+                is AppResult.Err -> {
+                    statusMessage.value = "Failed to export CSV: ${result.error.userMessage()}"
+                }
+            }
+        }
+    }
+
+    fun importJson(jsonString: String, onComplete: (Boolean, String) -> Unit) {
+        viewModelScope.launch {
+            when (val result = backupService.importFromJson(jsonString)) {
+                is AppResult.Ok -> {
+                    val importResult = result.value
+                    val msg =
+                        "Imported ${importResult.tasksCount} tasks, " +
+                            "${importResult.projectsCount} projects, " +
+                            "${importResult.areasCount} areas"
+                    statusMessage.value = msg
+                    onComplete(true, msg)
+                }
+                is AppResult.Err -> {
+                    val msg = "Failed to import JSON: ${result.error.userMessage()}"
+                    statusMessage.value = msg
+                    onComplete(false, msg)
+                }
+            }
+        }
+    }
+
+    fun setAutoBackupEnabled(enabled: Boolean) {
+        viewModelScope.launch {
+            settingsService.setAutoBackupEnabled(enabled)
+        }
+    }
+
+    fun setAutoBackupUri(uri: String) {
+        viewModelScope.launch {
+            settingsService.setAutoBackupUri(uri)
+            statusMessage.value = "Backup folder updated"
+        }
+    }
+
+    fun performBackupNow(context: Context, onResult: (Boolean, String) -> Unit) {
+        viewModelScope.launch {
+            val uri = uiState.value.backup.autoBackupUri
+            if (uri.isNullOrBlank()) {
+                val msg = "Please pick a backup folder first"
+                statusMessage.value = msg
+                onResult(false, msg)
+                return@launch
+            }
+            when (val result = backupService.performAutoBackupToTreeUri(context, uri)) {
+                is AppResult.Ok -> {
+                    val msg = "Backup completed: ${result.value}"
+                    statusMessage.value = msg
+                    onResult(true, msg)
+                }
+                is AppResult.Err -> {
+                    val msg = "Backup failed: ${result.error.userMessage()}"
+                    statusMessage.value = msg
+                    onResult(false, msg)
+                }
+            }
+        }
+    }
+
+    fun clearStatusMessage() {
+        statusMessage.value = null
     }
 }

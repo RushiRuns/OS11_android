@@ -336,12 +336,12 @@ Hardest platform phase. Start with the 27-row table.
 
 ## PHASE 17: Data Portability and Backup (Week 33)
 
-- [ ] JSON export / import via SAF; round-trip test (export, fresh DB, import, compare)
-- [ ] Import **desktop OS11 JSON** and verify against a real desktop export (this is also the pre-sync way to move data)
-- [ ] CSV export
-- [ ] Daily auto-backup to a user-picked folder (WorkManager, ZIP)
-- [ ] Imported rows get proper clocks and outbox entries (an import is a set of writes, not a bypass)
-- [ ] Version history: table only, no UI
+- [x] JSON export / import via SAF; round-trip test (export, fresh DB, import, compare)
+- [x] Import **desktop OS11 JSON** and verify against a real desktop export (this is also the pre-sync way to move data)
+- [x] CSV export
+- [x] Daily auto-backup to a user-picked folder (WorkManager, ZIP)
+- [x] Imported rows get proper clocks and outbox entries (an import is a set of writes, not a bypass)
+- [x] Version history: table only, no UI
 
 **Done when:** a desktop export imports cleanly with matching counts and field values.
 

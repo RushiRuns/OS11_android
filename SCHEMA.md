@@ -36,7 +36,7 @@ Some synced columns merge **together as a group** (for example `bucket` with `du
 
 ## Schema Version
 
-Current version: `1` (Room database version, tracked by Room).
+Current version: `2` (Room database version, tracked by Room).
 Schema JSON: `app/schemas/`
 Migrations: `app/src/main/java/com/os11/app/data/db/migrations/`
 
@@ -79,6 +79,7 @@ Migrations: `app/src/main/java/com/os11/app/data/db/migrations/`
 | `sync_pending` | Remote changes waiting on a missing parent | meta |
 | `sync_conflict_log` | Conflict history shown in task detail | meta |
 | `tasks_fts` | FTS5 search index | derived |
+| `version_history` | System and backup snapshot history (table only, no UI) | local |
 
 Not in v1: `calendar_integration` data, `task_history` UI, Todoist/Notion/MS To Do importers. Tables for them are not created until their phase.
 
@@ -507,6 +508,25 @@ CREATE INDEX idx_task_history_task ON task_history(task_id);
 ```
 
 Both device-local. `task_history` has no UI in v1 and is purged after 30 days. It is created now so the table exists when the UI lands. `sync_conflict_log` is the synced-world equivalent that users actually see.
+
+---
+
+### `version_history` (local, table only, no UI)
+
+```sql
+CREATE TABLE version_history (
+  id             TEXT PRIMARY KEY,
+  entity_type    TEXT NOT NULL,
+  entity_id      TEXT NOT NULL,
+  version_number INTEGER NOT NULL,
+  snapshot_data  TEXT NOT NULL,
+  created_at     TEXT NOT NULL
+);
+CREATE INDEX idx_version_history_entity ON version_history(entity_type, entity_id);
+CREATE INDEX idx_version_history_created ON version_history(created_at);
+```
+
+Stores snapshot history for system and backup operations (JSON export, JSON import, CSV export, automated daily backups). Table only, no UI.
 
 ---
 

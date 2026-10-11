@@ -64,3 +64,26 @@ data class TaskHistoryEntity(
     @ColumnInfo(name = "changed_at")
     val changedAt: String,
 )
+
+@Entity(
+    tableName = "version_history",
+    indices = [
+        Index(name = "idx_version_history_entity", value = ["entity_type", "entity_id"]),
+        Index(name = "idx_version_history_created", value = ["created_at"]),
+    ],
+)
+data class VersionHistoryEntity(
+    @PrimaryKey
+    @ColumnInfo(name = "id")
+    val id: String,
+    @ColumnInfo(name = "entity_type")
+    val entityType: String,
+    @ColumnInfo(name = "entity_id")
+    val entityId: String,
+    @ColumnInfo(name = "version_number")
+    val versionNumber: Int,
+    @ColumnInfo(name = "snapshot_data")
+    val snapshotData: String,
+    @ColumnInfo(name = "created_at")
+    val createdAt: String,
+)

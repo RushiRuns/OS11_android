@@ -106,6 +106,19 @@ class SettingsService @Inject constructor(
         )
     }
 
+    fun observeBackupSettings(): Flow<BackupSettings> = observeSettingsMap().map { map ->
+        BackupSettings(
+            autoBackupEnabled = map["auto_backup_enabled"]?.toBooleanStrictOrNull() ?: false,
+            autoBackupUri = map["auto_backup_uri"],
+            lastBackupTimestamp = map["last_backup_timestamp"],
+        )
+    }
+
+    suspend fun setAutoBackupEnabled(enabled: Boolean): AppResult<Unit> =
+        setSetting("auto_backup_enabled", enabled.toString())
+
+    suspend fun setAutoBackupUri(uri: String): AppResult<Unit> = setSetting("auto_backup_uri", uri)
+
     fun observeActiveProfilePreset(): Flow<String> = observeSetting("active_profile_preset").map { raw ->
         raw?.replace("\"", "")?.trim() ?: "custom"
     }

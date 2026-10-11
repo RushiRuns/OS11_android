@@ -22,6 +22,9 @@ internal interface TagDao {
     @Query("SELECT * FROM tags ORDER BY sort_order ASC, name ASC")
     fun observeAll(): Flow<List<TagEntity>>
 
+    @Query("SELECT * FROM tags ORDER BY sort_order ASC, name ASC")
+    suspend fun getAll(): List<TagEntity>
+
     @Insert(onConflict = OnConflictStrategy.REPLACE)
     suspend fun upsert(tag: TagEntity)
 
@@ -90,6 +93,9 @@ internal interface TaskTagDao {
 
     @Query("SELECT COUNT(*) FROM task_tags WHERE tag_id = :tagId")
     suspend fun getTaskCountForTag(tagId: String): Int
+
+    @Query("SELECT * FROM task_tags")
+    suspend fun getAll(): List<TaskTagEntity>
 }
 
 @Dao
@@ -114,6 +120,9 @@ internal interface TaskDependencyDao {
 internal interface MilestoneDao {
     @Query("SELECT * FROM milestones WHERE id = :id")
     suspend fun getById(id: String): MilestoneEntity?
+
+    @Query("SELECT * FROM milestones ORDER BY due_date ASC, sort_order ASC")
+    suspend fun getAll(): List<MilestoneEntity>
 
     @Query("SELECT * FROM milestones WHERE project_id = :projectId ORDER BY due_date ASC, sort_order ASC")
     fun observeByProject(projectId: String): Flow<List<MilestoneEntity>>

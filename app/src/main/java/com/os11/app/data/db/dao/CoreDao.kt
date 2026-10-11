@@ -29,6 +29,9 @@ internal interface WorkspaceDao {
     @Query("SELECT * FROM workspaces WHERE id = :id")
     suspend fun getById(id: String): WorkspaceEntity?
 
+    @Query("SELECT * FROM workspaces")
+    suspend fun getAll(): List<WorkspaceEntity>
+
     @Query("SELECT * FROM workspaces LIMIT 1")
     fun observeDefault(): Flow<WorkspaceEntity?>
 
@@ -43,6 +46,9 @@ internal interface WorkspaceDao {
 internal interface AreaDao {
     @Query("SELECT * FROM areas WHERE id = :id")
     suspend fun getById(id: String): AreaEntity?
+
+    @Query("SELECT * FROM areas ORDER BY sort_order ASC, id ASC")
+    suspend fun getAll(): List<AreaEntity>
 
     @Query("SELECT * FROM areas WHERE workspace_id = :workspaceId ORDER BY sort_order ASC, id ASC")
     fun observeAll(workspaceId: String): Flow<List<AreaEntity>>
@@ -61,6 +67,9 @@ internal interface AreaDao {
 internal interface ProjectDao {
     @Query("SELECT * FROM projects WHERE id = :id")
     suspend fun getById(id: String): ProjectEntity?
+
+    @Query("SELECT * FROM projects ORDER BY sort_order ASC, id ASC")
+    suspend fun getAll(): List<ProjectEntity>
 
     @Query("SELECT * FROM projects WHERE workspace_id = :workspaceId ORDER BY sort_order ASC, id ASC")
     fun observeAll(workspaceId: String): Flow<List<ProjectEntity>>
@@ -82,6 +91,9 @@ internal interface ProjectDao {
 internal interface SectionDao {
     @Query("SELECT * FROM sections WHERE id = :id")
     suspend fun getById(id: String): SectionEntity?
+
+    @Query("SELECT * FROM sections ORDER BY sort_order ASC, id ASC")
+    suspend fun getAll(): List<SectionEntity>
 
     @Query("SELECT * FROM sections WHERE project_id = :projectId ORDER BY sort_order ASC, id ASC")
     fun observeByProject(projectId: String): Flow<List<SectionEntity>>

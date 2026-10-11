@@ -24,6 +24,9 @@ internal interface GoalDao {
     @Query("SELECT * FROM goals ORDER BY created_at DESC")
     fun observeAll(): Flow<List<GoalEntity>>
 
+    @Query("SELECT * FROM goals ORDER BY created_at ASC")
+    suspend fun getAll(): List<GoalEntity>
+
     @Insert(onConflict = OnConflictStrategy.REPLACE)
     suspend fun upsert(goal: GoalEntity)
 
@@ -41,6 +44,9 @@ internal interface GoalLinkDao {
 
     @Query("SELECT * FROM goal_links")
     fun observeAll(): Flow<List<GoalLinkEntity>>
+
+    @Query("SELECT * FROM goal_links")
+    suspend fun getAll(): List<GoalLinkEntity>
 
     @Insert(onConflict = OnConflictStrategy.REPLACE)
     suspend fun upsert(link: GoalLinkEntity)
@@ -98,6 +104,9 @@ internal interface SettingDao {
 
     @Query("SELECT * FROM settings")
     fun observeAll(): Flow<List<SettingEntity>>
+
+    @Query("SELECT * FROM settings")
+    suspend fun getAll(): List<SettingEntity>
 
     @Insert(onConflict = OnConflictStrategy.REPLACE)
     suspend fun upsert(setting: SettingEntity)

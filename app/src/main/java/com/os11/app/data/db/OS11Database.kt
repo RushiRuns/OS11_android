@@ -39,6 +39,7 @@ import com.os11.app.data.db.dao.TaskDependencyDao
 import com.os11.app.data.db.dao.TaskHistoryDao
 import com.os11.app.data.db.dao.TaskTagDao
 import com.os11.app.data.db.dao.UserDao
+import com.os11.app.data.db.dao.VersionHistoryDao
 import com.os11.app.data.db.dao.WorkspaceDao
 import com.os11.app.data.db.entities.AreaEntity
 import com.os11.app.data.db.entities.AttachmentEntity
@@ -71,7 +72,9 @@ import com.os11.app.data.db.entities.TaskEntity
 import com.os11.app.data.db.entities.TaskHistoryEntity
 import com.os11.app.data.db.entities.TaskTagEntity
 import com.os11.app.data.db.entities.UserEntity
+import com.os11.app.data.db.entities.VersionHistoryEntity
 import com.os11.app.data.db.entities.WorkspaceEntity
+import com.os11.app.data.db.migrations.MIGRATION_1_2
 
 @Database(
     entities = [
@@ -107,8 +110,9 @@ import com.os11.app.data.db.entities.WorkspaceEntity
         SyncPeerStateEntity::class,
         SyncPendingEntity::class,
         SyncConflictLogEntity::class,
+        VersionHistoryEntity::class,
     ],
-    version = 1,
+    version = 2,
     exportSchema = true,
 )
 @Suppress("TooManyFunctions")
@@ -146,6 +150,7 @@ abstract class OS11Database : RoomDatabase() {
     internal abstract fun syncPeerStateDao(): SyncPeerStateDao
     internal abstract fun syncPendingDao(): SyncPendingDao
     internal abstract fun syncConflictLogDao(): SyncConflictLogDao
+    internal abstract fun versionHistoryDao(): VersionHistoryDao
     internal abstract fun countsDao(): CountsDao
     internal abstract fun searchDao(): SearchDao
     internal abstract fun dashboardDao(): DashboardDao
@@ -158,12 +163,14 @@ abstract class OS11Database : RoomDatabase() {
                 .setJournalMode(RoomDatabase.JournalMode.WRITE_AHEAD_LOGGING)
                 .setDriver(BundledSQLiteDriver())
                 .addCallback(OS11DatabaseCallback())
+                .addMigrations(MIGRATION_1_2)
             return builder.build()
         }
 
         fun buildInMemory(context: Context, useBundledDriver: Boolean = false): OS11Database {
             val builder = Room.inMemoryDatabaseBuilder(context, OS11Database::class.java)
                 .addCallback(OS11DatabaseCallback())
+                .addMigrations(MIGRATION_1_2)
             if (useBundledDriver) {
                 builder.setDriver(BundledSQLiteDriver())
             }

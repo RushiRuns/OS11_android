@@ -2,6 +2,7 @@ package com.os11.app.platform.startup
 
 import android.content.Context
 import com.os11.app.di.IoDispatcher
+import com.os11.app.platform.work.DailyBackupWorker
 import com.os11.app.platform.work.TrashPurgeWorker
 import com.os11.app.service.pomodoro.PomodoroService
 import com.os11.app.service.reminder.ReminderService
@@ -40,10 +41,13 @@ class DeferredStartupManager @Inject constructor(
                 // 2. Perform 30-day trash retention inspection
                 performTrashPurgeCheck()
 
-                // 3. Signal widget update if widgets exist
+                // 3. Schedule automated daily backup check
+                DailyBackupWorker.scheduleDailyBackup(context)
+
+                // 4. Signal widget update if widgets exist
                 performWidgetRefresh()
 
-                // 4. Start local network sync listener if paired (Phase S1 stub)
+                // 5. Start local network sync listener if paired (Phase S1 stub)
                 startSyncEngineIfPaired()
             } catch (e: CancellationException) {
                 throw e

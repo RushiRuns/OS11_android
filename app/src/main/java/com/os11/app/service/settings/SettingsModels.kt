@@ -31,6 +31,12 @@ data class SecuritySettings(
     val hapticsEnabled: Boolean = true,
 )
 
+data class BackupSettings(
+    val autoBackupEnabled: Boolean = false,
+    val autoBackupUri: String? = null,
+    val lastBackupTimestamp: String? = null,
+)
+
 data class ProfilePreset(
     val id: String,
     val title: String,
