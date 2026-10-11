@@ -72,7 +72,9 @@ fun OS11NavHost(
             GoalsScreen()
         }
         composable<OS11Route.Pomodoro> {
-            PomodoroScreen()
+            PomodoroScreen(
+                onNavigateToFocusMode = { navController.navigate(OS11Route.FocusMode()) },
+            )
         }
         composable<OS11Route.Settings> {
             SettingsScreen(
@@ -161,6 +163,22 @@ fun OS11NavHost(
         composable<OS11Route.BucketList> {
             com.os11.app.ui.features.smartlists.BucketTasksScreen(
                 onNavigateBack = { navController.popBackStack() },
+            )
+        }
+        composable<OS11Route.Onboarding> {
+            com.os11.app.ui.features.onboarding.OnboardingScreen(
+                onFinished = {
+                    navController.navigate(OS11Route.MyDay) {
+                        popUpTo(navController.graph.id) {
+                            inclusive = true
+                        }
+                    }
+                },
+            )
+        }
+        composable<OS11Route.FocusMode> {
+            com.os11.app.ui.features.focus.FocusModeScreen(
+                onExit = { navController.popBackStack() },
             )
         }
     }

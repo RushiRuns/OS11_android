@@ -41,6 +41,7 @@ internal object DatabaseInitializer {
         "haptics_enabled" to "true",
         "secure_screen" to "false",
         "sync_attachment_max_mb" to "25",
+        "onboarding_completed" to "false",
     )
 
     val DEFAULT_MODULES: Map<String, Boolean> = mapOf(

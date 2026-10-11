@@ -43,9 +43,11 @@ class SettingsServiceTest {
 
         val settingsRepo = SettingsRepositoryImpl(db, trackedWriter)
         val moduleRepo = ModuleRepositoryImpl(db, trackedWriter)
+        val localIdentityRepo = com.os11.app.data.repository.LocalIdentityRepositoryImpl(db, trackedWriter)
         settingsService = SettingsService(
             settingsRepository = settingsRepo,
             moduleRepository = moduleRepo,
+            localIdentityRepository = localIdentityRepo,
             ioDispatcher = Dispatchers.Unconfined,
         )
     }
@@ -154,5 +156,31 @@ class SettingsServiceTest {
         settingsService.setModuleEnabled("pomodoro", false)
         assertFalse(settingsService.isModuleEnabled("pomodoro"))
         assertEquals("custom", settingsService.observeActiveProfilePreset().first())
+    }
+
+    @Test
+    fun local_identity_get_and_update() = runBlocking {
+        val initial = settingsService.getLocalIdentity()
+        assertEquals("My Android", initial?.displayName)
+        assertEquals("📱", initial?.avatarEmoji)
+
+        settingsService.updateLocalIdentity("Alex's Pixel", "🚀")
+        val updated = settingsService.getLocalIdentity()
+        assertEquals("Alex's Pixel", updated?.displayName)
+        assertEquals("🚀", updated?.avatarEmoji)
+
+        val observed = settingsService.observeLocalIdentity().first()
+        assertEquals("Alex's Pixel", observed?.displayName)
+        assertEquals("🚀", observed?.avatarEmoji)
+    }
+
+    @Test
+    fun onboarding_completed_flow() = runBlocking {
+        assertFalse(settingsService.isOnboardingCompleted())
+        assertFalse(settingsService.observeOnboardingCompleted().first())
+
+        settingsService.setOnboardingCompleted(true)
+        assertTrue(settingsService.isOnboardingCompleted())
+        assertTrue(settingsService.observeOnboardingCompleted().first())
     }
 }

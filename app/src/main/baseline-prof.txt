@@ -3,6 +3,24 @@
 Lcom/os11/app/OS11Application;
 Lcom/os11/app/MainActivity;
 Lcom/os11/app/ui/theme/TokensKt;
+Lcom/os11/app/ui/theme/OS11ThemeKt;
+Lcom/os11/app/ui/shell/OS11AppShellKt;
+Lcom/os11/app/ui/navigation/OS11NavHostKt;
+
+# Launch Features (Onboarding, My Day, Focus Mode)
+Lcom/os11/app/ui/features/onboarding/OnboardingScreenKt;
+Lcom/os11/app/ui/features/onboarding/OnboardingViewModel;
+Lcom/os11/app/ui/features/myday/MyDayScreenKt;
+Lcom/os11/app/ui/features/focus/FocusModeScreenKt;
+Lcom/os11/app/ui/features/focus/FocusModeViewModel;
+
+# Services & Repositories Hot Path
+Lcom/os11/app/service/task/TaskService;
+Lcom/os11/app/service/settings/SettingsService;
+Lcom/os11/app/service/pomodoro/PomodoroService;
+Lcom/os11/app/data/db/OS11Database;
+Lcom/os11/app/data/sync/TrackedWriter;
+
 # Compose and Coroutines hot paths
 HSPLandroidx/compose/runtime/**;->*
 HSPLandroidx/compose/ui/**;->*

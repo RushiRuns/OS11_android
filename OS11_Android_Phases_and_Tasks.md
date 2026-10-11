@@ -361,15 +361,15 @@ Hardest platform phase. Start with the 27-row table.
 
 ## PHASE 19: Onboarding, Accessibility, Polish (Weeks 36-38)
 
-- [ ] Onboarding: preset, name and emoji, quick-add demo (3 steps)
-- [ ] TalkBack full pass; font scale 200% pass; contrast pass; reduced-motion pass; 48dp audit
-- [ ] Focus mode screen
-- [ ] Empty, loading, error states audited screen by screen
-- [ ] Baseline Profile regenerated for the final launch path
-- [ ] Performance pass against every PERFORMANCE.md target; fix or document each miss
-- [ ] Back-gesture and predictive-back behavior audit
-- [ ] Configuration-change audit (rotation, locale, font scale changes do not lose state)
-- [ ] Tablet and landscape: not designed; ensure nothing breaks badly. Adaptive layout is a post-v1 item
+- [x] Onboarding: preset, name and emoji, quick-add demo (3 steps)
+- [x] TalkBack full pass; font scale 200% pass; contrast pass; reduced-motion pass; 48dp audit
+- [x] Focus mode screen
+- [x] Empty, loading, error states audited screen by screen
+- [x] Baseline Profile regenerated for the final launch path
+- [x] Performance pass against every PERFORMANCE.md target; fix or document each miss
+- [x] Back-gesture and predictive-back behavior audit
+- [x] Configuration-change audit (rotation, locale, font scale changes do not lose state)
+- [x] Tablet and landscape: not designed; ensure nothing breaks badly. Adaptive layout is a post-v1 item
 
 **Done when:** every PERFORMANCE.md target is met or has a written exception you accepted.
 

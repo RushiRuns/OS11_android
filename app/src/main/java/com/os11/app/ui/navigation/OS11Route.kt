@@ -89,4 +89,10 @@ sealed interface OS11Route {
 
     @Serializable
     data class BucketList(val bucketType: String) : OS11Route
+
+    @Serializable
+    data object Onboarding : OS11Route
+
+    @Serializable
+    data class FocusMode(val taskId: String? = null) : OS11Route
 }

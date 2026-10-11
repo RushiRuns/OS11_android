@@ -50,9 +50,11 @@ class ModuleGatingTest {
 
         val settingsRepo = SettingsRepositoryImpl(db, trackedWriter)
         val moduleRepo = ModuleRepositoryImpl(db, trackedWriter)
+        val localIdentityRepo = com.os11.app.data.repository.LocalIdentityRepositoryImpl(db, trackedWriter)
         settingsService = SettingsService(
             settingsRepository = settingsRepo,
             moduleRepository = moduleRepo,
+            localIdentityRepository = localIdentityRepo,
             ioDispatcher = Dispatchers.Unconfined,
         )
         shortcutManager = AppShortcutManager(context)

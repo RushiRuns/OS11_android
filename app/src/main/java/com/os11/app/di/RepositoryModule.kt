@@ -17,6 +17,8 @@ import com.os11.app.data.repository.GoalRepository
 import com.os11.app.data.repository.GoalRepositoryImpl
 import com.os11.app.data.repository.HistoryRepository
 import com.os11.app.data.repository.HistoryRepositoryImpl
+import com.os11.app.data.repository.LocalIdentityRepository
+import com.os11.app.data.repository.LocalIdentityRepositoryImpl
 import com.os11.app.data.repository.MilestoneRepository
 import com.os11.app.data.repository.MilestoneRepositoryImpl
 import com.os11.app.data.repository.ModuleRepository
@@ -58,6 +60,11 @@ object RepositoryModule {
     @Singleton
     fun provideTaskRepository(db: OS11Database, trackedWriter: TrackedWriter, clock: Clock): TaskRepository =
         TaskRepositoryImpl(db, trackedWriter, clock)
+
+    @Provides
+    @Singleton
+    fun provideLocalIdentityRepository(db: OS11Database, trackedWriter: TrackedWriter): LocalIdentityRepository =
+        LocalIdentityRepositoryImpl(db, trackedWriter)
 
     @Provides
     @Singleton

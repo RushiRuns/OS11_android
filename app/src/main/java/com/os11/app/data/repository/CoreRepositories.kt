@@ -2,11 +2,26 @@ package com.os11.app.data.repository
 
 import com.os11.app.data.db.OS11Database
 import com.os11.app.data.db.entities.AreaEntity
+import com.os11.app.data.db.entities.LocalIdentityEntity
 import com.os11.app.data.db.entities.ProjectEntity
 import com.os11.app.data.db.entities.SectionEntity
 import com.os11.app.data.db.entities.WorkspaceEntity
 import com.os11.app.data.sync.TrackedWriter
 import kotlinx.coroutines.flow.Flow
+
+interface LocalIdentityRepository {
+    fun observe(): Flow<LocalIdentityEntity?>
+    suspend fun get(): LocalIdentityEntity?
+    suspend fun save(identity: LocalIdentityEntity): LocalIdentityEntity
+}
+
+internal class LocalIdentityRepositoryImpl(private val db: OS11Database, private val trackedWriter: TrackedWriter) :
+    LocalIdentityRepository {
+    override fun observe(): Flow<LocalIdentityEntity?> = db.localIdentityDao().observe()
+    override suspend fun get(): LocalIdentityEntity? = db.localIdentityDao().get()
+    override suspend fun save(identity: LocalIdentityEntity): LocalIdentityEntity =
+        trackedWriter.writeLocalIdentity(identity)
+}
 
 interface WorkspaceRepository {
     fun observeDefault(): Flow<WorkspaceEntity?>

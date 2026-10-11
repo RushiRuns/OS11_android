@@ -52,6 +52,7 @@ import com.os11.app.service.dashboard.DateRangeOption
 import com.os11.app.service.dashboard.HeatmapDay
 import com.os11.app.service.dashboard.PriorityDistributionItem
 import com.os11.app.ui.components.OSChip
+import com.os11.app.ui.components.OSEmptyState
 import com.os11.app.ui.components.OSIconButton
 import com.os11.app.ui.theme.OS11Theme
 import java.util.Locale
@@ -129,10 +130,10 @@ fun DashboardScreen(
                     .padding(spacing.s4),
                 contentAlignment = Alignment.Center,
             ) {
-                Text(
-                    text = "The Dashboard module is currently disabled. " +
+                OSEmptyState(
+                    title = "Dashboard Disabled",
+                    description = "The Dashboard module is currently disabled. " +
                         "Enable it in Settings to view statistics and trends.",
-                    style = type.body.copy(color = colors.textSecondary),
                 )
             }
             return

@@ -54,17 +54,7 @@ class MainActivity : FragmentActivity() {
         enableEdgeToEdge()
 
         handleIntent(intent)
-
-        // Observe secure screen setting (FLAG_SECURE)
-        lifecycleScope.launch {
-            settingsService.observeSecuritySettings().collect { security ->
-                if (security.secureScreen) {
-                    window.addFlags(WindowManager.LayoutParams.FLAG_SECURE)
-                } else {
-                    window.clearFlags(WindowManager.LayoutParams.FLAG_SECURE)
-                }
-            }
-        }
+        observeSecureScreen()
 
         setContent {
             val appearance by settingsService.observeAppearanceSettings()
@@ -81,6 +71,16 @@ class MainActivity : FragmentActivity() {
             val isLocked by appLockManager.isLocked.collectAsState()
             val quickAddText by quickAddLaunchText.collectAsState()
             val targetRoute by initialRoute.collectAsState()
+            val onboardingCompleted by settingsService.observeOnboardingCompleted()
+                .collectAsState(initial = null)
+
+            val effectiveInitialRoute = remember(targetRoute, onboardingCompleted) {
+                when {
+                    targetRoute != null -> targetRoute
+                    onboardingCompleted == false -> com.os11.app.ui.navigation.OS11Route.Onboarding
+                    else -> null
+                }
+            }
 
             OS11Theme(
                 accent = accent,
@@ -98,7 +98,7 @@ class MainActivity : FragmentActivity() {
                     OS11AppShell(
                         undoManager = undoManager,
                         quickAddLaunchText = quickAddText,
-                        initialRoute = targetRoute,
+                        initialRoute = effectiveInitialRoute,
                         onDismissQuickAdd = { quickAddLaunchText.value = null },
                     )
                 }
@@ -149,5 +149,17 @@ class MainActivity : FragmentActivity() {
     override fun onStop() {
         super.onStop()
         appLockManager.onAppBackgrounded()
+    }
+
+    private fun observeSecureScreen() {
+        lifecycleScope.launch {
+            settingsService.observeSecuritySettings().collect { security ->
+                if (security.secureScreen) {
+                    window.addFlags(WindowManager.LayoutParams.FLAG_SECURE)
+                } else {
+                    window.clearFlags(WindowManager.LayoutParams.FLAG_SECURE)
+                }
+            }
+        }
     }
 }

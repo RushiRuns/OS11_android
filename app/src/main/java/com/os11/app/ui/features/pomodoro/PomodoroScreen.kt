@@ -75,7 +75,11 @@ private const val SWEEP_MAX = 360f
  * Screen for Pomodoro focus sessions, breaks, and session cycle tracking (ADR-A09).
  */
 @Composable
-fun PomodoroScreen(modifier: Modifier = Modifier, viewModel: PomodoroViewModel = hiltViewModel()) {
+fun PomodoroScreen(
+    modifier: Modifier = Modifier,
+    onNavigateToFocusMode: (() -> Unit)? = null,
+    viewModel: PomodoroViewModel = hiltViewModel(),
+) {
     val uiState by viewModel.uiState.collectAsState()
     val availableTasks by viewModel.availableTasks.collectAsState()
     var showTaskPicker by remember { mutableStateOf(false) }
@@ -107,15 +111,30 @@ fun PomodoroScreen(modifier: Modifier = Modifier, viewModel: PomodoroViewModel =
                 longBreakMinutes = uiState.longBreakMinutesSetting,
             )
 
-            IconButton(
-                onClick = { showSettingsSheet = true },
-                modifier = Modifier.size(44.dp),
-            ) {
-                Icon(
-                    imageVector = Icons.Outlined.Settings,
-                    contentDescription = "Pomodoro Settings",
-                    tint = colors.textSecondary,
-                )
+            Row(verticalAlignment = Alignment.CenterVertically) {
+                if (onNavigateToFocusMode != null) {
+                    IconButton(
+                        onClick = onNavigateToFocusMode,
+                        modifier = Modifier.size(44.dp),
+                    ) {
+                        Icon(
+                            imageVector = Icons.Default.PlayArrow,
+                            contentDescription = "Fullscreen Focus Mode",
+                            tint = colors.accent,
+                        )
+                    }
+                }
+
+                IconButton(
+                    onClick = { showSettingsSheet = true },
+                    modifier = Modifier.size(44.dp),
+                ) {
+                    Icon(
+                        imageVector = Icons.Outlined.Settings,
+                        contentDescription = "Pomodoro Settings",
+                        tint = colors.textSecondary,
+                    )
+                }
             }
         }
 

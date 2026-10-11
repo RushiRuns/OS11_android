@@ -57,6 +57,7 @@ fun TaskActionsSheet(
     onSelect: (() -> Unit)? = null,
     onSkipOccurrence: (() -> Unit)? = null,
     onStartPomodoro: (() -> Unit)? = null,
+    onStartFocusMode: (() -> Unit)? = null,
 ) {
     val colors = OS11Theme.colors
     val spacing = OS11Theme.spacing
@@ -143,6 +144,17 @@ fun TaskActionsSheet(
                     onClick = {
                         onDismissRequest()
                         onStartPomodoro()
+                    },
+                )
+            }
+
+            if (onStartFocusMode != null) {
+                ActionItem(
+                    icon = Icons.Filled.PlayArrow,
+                    title = "Fullscreen Focus Mode",
+                    onClick = {
+                        onDismissRequest()
+                        onStartFocusMode()
                     },
                 )
             }

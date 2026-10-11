@@ -1,12 +1,15 @@
 package com.os11.app.service.settings
 
+import com.os11.app.data.db.entities.LocalIdentityEntity
 import com.os11.app.data.db.entities.ModuleEntity
 import com.os11.app.data.db.entities.SettingEntity
+import com.os11.app.data.repository.LocalIdentityRepository
 import com.os11.app.data.repository.ModuleRepository
 import com.os11.app.data.repository.SettingsRepository
 import com.os11.app.di.IoDispatcher
 import com.os11.app.ui.theme.OS11Density
 import com.os11.app.ui.theme.OS11FontStep
+import com.os11.domain.id.DefaultIdGenerator
 import com.os11.domain.result.AppError
 import com.os11.domain.result.AppResult
 import kotlinx.coroutines.CancellationException
@@ -22,6 +25,7 @@ import javax.inject.Singleton
 class SettingsService @Inject constructor(
     private val settingsRepository: SettingsRepository,
     private val moduleRepository: ModuleRepository,
+    private val localIdentityRepository: LocalIdentityRepository,
     @param:IoDispatcher private val ioDispatcher: CoroutineDispatcher,
 ) {
     fun observeAllSettings(): Flow<List<SettingEntity>> = settingsRepository.observeAll()
@@ -135,6 +139,42 @@ class SettingsService @Inject constructor(
 
     suspend fun getAppLockTimeoutSeconds(): Int =
         getSetting("app_lock_timeout_seconds")?.replace("\"", "")?.trim()?.toIntOrNull() ?: 0
+
+    fun observeLocalIdentity(): Flow<LocalIdentityEntity?> = localIdentityRepository.observe()
+
+    suspend fun getLocalIdentity(): LocalIdentityEntity? = localIdentityRepository.get()
+
+    suspend fun updateLocalIdentity(displayName: String, avatarEmoji: String?): AppResult<Unit> =
+        withContext(ioDispatcher) {
+            try {
+                val current = localIdentityRepository.get()
+                val id = current?.id ?: DefaultIdGenerator().randomId()
+                val createdAt = current?.createdAt ?: java.time.Instant.now().toString()
+                localIdentityRepository.save(
+                    LocalIdentityEntity(
+                        id = id,
+                        displayName = displayName.trim().ifEmpty { "My Android" },
+                        avatarEmoji = avatarEmoji,
+                        createdAt = createdAt,
+                    ),
+                )
+                AppResult.ok(Unit)
+            } catch (e: CancellationException) {
+                throw e
+            } catch (e: Exception) {
+                AppResult.err(AppError.Unexpected(e))
+            }
+        }
+
+    fun observeOnboardingCompleted(): Flow<Boolean> = observeSetting("onboarding_completed").map { raw ->
+        raw?.replace("\"", "")?.trim()?.toBooleanStrictOrNull() ?: false
+    }
+
+    suspend fun isOnboardingCompleted(): Boolean =
+        getSetting("onboarding_completed")?.replace("\"", "")?.trim()?.toBooleanStrictOrNull() ?: false
+
+    suspend fun setOnboardingCompleted(completed: Boolean): AppResult<Unit> =
+        setSetting("onboarding_completed", completed.toString())
 
     suspend fun setSetting(key: String, value: String): AppResult<Unit> = withContext(ioDispatcher) {
         try {

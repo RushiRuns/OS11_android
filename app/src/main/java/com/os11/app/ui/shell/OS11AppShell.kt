@@ -142,6 +142,7 @@ fun OS11AppShell(
     val navBackStackEntry by navController.currentBackStackEntryAsState()
     val currentRoute = navBackStackEntry?.destination?.route
     val screenTitle = resolveScreenTitle(currentRoute)
+    val isFullScreen = currentRoute?.contains("Onboarding") == true || currentRoute?.contains("FocusMode") == true
 
     Column(
         modifier = modifier
@@ -149,74 +150,76 @@ fun OS11AppShell(
             .background(colors.surfaceBase),
     ) {
         // 1. Top Bar
-        Row(
-            modifier = Modifier
-                .fillMaxWidth()
-                .windowInsetsPadding(WindowInsets.statusBars)
-                .height(layout.topBarHeight)
-                .background(colors.surfaceSidebar)
-                .padding(horizontal = spacing.s4),
-            verticalAlignment = Alignment.CenterVertically,
-            horizontalArrangement = Arrangement.SpaceBetween,
-        ) {
-            Text(
-                text = screenTitle,
-                style = type.subViewTitle.copy(color = colors.textPrimary),
-            )
-
+        if (!isFullScreen) {
             Row(
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .windowInsetsPadding(WindowInsets.statusBars)
+                    .height(layout.topBarHeight)
+                    .background(colors.surfaceSidebar)
+                    .padding(horizontal = spacing.s4),
                 verticalAlignment = Alignment.CenterVertically,
-                horizontalArrangement = Arrangement.spacedBy(spacing.s1),
+                horizontalArrangement = Arrangement.SpaceBetween,
             ) {
-                // Search Button
-                OSIconButton(
-                    onClick = { navController.navigate(OS11Route.Search) },
-                    contentDescription = "Search",
-                ) {
-                    Icon(
-                        imageVector = Icons.Default.Search,
-                        contentDescription = null,
-                        tint = colors.textSecondary,
-                    )
-                }
+                Text(
+                    text = screenTitle,
+                    style = type.subViewTitle.copy(color = colors.textPrimary),
+                )
 
-                // Notifications Button
-                OSIconButton(
-                    onClick = { navController.navigate(OS11Route.NotificationCenter) },
-                    contentDescription = "Notification Center",
+                Row(
+                    verticalAlignment = Alignment.CenterVertically,
+                    horizontalArrangement = Arrangement.spacedBy(spacing.s1),
                 ) {
-                    Icon(
-                        imageVector = Icons.Outlined.Notifications,
-                        contentDescription = null,
-                        tint = colors.textSecondary,
-                    )
-                }
-
-                // Profile Avatar Button
-                OSIconButton(
-                    onClick = { showProfileMenu = true },
-                    contentDescription = "Profile Menu",
-                ) {
-                    Box(
-                        modifier = Modifier
-                            .size(32.dp)
-                            .clip(CircleShape)
-                            .border(spacing.px, colors.borderAvatar, CircleShape)
-                            .background(colors.surfaceRaised),
-                        contentAlignment = Alignment.Center,
+                    // Search Button
+                    OSIconButton(
+                        onClick = { navController.navigate(OS11Route.Search) },
+                        contentDescription = "Search",
                     ) {
                         Icon(
-                            imageVector = Icons.Default.AccountCircle,
+                            imageVector = Icons.Default.Search,
                             contentDescription = null,
                             tint = colors.textSecondary,
                         )
+                    }
+
+                    // Notifications Button
+                    OSIconButton(
+                        onClick = { navController.navigate(OS11Route.NotificationCenter) },
+                        contentDescription = "Notification Center",
+                    ) {
+                        Icon(
+                            imageVector = Icons.Outlined.Notifications,
+                            contentDescription = null,
+                            tint = colors.textSecondary,
+                        )
+                    }
+
+                    // Profile Avatar Button
+                    OSIconButton(
+                        onClick = { showProfileMenu = true },
+                        contentDescription = "Profile Menu",
+                    ) {
+                        Box(
+                            modifier = Modifier
+                                .size(32.dp)
+                                .clip(CircleShape)
+                                .border(spacing.px, colors.borderAvatar, CircleShape)
+                                .background(colors.surfaceRaised),
+                            contentAlignment = Alignment.Center,
+                        ) {
+                            Icon(
+                                imageVector = Icons.Default.AccountCircle,
+                                contentDescription = null,
+                                tint = colors.textSecondary,
+                            )
+                        }
                     }
                 }
             }
         }
 
         // Pomodoro In-App Pill (ADR-A09)
-        if (pomodoroTimerState.isActive && currentRoute?.contains("Pomodoro") != true) {
+        if (!isFullScreen && pomodoroTimerState.isActive && currentRoute?.contains("Pomodoro") != true) {
             PomodoroPill(
                 state = pomodoroTimerState,
                 onClick = { navController.navigate(OS11Route.Pomodoro) },
@@ -238,20 +241,22 @@ fun OS11AppShell(
             )
 
             // FAB for Quick Add
-            FloatingActionButton(
-                onClick = { showQuickAddSheet = true },
-                modifier = Modifier
-                    .align(Alignment.BottomEnd)
-                    .padding(spacing.s4)
-                    .size(layout.fabSize),
-                containerColor = colors.accent,
-                contentColor = colors.textOnAccent,
-                shape = RoundedCornerShape(OS11Theme.radius.xl),
-            ) {
-                Icon(
-                    imageVector = Icons.Default.Add,
-                    contentDescription = "Quick Add",
-                )
+            if (!isFullScreen) {
+                FloatingActionButton(
+                    onClick = { showQuickAddSheet = true },
+                    modifier = Modifier
+                        .align(Alignment.BottomEnd)
+                        .padding(spacing.s4)
+                        .size(layout.fabSize),
+                    containerColor = colors.accent,
+                    contentColor = colors.textOnAccent,
+                    shape = RoundedCornerShape(OS11Theme.radius.xl),
+                ) {
+                    Icon(
+                        imageVector = Icons.Default.Add,
+                        contentDescription = "Quick Add",
+                    )
+                }
             }
 
             // Snackbar host for Undo actions
@@ -264,18 +269,20 @@ fun OS11AppShell(
         }
 
         // 3. Bottom Bar
-        OS11BottomNavBar(
-            currentRoute = currentRoute,
-            onNavigate = { route ->
-                navController.navigate(route) {
-                    popUpTo(navController.graph.findStartDestination().id) {
-                        saveState = true
+        if (!isFullScreen) {
+            OS11BottomNavBar(
+                currentRoute = currentRoute,
+                onNavigate = { route ->
+                    navController.navigate(route) {
+                        popUpTo(navController.graph.findStartDestination().id) {
+                            saveState = true
+                        }
+                        launchSingleTop = true
+                        restoreState = true
                     }
-                    launchSingleTop = true
-                    restoreState = true
-                }
-            },
-        )
+                },
+            )
+        }
     }
 
     // Profile Menu Modal Sheet
@@ -331,6 +338,13 @@ fun OS11AppShell(
                             onClick = {
                                 showProfileMenu = false
                                 navController.navigate(OS11Route.Settings)
+                            },
+                        ),
+                        OSMenuItem(
+                            title = "Welcome & Onboarding",
+                            onClick = {
+                                showProfileMenu = false
+                                navController.navigate(OS11Route.Onboarding)
                             },
                         ),
                         OSMenuItem(

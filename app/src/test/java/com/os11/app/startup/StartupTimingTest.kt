@@ -94,9 +94,11 @@ class StartupTimingTest {
         val widgetUpdateManager = com.os11.app.platform.widgets.WidgetUpdateManager(context, trackedWriter)
         val appShortcutManager = com.os11.app.platform.shortcuts.AppShortcutManager(context)
         val moduleRepository = com.os11.app.data.repository.ModuleRepositoryImpl(db, trackedWriter)
+        val localIdentityRepository = com.os11.app.data.repository.LocalIdentityRepositoryImpl(db, trackedWriter)
         val settingsService = com.os11.app.service.settings.SettingsService(
             settingsRepository = settingsRepository,
             moduleRepository = moduleRepository,
+            localIdentityRepository = localIdentityRepository,
             ioDispatcher = Dispatchers.Unconfined,
         )
         deferredStartupManager = DeferredStartupManager(

@@ -7,6 +7,7 @@ import com.os11.app.data.db.entities.AttachmentEntity
 import com.os11.app.data.db.entities.CommentEntity
 import com.os11.app.data.db.entities.GoalEntity
 import com.os11.app.data.db.entities.GoalLinkEntity
+import com.os11.app.data.db.entities.LocalIdentityEntity
 import com.os11.app.data.db.entities.MilestoneEntity
 import com.os11.app.data.db.entities.ModuleEntity
 import com.os11.app.data.db.entities.NotificationHistoryEntity
@@ -664,6 +665,13 @@ class TrackedWriter(
 
     suspend fun purgeTaskHistory(cutoffIso: String) {
         db.taskHistoryDao().purgeOlderThan(cutoffIso)
+    }
+
+    suspend fun writeLocalIdentity(identity: LocalIdentityEntity): LocalIdentityEntity {
+        db.withTransaction {
+            db.localIdentityDao().upsert(identity)
+        }
+        return identity
     }
 
     // --- Private helpers ---
