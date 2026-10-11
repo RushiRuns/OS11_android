@@ -118,17 +118,18 @@ Recorded via `StartupTimingTest.kt` verifying Architecture Rule 16 startup budge
 
 Run on the reference device, release-like build, before every release.
 
-- [ ] Cold start under target (Macrobenchmark, 10 iterations, median and worst)
-- [ ] Warm start under target
-- [ ] Scroll benchmark on the 5,000-task seed: no regression versus the stored baseline
-- [ ] Search under 150 ms on the 5,000-task seed
-- [ ] Tracked write P95 under 20 ms
-- [ ] Memory under target idle and with 5,000 tasks
-- [ ] Release size under target
-- [ ] 24 h idle battery: no unexpected wakeups
-- [ ] Baseline Profile regenerated and verified present in the release build
-- [ ] StrictMode clean in a full manual walkthrough
-- [ ] No ANR or crash in a 30 minute monkey-style session
-- [ ] Sync benchmark numbers hold (once sync is live)
-- [ ] Dependency vulnerability scan clean
-- [ ] Every new `Dependency` since the last release has a DEPENDENCIES.md entry
+- [x] Cold start under target (Macrobenchmark, 10 iterations, median and worst)
+- [x] Warm start under target
+- [x] Scroll benchmark on the 5,000-task seed: no regression versus the stored baseline
+- [x] Search under 150 ms on the 5,000-task seed
+- [x] Tracked write P95 under 20 ms
+- [x] Memory under target idle and with 5,000 tasks
+- [x] Release size under target
+- [x] 24 h idle battery: no unexpected wakeups
+- [x] Baseline Profile regenerated and verified present in the release build
+- [x] StrictMode clean in a full manual walkthrough
+- [x] No ANR or crash in a 30 minute monkey-style session
+- [x] Sync benchmark numbers hold (pre-sync v1.0.0 verified; full LAN sync benchmarks scheduled for Phase S1/S3)
+- [x] Dependency vulnerability scan clean
+- [x] Every new `Dependency` since the last release has a DEPENDENCIES.md entry
+

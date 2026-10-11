@@ -22,6 +22,6 @@ Lcom/os11/app/data/db/OS11Database;
 Lcom/os11/app/data/sync/TrackedWriter;
 
 # Compose and Coroutines hot paths
-HSPLandroidx/compose/runtime/**;->*
-HSPLandroidx/compose/ui/**;->*
-HSPLkotlinx/coroutines/**;->*
+Landroidx/compose/runtime/**;
+Landroidx/compose/ui/**;
+Lkotlinx/coroutines/**;

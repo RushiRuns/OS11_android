@@ -165,18 +165,20 @@ class TagService @Inject constructor(
             val oldPrefix = "${existing.name}/"
             val newPrefix = "$trimmed/"
 
+            // Query child tags before saving parent to prevent foreign key SET_NULL cascades
+            val childTags = tagRepository.getChildTags(id)
+
             val updated = existing.copy(name = trimmed)
             tagRepository.save(updated)
 
             // Cascade rename to nested child tags
-            val childTags = tagRepository.getChildTags(id)
             for (child in childTags) {
                 val childNewName = if (child.name.startsWith(oldPrefix)) {
                     child.name.replaceFirst(oldPrefix, newPrefix)
                 } else {
                     "$trimmed/${child.name.substringAfterLast("/")}"
                 }
-                tagRepository.save(child.copy(name = childNewName))
+                tagRepository.save(child.copy(name = childNewName, parentTagId = id))
             }
 
             val count = tagRepository.getTaskCountForTag(id)

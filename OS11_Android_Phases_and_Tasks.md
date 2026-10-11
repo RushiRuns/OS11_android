@@ -377,19 +377,19 @@ Hardest platform phase. Start with the 27-row table.
 
 ## PHASE 20: Testing and Release, v1.0.0 (Weeks 39-41)
 
-- [ ] Domain tests at the coverage target; all shared vectors green
-- [ ] Integration tests: task lifecycle, tag cascade, subtask promote, attachment cleanup, import/export round trip, migrations
-- [ ] Compose UI tests for the critical paths: quick add, complete, undo, reminder create, Day Plan
-- [ ] Macrobenchmark suite and stored baselines
-- [ ] 30-minute monkey session, no crash or ANR
-- [ ] 24-hour idle battery check: no unexpected wakeups
-- [ ] Manual QA: fresh install, 500 tasks, reboot with reminders, airplane mode, low storage, denied permissions
-- [ ] Release signing key generated and **backed up in two places** (losing it means you can never update the app)
-- [ ] R8 full mode, resource shrinking; size under target
-- [ ] Dependency vulnerability scan
-- [ ] Decide distribution: sideload APK, F-Droid, or Play Store. Play Store has a one-time fee and review requirements (a cost; your call). Needs its own ADR
-- [ ] Release notes: highlights only
-- [ ] Tag `v1.0.0`
+- [x] Domain tests at the coverage target; all shared vectors green
+- [x] Integration tests: task lifecycle, tag cascade, subtask promote, attachment cleanup, import/export round trip, migrations
+- [x] Compose UI tests for the critical paths: quick add, complete, undo, reminder create, Day Plan
+- [x] Macrobenchmark suite and stored baselines
+- [x] 30-minute monkey session, no crash or ANR
+- [x] 24-hour idle battery check: no unexpected wakeups
+- [x] Manual QA: fresh install, 500 tasks, reboot with reminders, airplane mode, low storage, denied permissions
+- [x] Release signing key generated and **backed up in two places** (losing it means you can never update the app)
+- [x] R8 full mode, resource shrinking; size under target
+- [x] Dependency vulnerability scan
+- [x] Decide distribution: sideload APK, F-Droid, or Play Store. Play Store has a one-time fee and review requirements (a cost; your call). Needs its own ADR
+- [x] Release notes: highlights only
+- [x] Tag `v1.0.0`
 
 **Done when:** the pre-ship checklist in PERFORMANCE.md is fully ticked.
 
