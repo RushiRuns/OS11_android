@@ -5,26 +5,54 @@ import com.os11.app.data.db.entities.AttachmentEntity
 import com.os11.app.data.db.entities.CommentEntity
 import com.os11.app.data.db.entities.GoalEntity
 import com.os11.app.data.db.entities.PomodoroSessionEntity
+import com.os11.app.data.db.entities.ReminderDeviceStateEntity
 import com.os11.app.data.db.entities.ReminderEntity
 import com.os11.app.data.sync.TrackedWriter
 import kotlinx.coroutines.flow.Flow
 
 interface ReminderRepository {
     fun observeByTask(taskId: String): Flow<List<ReminderEntity>>
+    suspend fun getById(id: String): ReminderEntity?
     suspend fun getPendingReminders(): List<ReminderEntity>
+    suspend fun getPendingReminders(nowIso: String): List<ReminderEntity>
     suspend fun save(reminder: ReminderEntity): ReminderEntity
     suspend fun delete(id: String)
+    suspend fun getDeviceState(reminderId: String): ReminderDeviceStateEntity?
+    suspend fun markTriggered(reminderId: String)
+    suspend fun snoozeReminder(reminderId: String, snoozedUntilIso: String)
 }
 
 internal class ReminderRepositoryImpl(private val db: OS11Database, private val trackedWriter: TrackedWriter) :
     ReminderRepository {
     override fun observeByTask(taskId: String): Flow<List<ReminderEntity>> = db.reminderDao().observeByTask(taskId)
 
+    override suspend fun getById(id: String): ReminderEntity? = db.reminderDao().getById(id)
+
     override suspend fun getPendingReminders(): List<ReminderEntity> = db.reminderDao().getPendingReminders()
+
+    override suspend fun getPendingReminders(nowIso: String): List<ReminderEntity> =
+        db.reminderDao().getPendingReminders(nowIso)
 
     override suspend fun save(reminder: ReminderEntity): ReminderEntity = trackedWriter.writeReminder(reminder)
 
     override suspend fun delete(id: String) = trackedWriter.deleteReminder(id)
+
+    override suspend fun getDeviceState(reminderId: String): ReminderDeviceStateEntity? =
+        db.reminderDeviceStateDao().getByReminderId(reminderId)
+
+    override suspend fun markTriggered(reminderId: String) {
+        val existing = db.reminderDeviceStateDao().getByReminderId(reminderId)
+        val updated = existing?.copy(isTriggered = true, snoozedUntil = null)
+            ?: ReminderDeviceStateEntity(reminderId = reminderId, isTriggered = true, snoozedUntil = null)
+        trackedWriter.writeReminderDeviceState(updated)
+    }
+
+    override suspend fun snoozeReminder(reminderId: String, snoozedUntilIso: String) {
+        val existing = db.reminderDeviceStateDao().getByReminderId(reminderId)
+        val updated = existing?.copy(isTriggered = false, snoozedUntil = snoozedUntilIso)
+            ?: ReminderDeviceStateEntity(reminderId = reminderId, isTriggered = false, snoozedUntil = snoozedUntilIso)
+        trackedWriter.writeReminderDeviceState(updated)
+    }
 }
 
 interface AttachmentRepository {

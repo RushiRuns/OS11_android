@@ -298,6 +298,48 @@ internal interface TaskDao {
     @Query("SELECT * FROM tasks WHERE section_id = :sectionId AND is_trashed = 0")
     suspend fun getTasksBySection(sectionId: String): List<TaskEntity>
 
+    @Query(
+        """
+        SELECT id, title, workspace_id as workspaceId, area_id as areaId, project_id as projectId,
+               section_id as sectionId, parent_task_id as parentTaskId, due_date as dueDate,
+               due_time as dueTime, all_day as allDay, recurrence_rule as recurrenceRule,
+               recurrence_basis as recurrenceBasis, priority, is_starred as isStarred,
+               is_completed as isCompleted, completed_at as completedAt, estimated_minutes as estimatedMinutes,
+               sort_order as sortOrder, my_day_date as myDayDate, pomodoro_count as pomodoroCount,
+               scheduled_start_min as scheduledStartMin, scheduled_duration_min as scheduledDurationMin,
+               bucket, waiting_on as waitingOn, waiting_since as waitingSince, follow_up_date as followUpDate,
+               is_trashed as isTrashed, created_at as createdAt, updated_at as updatedAt
+        FROM tasks
+        WHERE bucket = :bucket AND is_trashed = 0 AND is_completed = 0
+        ORDER BY sort_order ASC, id ASC
+        """,
+    )
+    fun observeBucketSlim(bucket: String): Flow<List<SlimTask>>
+
+    @Query(
+        """
+        SELECT id, title, workspace_id as workspaceId, area_id as areaId, project_id as projectId,
+               section_id as sectionId, parent_task_id as parentTaskId, due_date as dueDate,
+               due_time as dueTime, all_day as allDay, recurrence_rule as recurrenceRule,
+               recurrence_basis as recurrenceBasis, priority, is_starred as isStarred,
+               is_completed as isCompleted, completed_at as completedAt, estimated_minutes as estimatedMinutes,
+               sort_order as sortOrder, my_day_date as myDayDate, pomodoro_count as pomodoroCount,
+               scheduled_start_min as scheduledStartMin, scheduled_duration_min as scheduledDurationMin,
+               bucket, waiting_on as waitingOn, waiting_since as waitingSince, follow_up_date as followUpDate,
+               is_trashed as isTrashed, created_at as createdAt, updated_at as updatedAt
+        FROM tasks
+        WHERE waiting_since IS NOT NULL AND is_trashed = 0 AND is_completed = 0
+        ORDER BY follow_up_date ASC, waiting_since ASC, id ASC
+        """,
+    )
+    fun observeWaitingSlim(): Flow<List<SlimTask>>
+
+    @Query("SELECT * FROM tasks WHERE waiting_since IS NOT NULL AND is_trashed = 0 AND is_completed = 0")
+    suspend fun getWaitingTasks(): List<TaskEntity>
+
+    @Query("SELECT * FROM tasks WHERE bucket = :bucket AND is_trashed = 0 AND is_completed = 0")
+    suspend fun getTasksByBucket(bucket: String): List<TaskEntity>
+
     @Insert(onConflict = OnConflictStrategy.REPLACE)
     suspend fun upsert(task: TaskEntity)
 

@@ -30,6 +30,7 @@ detekt {
 
 dependencies {
     implementation(libs.kotlinx.serialization.json)
+    implementation(libs.lib.recur)
 
     testImplementation(libs.junit)
     testImplementation(libs.konsist)

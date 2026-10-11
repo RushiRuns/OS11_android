@@ -20,6 +20,7 @@ import androidx.compose.material.icons.outlined.DateRange
 import androidx.compose.material.icons.outlined.Delete
 import androidx.compose.material.icons.outlined.Edit
 import androidx.compose.material.icons.outlined.FavoriteBorder
+import androidx.compose.material.icons.outlined.Refresh
 import androidx.compose.material.icons.outlined.Star
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.Icon
@@ -53,6 +54,7 @@ fun TaskActionsSheet(
     onTrash: () -> Unit,
     modifier: Modifier = Modifier,
     onSelect: (() -> Unit)? = null,
+    onSkipOccurrence: (() -> Unit)? = null,
 ) {
     val colors = OS11Theme.colors
     val spacing = OS11Theme.spacing
@@ -120,6 +122,17 @@ fun TaskActionsSheet(
                     onChangeDate()
                 },
             )
+
+            if (onSkipOccurrence != null && task.recurrenceRule != null) {
+                ActionItem(
+                    icon = Icons.Outlined.Refresh,
+                    title = "Skip this occurrence",
+                    onClick = {
+                        onDismissRequest()
+                        onSkipOccurrence()
+                    },
+                )
+            }
 
             ActionItem(
                 icon = Icons.AutoMirrored.Outlined.List,

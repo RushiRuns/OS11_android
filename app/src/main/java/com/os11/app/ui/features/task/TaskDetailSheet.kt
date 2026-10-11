@@ -25,6 +25,8 @@ import androidx.compose.material.icons.filled.Close
 import androidx.compose.material.icons.outlined.DateRange
 import androidx.compose.material.icons.outlined.Edit
 import androidx.compose.material.icons.outlined.KeyboardArrowDown
+import androidx.compose.material.icons.outlined.Notifications
+import androidx.compose.material.icons.outlined.Refresh
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.Icon
 import androidx.compose.material3.Text
@@ -81,6 +83,11 @@ fun TaskDetailSheet(
     onAddTag: ((String) -> Unit)? = null,
     onRemoveTag: ((String) -> Unit)? = null,
     onCreateTag: ((String, String?) -> Unit)? = null,
+    recurrenceRule: String? = null,
+    onRecurrenceRuleChange: ((String?) -> Unit)? = null,
+    reminders: List<ReminderUiModel> = emptyList(),
+    onAddReminder: ((String) -> Unit)? = null,
+    onDeleteReminder: ((String) -> Unit)? = null,
     onDismissRequest: () -> Unit,
     modifier: Modifier = Modifier,
 ) {
@@ -96,6 +103,7 @@ fun TaskDetailSheet(
 
     var isNotesExpanded by remember { mutableStateOf(!notes.isNullOrBlank()) }
     var isSubtasksExpanded by remember { mutableStateOf(subtasks.isNotEmpty()) }
+    var isRemindersExpanded by remember(reminders.isNotEmpty()) { mutableStateOf(reminders.isNotEmpty()) }
     var newSubtaskTitle by remember { mutableStateOf("") }
 
     OSSheet(
@@ -128,6 +136,14 @@ fun TaskDetailSheet(
                 dueTime = dueTime,
                 onSetDateClick = { showDatePicker = true },
                 onClearDueDate = { onDueDateChange(null) },
+            )
+
+            Spacer(modifier = Modifier.height(spacing.s3))
+
+            // Repeat / Recurrence row
+            TaskDetailRecurrenceRow(
+                recurrenceRule = recurrenceRule,
+                onRecurrenceRuleChange = onRecurrenceRuleChange,
             )
 
             Spacer(modifier = Modifier.height(spacing.s3))
@@ -195,6 +211,17 @@ fun TaskDetailSheet(
                     modifier = Modifier.padding(top = spacing.s2),
                 )
             }
+
+            Spacer(modifier = Modifier.height(spacing.s4))
+
+            // Reminders Section (Progressive disclosure: collapsed if empty)
+            TaskDetailRemindersSection(
+                reminders = reminders,
+                isExpanded = isRemindersExpanded,
+                onToggleExpand = { isRemindersExpanded = !isRemindersExpanded },
+                onAddReminder = onAddReminder,
+                onDeleteReminder = onDeleteReminder,
+            )
 
             Spacer(modifier = Modifier.height(spacing.s6))
         }
@@ -527,6 +554,183 @@ private fun TaskDetailSubtasksList(
                     contentDescription = null,
                     tint = colors.accent,
                 )
+            }
+        }
+    }
+}
+
+@Suppress("CyclomaticComplexMethod")
+@Composable
+private fun TaskDetailRecurrenceRow(recurrenceRule: String?, onRecurrenceRuleChange: ((String?) -> Unit)?) {
+    val colors = OS11Theme.colors
+    val spacing = OS11Theme.spacing
+    val type = OS11Theme.type
+    val radius = OS11Theme.radius
+
+    val label = when (recurrenceRule) {
+        null -> "Does not repeat"
+        "FREQ=DAILY" -> "Every day"
+        "FREQ=WEEKLY" -> "Every week"
+        "FREQ=MONTHLY" -> "Every month"
+        "FREQ=YEARLY" -> "Every year"
+        else -> "Custom ($recurrenceRule)"
+    }
+
+    Row(
+        modifier = Modifier
+            .fillMaxWidth()
+            .clip(RoundedCornerShape(radius.sm))
+            .background(colors.surfaceRaised)
+            .border(spacing.px, colors.borderSubtle, RoundedCornerShape(radius.sm))
+            .clickable(
+                enabled = onRecurrenceRuleChange != null,
+                role = Role.Button,
+                onClick = {
+                    val next = when (recurrenceRule) {
+                        null -> "FREQ=DAILY"
+                        "FREQ=DAILY" -> "FREQ=WEEKLY"
+                        "FREQ=WEEKLY" -> "FREQ=MONTHLY"
+                        "FREQ=MONTHLY" -> "FREQ=YEARLY"
+                        else -> null
+                    }
+                    onRecurrenceRuleChange?.invoke(next)
+                },
+            )
+            .padding(horizontal = spacing.s3, vertical = spacing.s2),
+        verticalAlignment = Alignment.CenterVertically,
+        horizontalArrangement = Arrangement.SpaceBetween,
+    ) {
+        Row(
+            verticalAlignment = Alignment.CenterVertically,
+            horizontalArrangement = Arrangement.spacedBy(spacing.s2),
+        ) {
+            Icon(
+                imageVector = Icons.Outlined.Refresh,
+                contentDescription = null,
+                tint = if (recurrenceRule != null) colors.accent else colors.textTertiary,
+                modifier = Modifier.size(spacing.s4),
+            )
+            Text(
+                text = "Repeat: $label",
+                style = type.meta.copy(
+                    color = if (recurrenceRule != null) colors.textPrimary else colors.textSecondary,
+                ),
+            )
+        }
+
+        if (recurrenceRule != null && onRecurrenceRuleChange != null) {
+            OSIconButton(
+                onClick = { onRecurrenceRuleChange.invoke(null) },
+                contentDescription = "Clear repeat rule",
+                modifier = Modifier.size(24.dp),
+            ) {
+                Icon(
+                    imageVector = Icons.Default.Close,
+                    contentDescription = null,
+                    tint = colors.textTertiary,
+                    modifier = Modifier.size(16.dp),
+                )
+            }
+        }
+    }
+}
+
+@Composable
+private fun TaskDetailRemindersSection(
+    reminders: List<ReminderUiModel>,
+    isExpanded: Boolean,
+    onToggleExpand: () -> Unit,
+    onAddReminder: ((String) -> Unit)?,
+    onDeleteReminder: ((String) -> Unit)?,
+) {
+    val colors = OS11Theme.colors
+    val spacing = OS11Theme.spacing
+    val type = OS11Theme.type
+    val radius = OS11Theme.radius
+
+    SectionHeader(
+        title = "Reminders (${reminders.size})",
+        icon = Icons.Outlined.Notifications,
+        isExpanded = isExpanded,
+        onClick = onToggleExpand,
+    )
+
+    if (isExpanded) {
+        Column(
+            modifier = Modifier
+                .fillMaxWidth()
+                .padding(top = spacing.s2),
+            verticalArrangement = Arrangement.spacedBy(spacing.s2),
+        ) {
+            reminders.forEach { reminder ->
+                Row(
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .clip(RoundedCornerShape(radius.sm))
+                        .background(colors.surfaceRaised)
+                        .border(spacing.px, colors.borderSubtle, RoundedCornerShape(radius.sm))
+                        .padding(horizontal = spacing.s3, vertical = spacing.s2),
+                    verticalAlignment = Alignment.CenterVertically,
+                    horizontalArrangement = Arrangement.SpaceBetween,
+                ) {
+                    Row(
+                        verticalAlignment = Alignment.CenterVertically,
+                        horizontalArrangement = Arrangement.spacedBy(spacing.s2),
+                    ) {
+                        Icon(
+                            imageVector = Icons.Outlined.Notifications,
+                            contentDescription = null,
+                            tint = colors.accent,
+                            modifier = Modifier.size(spacing.s4),
+                        )
+                        Text(
+                            text = reminder.formattedRemindAt,
+                            style = type.meta.copy(color = colors.textPrimary),
+                        )
+                    }
+
+                    if (onDeleteReminder != null) {
+                        OSIconButton(
+                            onClick = { onDeleteReminder(reminder.id) },
+                            contentDescription = "Delete reminder",
+                            modifier = Modifier.size(24.dp),
+                        ) {
+                            Icon(
+                                imageVector = Icons.Default.Close,
+                                contentDescription = null,
+                                tint = colors.textTertiary,
+                                modifier = Modifier.size(16.dp),
+                            )
+                        }
+                    }
+                }
+            }
+
+            if (onAddReminder != null) {
+                Row(
+                    horizontalArrangement = Arrangement.spacedBy(spacing.s2),
+                ) {
+                    OSChip(
+                        label = "+ In 1 hour",
+                        onClick = {
+                            val trigger = java.time.Instant.now()
+                                .plus(1, java.time.temporal.ChronoUnit.HOURS)
+                                .toString()
+                            onAddReminder(trigger)
+                        },
+                    )
+                    OSChip(
+                        label = "+ Tomorrow 9 AM",
+                        onClick = {
+                            val trigger = java.time.LocalDate.now().plusDays(1)
+                                .atTime(9, 0)
+                                .atZone(java.time.ZoneId.systemDefault())
+                                .toInstant()
+                                .toString()
+                            onAddReminder(trigger)
+                        },
+                    )
+                }
             }
         }
     }

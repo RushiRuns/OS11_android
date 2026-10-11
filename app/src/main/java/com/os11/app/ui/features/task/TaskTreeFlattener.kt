@@ -111,6 +111,10 @@ object TaskTreeFlattener {
             sectionId = task.sectionId,
             workspaceId = task.workspaceId,
             sortOrder = task.sortOrder,
+            recurrenceRule = task.recurrenceRule,
+            bucket = task.bucket,
+            waitingOn = task.waitingOn,
+            followUpDate = task.followUpDate,
         )
     }
 }

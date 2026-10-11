@@ -38,6 +38,7 @@ class TaskService @Inject constructor(
     private val clock: Clock,
     private val idGenerator: IdGenerator,
     @param:IoDispatcher private val ioDispatcher: CoroutineDispatcher,
+    private val taskSchedulingService: TaskSchedulingService? = null,
 ) {
     fun observeById(id: String): Flow<TaskEntity?> = taskRepository.observeById(id)
     fun observeAllSlim(): Flow<List<SlimTask>> = taskRepository.observeAllSlim()
@@ -96,6 +97,12 @@ class TaskService @Inject constructor(
 
     fun observeSubtasks(parentId: String): Flow<List<TaskItem>> =
         taskRepository.observeSubtasksSlim(parentId).map { list -> list.map { it.toTaskItem() } }
+
+    fun observeBucketTasks(bucket: String): Flow<List<TaskItem>> =
+        taskRepository.observeBucketSlim(bucket).map { list -> list.map { it.toTaskItem() } }
+
+    fun observeWaitingTasks(): Flow<List<TaskItem>> =
+        taskRepository.observeWaitingSlim().map { list -> list.map { it.toTaskItem() } }
 
     suspend fun addToMyDay(taskId: String, date: String = clock.today()): AppResult<UndoToken> =
         withContext(ioDispatcher) {
@@ -299,6 +306,25 @@ class TaskService @Inject constructor(
             val existing = taskRepository.getById(id)
                 ?: return@withContext AppResult.err(AppError.NotFound)
 
+            val isRecurring = existing.recurrenceRule != null && existing.dueDate != null
+            if (completed && isRecurring && taskSchedulingService != null) {
+                val recurringResult = taskSchedulingService.completeRecurringTask(id)
+                if (recurringResult.isOk) {
+                    val token = undoManager.registerUndo(description = "Task completed") {
+                        val current = taskRepository.getById(id) ?: return@registerUndo AppResult.err(AppError.NotFound)
+                        taskRepository.saveTask(
+                            current.copy(
+                                isCompleted = false,
+                                completedAt = null,
+                                updatedAt = clock.nowIso(),
+                            ),
+                        )
+                        AppResult.ok(Unit)
+                    }
+                    return@withContext AppResult.ok(token)
+                }
+            }
+
             val now = clock.nowIso()
             val updated = existing.copy(
                 isCompleted = completed,
@@ -428,8 +454,15 @@ class TaskService @Inject constructor(
         )
     }
 
-    suspend fun updateDueDate(id: String, dueDate: String?, dueTime: String? = null): AppResult<UndoToken> =
-        withContext(ioDispatcher) {
+    suspend fun updateDueDate(id: String, dueDate: String?, dueTime: String? = null): AppResult<UndoToken> {
+        if (taskSchedulingService != null) {
+            return if (dueDate != null) {
+                taskSchedulingService.scheduleDate(id, dueDate, dueTime)
+            } else {
+                taskSchedulingService.clearSchedule(id)
+            }
+        }
+        return withContext(ioDispatcher) {
             try {
                 val existing = taskRepository.getById(id)
                     ?: return@withContext AppResult.err(AppError.NotFound)
@@ -462,6 +495,7 @@ class TaskService @Inject constructor(
                 AppResult.err(AppError.Unexpected(e))
             }
         }
+    }
 
     suspend fun addSubtask(parentId: String, title: String): AppResult<TaskEntity> = withContext(ioDispatcher) {
         try {

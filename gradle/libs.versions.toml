@@ -34,8 +34,10 @@ robolectric = "4.14.1"
 leakcanary = "2.14"
 jsoup = "1.18.3"
 reorderable = "3.1.0"
+recur = "0.17.1"
 
 [libraries]
+lib-recur = { group = "org.dmfs", name = "lib-recur", version.ref = "recur" }
 reorderable = { group = "sh.calvin.reorderable", name = "reorderable", version.ref = "reorderable" }
 jsoup = { group = "org.jsoup", name = "jsoup", version.ref = "jsoup" }
 leakcanary-android = { group = "com.squareup.leakcanary", name = "leakcanary-android", version.ref = "leakcanary" }

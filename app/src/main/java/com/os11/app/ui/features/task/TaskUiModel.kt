@@ -34,6 +34,10 @@ data class TaskUiModel(
     val sectionId: String? = null,
     val workspaceId: String = "",
     val sortOrder: Double = 0.0,
+    val recurrenceRule: String? = null,
+    val bucket: String? = null,
+    val waitingOn: String? = null,
+    val followUpDate: String? = null,
 ) {
     val hasSecondLine: Boolean
         get() = formattedDueDate != null ||

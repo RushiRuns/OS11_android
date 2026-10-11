@@ -69,6 +69,18 @@ fun SettingsScreen(onNavigate: (OS11Route) -> Unit = {}, modifier: Modifier = Mo
             icon = Icons.Outlined.Notifications,
             onClick = { onNavigate(OS11Route.NotificationCenter) },
         )
+
+        Text(
+            text = "Reliability & System",
+            style = type.sectionHeader.copy(color = colors.textSecondary),
+        )
+
+        SettingsNavRow(
+            title = "Reminder Reliability",
+            subtitle = "Battery optimization & exact alarm settings",
+            icon = Icons.Outlined.Notifications,
+            onClick = { onNavigate(OS11Route.BatteryGuidance) },
+        )
     }
 }
 

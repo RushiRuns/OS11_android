@@ -62,4 +62,10 @@ sealed interface OS11Route {
 
     @Serializable
     data object NotificationCenter : OS11Route
+
+    @Serializable
+    data object BatteryGuidance : OS11Route
+
+    @Serializable
+    data class BucketList(val bucketType: String) : OS11Route
 }

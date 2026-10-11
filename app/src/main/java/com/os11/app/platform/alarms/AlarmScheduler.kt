@@ -36,9 +36,6 @@ class AlarmScheduler @Inject constructor(@param:ApplicationContext private val c
      */
     fun scheduleExactAlarm(triggerAtMillis: Long, reminderId: String) {
         if (alarmManager == null) return
-        if (!canScheduleExactAlarms()) {
-            return
-        }
 
         val intent = Intent(context, AlarmReceiver::class.java).apply {
             action = ACTION_FIRE_REMINDER
@@ -52,11 +49,20 @@ class AlarmScheduler @Inject constructor(@param:ApplicationContext private val c
             PendingIntent.FLAG_UPDATE_CURRENT or PendingIntent.FLAG_IMMUTABLE,
         )
 
-        alarmManager.setExactAndAllowWhileIdle(
-            AlarmManager.RTC_WAKEUP,
-            triggerAtMillis,
-            pendingIntent,
-        )
+        if (canScheduleExactAlarms()) {
+            alarmManager.setExactAndAllowWhileIdle(
+                AlarmManager.RTC_WAKEUP,
+                triggerAtMillis,
+                pendingIntent,
+            )
+        } else {
+            // Fallback when SCHEDULE_EXACT_ALARM is denied
+            alarmManager.setAndAllowWhileIdle(
+                AlarmManager.RTC_WAKEUP,
+                triggerAtMillis,
+                pendingIntent,
+            )
+        }
     }
 
     /**

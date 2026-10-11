@@ -53,8 +53,8 @@ Each of these exists exactly once. A second copy is a bug.
 | `DependencyCycleCheck` | `domain/logic/validation/CycleChecks.kt` | Direct and transitive task dependency cycle detection (DFS) | 3 | Built |
 | `ParentCycleCheck` | `domain/logic/validation/CycleChecks.kt` | Subtask nesting cycle detection (DFS) | 3 | Built |
 | `NlpParser` | `domain/nlp/NlpParser.kt` | Quick Add text to structured fields | 7 | Planned |
-| `RecurrenceEngine` | `domain/recurrence/RecurrenceEngine.kt` | Next occurrence, fixed and after-completion | 11 | Planned |
-| `SchedulingTransitions` | `domain/scheduling/SchedulingTransitions.kt` | The 27-row bucket/waiting transition table | 11 | Planned |
+| `RecurrenceEngine` | `domain/logic/recurrence/RecurrenceEngine.kt` | Next occurrence, fixed and after-completion, RFC 5545 | 11 | Built |
+| `SchedulingTransitions` | `domain/logic/scheduling/SchedulingTransitions.kt` | The 27-row bucket/waiting transition table (ADR-0010) | 11 | Built |
 | `DayPlanLayout` | `domain/dayplan/DayPlanLayout.kt` | Snap, clamp, lane assignment for overlapping blocks | 13 | Planned |
 | `DeterministicIds` | `domain/id/IdGenerator.kt` | RFC 4122 UUIDv5 for default workspace/area and recurring occurrences | 3 | Built |
 | `AppResult`, `AppError` | `domain/result/AppResult.kt` | Typed Result error model for all fallible operations | 4 | Built |
@@ -71,14 +71,13 @@ Each of these exists exactly once. A second copy is a bug.
 | `ProjectService` | `service/project/ProjectService.kt` | Project lifecycle and section use cases | 4 | Built |
 | `AreaService` | `service/area/AreaService.kt` | Area lifecycle use cases | 4 | Built |
 | `TagService` | `service/tag/TagService.kt` | Tag management use cases | 4 | Built |
-| `ReminderService` | `service/reminder/ReminderService.kt` | Reminder scheduling and alarm reconciliation | 4 | Built |
+| `ReminderService` | `service/reminder/ReminderService.kt` | Reminder scheduling, next alarm arming, post-commit reconciliation | 11 | Built |
 | `PomodoroService` | `service/pomodoro/PomodoroService.kt` | Pomodoro session tracking use cases | 4 | Built |
 | `GoalService` | `service/goal/GoalService.kt` | Goal tracking use cases | 4 | Built |
 | `SettingsService` | `service/settings/SettingsService.kt` | App preferences use cases | 4 | Built |
 | `SearchService` | `service/search/SearchService.kt` | FTS5 task search use cases | 4 | Built |
 | `ExportService` | `service/export/ExportService.kt` | JSON/CSV export orchestration | 4 | Built |
-| `TaskSchedulingService` | `service/task/` | Sole writer of scheduling fields | 11 | Planned |
-| `ReminderScheduler` | `service/reminder/` | Arms next due alarm; reconciles after writes | 11 | Planned |
+| `TaskSchedulingService` | `service/task/TaskSchedulingService.kt` | Sole writer of scheduling fields (Rule 15), bucket moves, waiting, recurrence | 11 | Built |
 | `UndoManager` | `service/undo/UndoManager.kt` | Service-level 100-entry undo stack and Snackbar bridge | 4 | Built |
 | `ImportService` | `service/data/` | JSON/CSV import round trip | 17 | Planned |
 | `BackupService` | `service/data/` | Daily ZIP backup | 17 | Planned |
@@ -104,6 +103,10 @@ Record query methods here as they are written, grouped by repository, so a new q
 | `TaskRepository` | `observeSubtasksSlim(parentId)` | `Flow<List<SlimTask>>` | 3 | Built |
 | `TaskRepository` | `observeMyDaySlim(date)` | `Flow<List<SlimTask>>` | 3 | Built |
 | `TaskRepository` | `observeTasksByTagSlim(tagId)` | `Flow<List<SlimTask>>` | 9 | Built |
+| `TaskRepository` | `observeBucketSlim(bucket)` | `Flow<List<SlimTask>>` | 11 | Built |
+| `TaskRepository` | `observeWaitingSlim()` | `Flow<List<SlimTask>>` | 11 | Built |
+| `TaskRepository` | `getWaitingTasks()` | `List<TaskEntity>` | 11 | Built |
+| `TaskRepository` | `getTasksByBucket(bucket)` | `List<TaskEntity>` | 11 | Built |
 | `TaskRepository` | `observeTrashSlim()` | `Flow<List<SlimTask>>` | 3 | Built |
 | `TaskRepository` | `observeActiveTaskCount()` | `Flow<Int>` | 3 | Built |
 | `TaskRepository` | `saveTask(task)` | `TaskEntity` | 3 | Built |
@@ -117,7 +120,7 @@ Record query methods here as they are written, grouped by repository, so a new q
 | `TagRepository` | `observeAll()`, `getById(id)`, `getByName(name)`, `observeTagsForTask(taskId)`, `getTagsForTasks(taskIds)`, `observeTagsForTasks(taskIds)`, `observeChildTags(parentId)`, `getChildren(parentId)`, `getTaskCountForTag(tagId)`, `getTasksForTag(tagId)`, `save(tag)`, `delete(id)`, `addTagToTask(taskId, tagId)`, `removeTagFromTask(taskId, tagId)`, `repointTasks(fromTagId, toTagId)`, `repointChildTags(oldParentId, newParentId)` | Tag queries, hierarchy & batch loading | 9 | Built |
 | `DependencyRepository` | `getDependenciesForTask(taskId)`, `getAllDependencyPairs()`, `observeAllDependencyPairs()`, `addDependency(...)`, `removeDependency(...)` | Dependency queries & cycles | 10 | Built |
 | `MilestoneRepository` | `observeByProject(projectId)`, `getByProject(projectId)`, `getById(id)`, `save(milestone)`, `delete(id)` | Milestone queries | 10 | Built |
-| `ReminderRepository` | `observeByTask(taskId)`, `getById(id)`, `save(reminder)`, `delete(id)` | Reminder queries | 3 | Built |
+| `ReminderRepository` | `observeByTask(taskId)`, `getById(id)`, `getPendingReminders(nowIso)`, `getDeviceState(reminderId)`, `markTriggered(id, atIso)`, `snoozeReminder(id, newIso)`, `save(reminder)`, `delete(id)` | Reminder queries & device state | 11 | Built |
 | `AttachmentRepository` | `observeByTask(taskId)`, `getById(id)`, `save(attachment)`, `delete(id)` | Attachment queries | 3 | Built |
 | `CommentRepository` | `observeByTask(taskId)`, `save(comment)` | Comment queries | 3 | Built |
 | `PomodoroRepository` | `observeAll()`, `observeByTask(taskId)`, `save(session)` | Pomodoro queries | 3 | Built |
@@ -169,6 +172,8 @@ Record query methods here as they are written, grouped by repository, so a new q
 | `ProjectMilestonesSheet` | Milestone management modal sheet | 10 | Built |
 | `ProjectDependenciesSheet` | Task dependencies manager with circular dependency cycle error card | 10 | Built |
 | `ProjectService` | Project lifecycle, section CRUD, milestone CRUD, dependency cycle detection, CSV export | 10 | Built |
+| `BucketTasksScreen` | Dedicated smart list screen for Anytime, Someday, and Waiting For lists | 11 | Built |
+| `BatteryOptimizationGuidanceScreen` | Vendor battery-optimization guidance and system settings deep links | 11 | Built |
 
 ## Modifiers and Compose Helpers
 
@@ -183,7 +188,10 @@ Record query methods here as they are written, grouped by repository, so a new q
 | Name | Purpose | Phase | Status |
 |---|---|---|---|
 | `TrashPurgeWorker` | Daily 30-day trash purge background worker | 5 | Built |
-| `AlarmGateway` | Wraps `AlarmManager` for testability | 11 | Planned |
+| `AlarmScheduler` | Wraps `AlarmManager` for single next-alarm arming with fallback | 11 | Built |
+| `ReminderActionReceiver` | Broadcast receiver for notification actions (Complete, Snooze) | 11 | Built |
+| `BootReceiver` | Re-arms alarms on device boot or time changes | 11 | Built |
+| `AlarmReceiver` | Dispatches reminder notifications when AlarmManager alarms fire | 11 | Built |
 | `OS11NotificationChannels` | Channel definitions and initialization | 9 | Built |
 | `NotificationPlatformDispatcher` | Platform system notification dispatcher with permission checks | 9 | Built |
 | `HapticsGateway` | Wraps `Vibrator`/`HapticFeedback` | 2 | Planned |

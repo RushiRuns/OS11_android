@@ -116,5 +116,15 @@ fun OS11NavHost(
                 onNavigateBack = { navController.popBackStack() },
             )
         }
+        composable<OS11Route.BatteryGuidance> {
+            com.os11.app.ui.features.settings.BatteryOptimizationGuidanceScreen(
+                onNavigateBack = { navController.popBackStack() },
+            )
+        }
+        composable<OS11Route.BucketList> {
+            com.os11.app.ui.features.smartlists.BucketTasksScreen(
+                onNavigateBack = { navController.popBackStack() },
+            )
+        }
     }
 }

@@ -1,0 +1,83 @@
+[
+  {
+    "id": "daily_fixed",
+    "rrule": "FREQ=DAILY",
+    "basis": "fixed",
+    "currentDueDate": "2026-10-10",
+    "completedDate": "2026-10-10",
+    "sourceTaskId": "task-uuid-1",
+    "expectedNextDueDate": "2026-10-11"
+  },
+  {
+    "id": "daily_interval_2",
+    "rrule": "FREQ=DAILY;INTERVAL=2",
+    "basis": "fixed",
+    "currentDueDate": "2026-10-10",
+    "completedDate": "2026-10-10",
+    "sourceTaskId": "task-uuid-1",
+    "expectedNextDueDate": "2026-10-12"
+  },
+  {
+    "id": "daily_completed_late_fixed",
+    "rrule": "FREQ=DAILY",
+    "basis": "fixed",
+    "currentDueDate": "2026-10-05",
+    "completedDate": "2026-10-10",
+    "sourceTaskId": "task-uuid-1",
+    "expectedNextDueDate": "2026-10-06"
+  },
+  {
+    "id": "daily_completed_late_after_completion",
+    "rrule": "FREQ=DAILY",
+    "basis": "after_completion",
+    "currentDueDate": "2026-10-05",
+    "completedDate": "2026-10-10",
+    "sourceTaskId": "task-uuid-1",
+    "expectedNextDueDate": "2026-10-11"
+  },
+  {
+    "id": "weekly_fixed",
+    "rrule": "FREQ=WEEKLY",
+    "basis": "fixed",
+    "currentDueDate": "2026-10-10",
+    "completedDate": "2026-10-10",
+    "sourceTaskId": "task-uuid-2",
+    "expectedNextDueDate": "2026-10-17"
+  },
+  {
+    "id": "weekly_byday_mo_we_fr",
+    "rrule": "FREQ=WEEKLY;BYDAY=MO,WE,FR",
+    "basis": "fixed",
+    "currentDueDate": "2026-10-12",
+    "completedDate": "2026-10-12",
+    "sourceTaskId": "task-uuid-2",
+    "expectedNextDueDate": "2026-10-14"
+  },
+  {
+    "id": "weekly_interval_2",
+    "rrule": "FREQ=WEEKLY;INTERVAL=2",
+    "basis": "fixed",
+    "currentDueDate": "2026-10-10",
+    "completedDate": "2026-10-10",
+    "sourceTaskId": "task-uuid-2",
+    "expectedNextDueDate": "2026-10-24"
+  },
+  {
+    "id": "monthly_fixed",
+    "rrule": "FREQ=MONTHLY",
+    "basis": "fixed",
+    "currentDueDate": "2026-10-15",
+    "completedDate": "2026-10-15",
+    "sourceTaskId": "task-uuid-3",
+    "expectedNextDueDate": "2026-11-15"
+  },
+  {
+    "id": "monthly_after_completion",
+    "rrule": "FREQ=MONTHLY",
+    "basis": "after_completion",
+    "currentDueDate": "2026-10-01",
+    "completedDate": "2026-10-20",
+    "sourceTaskId": "task-uuid-3",
+    "expectedNextDueDate": "2026-11-20"
+  }
+]

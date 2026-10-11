@@ -178,17 +178,17 @@ fun BrowseScreen(
                 ModuleBadgeChip(
                     title = "Anytime",
                     count = state.counts.anytimeCount,
-                    onClick = { },
+                    onClick = { onNavigate(OS11Route.BucketList("anytime")) },
                 )
                 ModuleBadgeChip(
                     title = "Someday",
                     count = state.counts.somedayCount,
-                    onClick = { },
+                    onClick = { onNavigate(OS11Route.BucketList("someday")) },
                 )
                 ModuleBadgeChip(
                     title = "Waiting For",
                     count = state.counts.waitingForCount,
-                    onClick = { },
+                    onClick = { onNavigate(OS11Route.BucketList("waiting")) },
                 )
             }
         }

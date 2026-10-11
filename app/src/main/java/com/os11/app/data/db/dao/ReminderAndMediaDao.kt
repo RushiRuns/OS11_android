@@ -34,6 +34,17 @@ internal interface ReminderDao {
     )
     suspend fun getPendingReminders(): List<ReminderEntity>
 
+    @Query(
+        """
+        SELECT r.* FROM reminders r
+        LEFT JOIN reminder_device_state rds ON rds.reminder_id = r.id
+        WHERE (rds.is_triggered IS NULL OR rds.is_triggered = 0)
+           OR (rds.snoozed_until IS NOT NULL AND rds.snoozed_until > :nowIso)
+        ORDER BY CASE WHEN rds.snoozed_until IS NOT NULL THEN rds.snoozed_until ELSE r.remind_at END ASC
+        """,
+    )
+    suspend fun getPendingReminders(nowIso: String): List<ReminderEntity>
+
     @Insert(onConflict = OnConflictStrategy.REPLACE)
     suspend fun upsert(reminder: ReminderEntity)
 

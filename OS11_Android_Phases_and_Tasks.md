@@ -258,17 +258,17 @@ The largest foundation phase. Sync readiness is built here or never cheaply.
 
 Hardest platform phase. Start with the 27-row table.
 
-- [ ] **Get the 27-row scheduling transition table from desktop** (ADR-0010). Convert to shared JSON vectors
-- [ ] `TaskSchedulingService`: the only writer of `bucket`, `waiting_*`, `follow_up_*`; all vectors pass
-- [ ] Recurrence in `:domain` over lib-recur: fixed vs after-completion, skip occurrence, deterministic occurrence IDs (UUIDv5)
-- [ ] Shared recurrence vectors from desktop; divergences recorded
-- [ ] Reminders: multiple per task, `AlarmManager.setExactAndAllowWhileIdle`, arm only the next due reminder, reconcile after every write via the post-commit hook
-- [ ] `SCHEDULE_EXACT_ALARM` permission flow with a clear fallback when denied
-- [ ] Boot receiver re-arms; time-zone and clock-change receivers re-arm
-- [ ] Notification actions: Complete, Snooze 15 min, 1 hour, tomorrow morning
-- [ ] Waiting For: stale days, follow-up notifications at `follow_up_notify_time`
-- [ ] Per-device reminder state in `reminder_device_state`, never synced
-- [ ] Vendor battery-optimization guidance screen (informed by spike S-8)
+- [x] **Get the 27-row scheduling transition table from desktop** (ADR-0010). Convert to shared JSON vectors
+- [x] `TaskSchedulingService`: the only writer of `bucket`, `waiting_*`, `follow_up_*`; all vectors pass
+- [x] Recurrence in `:domain` over lib-recur: fixed vs after-completion, skip occurrence, deterministic occurrence IDs (UUIDv5)
+- [x] Shared recurrence vectors from desktop; divergences recorded
+- [x] Reminders: multiple per task, `AlarmManager.setExactAndAllowWhileIdle`, arm only the next due reminder, reconcile after every write via the post-commit hook
+- [x] `SCHEDULE_EXACT_ALARM` permission flow with a clear fallback when denied
+- [x] Boot receiver re-arms; time-zone and clock-change receivers re-arm
+- [x] Notification actions: Complete, Snooze 15 min, 1 hour, tomorrow morning
+- [x] Waiting For: stale days, follow-up notifications at `follow_up_notify_time`
+- [x] Per-device reminder state in `reminder_device_state`, never synced
+- [x] Vendor battery-optimization guidance screen (informed by spike S-8)
 
 **Done when:** a reminder survives a reboot and an overnight idle on the reference device, and all scheduling vectors pass.
 

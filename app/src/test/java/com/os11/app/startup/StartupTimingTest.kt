@@ -69,6 +69,7 @@ class StartupTimingTest {
         val reminderService = ReminderService(
             reminderRepository = reminderRepository,
             alarmScheduler = alarmScheduler,
+            trackedWriter = trackedWriter,
             clock = testClock,
             idGenerator = idGenerator,
             ioDispatcher = Dispatchers.Unconfined,

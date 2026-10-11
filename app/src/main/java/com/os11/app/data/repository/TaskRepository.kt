@@ -36,6 +36,10 @@ interface TaskRepository {
     suspend fun getSubtasks(parentId: String): List<TaskEntity>
     suspend fun getTasksBySection(sectionId: String): List<TaskEntity>
     suspend fun getIncompleteMyDayBefore(today: String): List<TaskEntity>
+    fun observeBucketSlim(bucket: String): Flow<List<SlimTask>>
+    fun observeWaitingSlim(): Flow<List<SlimTask>>
+    suspend fun getWaitingTasks(): List<TaskEntity>
+    suspend fun getTasksByBucket(bucket: String): List<TaskEntity>
 }
 
 @Suppress("TooManyFunctions")
@@ -114,4 +118,12 @@ internal class TaskRepositoryImpl(
     override suspend fun getSubtasks(parentId: String): List<TaskEntity> = taskDao.getSubtasks(parentId)
 
     override suspend fun getTasksBySection(sectionId: String): List<TaskEntity> = taskDao.getTasksBySection(sectionId)
+
+    override fun observeBucketSlim(bucket: String): Flow<List<SlimTask>> = taskDao.observeBucketSlim(bucket)
+
+    override fun observeWaitingSlim(): Flow<List<SlimTask>> = taskDao.observeWaitingSlim()
+
+    override suspend fun getWaitingTasks(): List<TaskEntity> = taskDao.getWaitingTasks()
+
+    override suspend fun getTasksByBucket(bucket: String): List<TaskEntity> = taskDao.getTasksByBucket(bucket)
 }

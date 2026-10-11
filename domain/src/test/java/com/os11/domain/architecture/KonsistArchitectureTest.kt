@@ -97,4 +97,24 @@ class KonsistArchitectureTest {
                     text.contains("Dao().enqueue")
             }
     }
+
+    @Test
+    fun only_TaskSchedulingService_writes_scheduling_guarded_fields() {
+        Konsist
+            .scopeFromProduction("app")
+            .files
+            .withPackage("com.os11.app.service..")
+            .assertFalse { file ->
+                val isScheduling = file.name.startsWith("TaskSchedulingService")
+                val text = file.text
+                !isScheduling &&
+                    (
+                        text.contains("copy(bucket =") ||
+                            text.contains("copy(waitingOn =") ||
+                            text.contains("copy(waitingSince =") ||
+                            text.contains("copy(followUpDate =") ||
+                            text.contains("copy(reviewedAt =")
+                        )
+            }
+    }
 }

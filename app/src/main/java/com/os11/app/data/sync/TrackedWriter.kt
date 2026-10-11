@@ -11,6 +11,7 @@ import com.os11.app.data.db.entities.ModuleEntity
 import com.os11.app.data.db.entities.NotificationHistoryEntity
 import com.os11.app.data.db.entities.PomodoroSessionEntity
 import com.os11.app.data.db.entities.ProjectEntity
+import com.os11.app.data.db.entities.ReminderDeviceStateEntity
 import com.os11.app.data.db.entities.ReminderEntity
 import com.os11.app.data.db.entities.SectionEntity
 import com.os11.app.data.db.entities.SettingEntity
@@ -610,6 +611,10 @@ class TrackedWriter(
 
     suspend fun writeModule(module: ModuleEntity) {
         db.moduleDao().upsert(module)
+    }
+
+    suspend fun writeReminderDeviceState(state: ReminderDeviceStateEntity) {
+        db.reminderDeviceStateDao().upsert(state)
     }
 
     suspend fun purgeTaskHistory(cutoffIso: String) {
