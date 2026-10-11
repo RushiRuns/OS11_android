@@ -27,6 +27,15 @@ class SettingsService @Inject constructor(
     fun observeEnabledModules(): Flow<List<ModuleEntity>> =
         moduleRepository.observeAll().map { modules -> modules.filter { it.isEnabled } }
 
+    fun observeModuleEnabled(name: String): Flow<Boolean> = moduleRepository.observeAll().map { modules ->
+        modules.firstOrNull {
+            it.moduleName == name || (name == "goals" && it.moduleName == "goals_habits")
+        }?.isEnabled ?: true
+    }
+
+    suspend fun isModuleEnabled(name: String): Boolean =
+        moduleRepository.isEnabled(name) || (name == "goals" && moduleRepository.isEnabled("goals_habits"))
+
     suspend fun getSetting(key: String): String? = settingsRepository.get(key)
 
     suspend fun setSetting(key: String, value: String): AppResult<Unit> = withContext(ioDispatcher) {

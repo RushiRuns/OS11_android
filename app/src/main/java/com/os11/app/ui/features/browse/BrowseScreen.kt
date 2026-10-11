@@ -171,25 +171,44 @@ fun BrowseScreen(
         }
 
         item(key = "modules_content") {
-            Row(
-                modifier = Modifier.fillMaxWidth(),
-                horizontalArrangement = Arrangement.spacedBy(spacing.s2),
-            ) {
-                ModuleBadgeChip(
-                    title = "Anytime",
-                    count = state.counts.anytimeCount,
-                    onClick = { onNavigate(OS11Route.BucketList("anytime")) },
-                )
-                ModuleBadgeChip(
-                    title = "Someday",
-                    count = state.counts.somedayCount,
-                    onClick = { onNavigate(OS11Route.BucketList("someday")) },
-                )
-                ModuleBadgeChip(
-                    title = "Waiting For",
-                    count = state.counts.waitingForCount,
-                    onClick = { onNavigate(OS11Route.BucketList("waiting")) },
-                )
+            Column(verticalArrangement = Arrangement.spacedBy(spacing.s2)) {
+                Row(
+                    modifier = Modifier.fillMaxWidth(),
+                    horizontalArrangement = Arrangement.spacedBy(spacing.s2),
+                ) {
+                    ModuleBadgeChip(
+                        title = "Anytime",
+                        count = state.counts.anytimeCount,
+                        onClick = { onNavigate(OS11Route.BucketList("anytime")) },
+                    )
+                    ModuleBadgeChip(
+                        title = "Someday",
+                        count = state.counts.somedayCount,
+                        onClick = { onNavigate(OS11Route.BucketList("someday")) },
+                    )
+                    ModuleBadgeChip(
+                        title = "Waiting For",
+                        count = state.counts.waitingForCount,
+                        onClick = { onNavigate(OS11Route.BucketList("waiting")) },
+                    )
+                }
+                Row(
+                    modifier = Modifier.fillMaxWidth(),
+                    horizontalArrangement = Arrangement.spacedBy(spacing.s2),
+                ) {
+                    OSChip(
+                        label = "Day Plan",
+                        onClick = { onNavigate(OS11Route.DayPlan) },
+                    )
+                    OSChip(
+                        label = "Goals",
+                        onClick = { onNavigate(OS11Route.Goals) },
+                    )
+                    OSChip(
+                        label = "Pomodoro",
+                        onClick = { onNavigate(OS11Route.Pomodoro) },
+                    )
+                }
             }
         }
 

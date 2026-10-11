@@ -288,12 +288,12 @@ Hardest platform phase. Start with the 27-row table.
 
 ## PHASE 13: Day Plan and Goals (Weeks 27-28)
 
-- [ ] Day Plan page per ANDROID_VS_DESKTOP.md section 5: timeline, bottom sheet pool, select then Add to plan
-- [ ] Block move and resize with 15-minute snap, clamping, lane layout for overlaps
-- [ ] Both-or-neither write of `scheduled_start_min` / `scheduled_duration_min`
-- [ ] Clearing on leaving My Day and at rollover
-- [ ] Goals: create, link tasks and projects, progress, streaks (device-local streak counter)
-- [ ] Behind the `agenda` and `goals` module toggles
+- [x] Day Plan page per ANDROID_VS_DESKTOP.md section 5: timeline, bottom sheet pool, select then Add to plan
+- [x] Block move and resize with 15-minute snap, clamping, lane layout for overlaps
+- [x] Both-or-neither write of `scheduled_start_min` / `scheduled_duration_min`
+- [x] Clearing on leaving My Day and at rollover
+- [x] Goals: create, link tasks and projects, progress, streaks (device-local streak counter)
+- [x] Behind the `agenda` and `goals` module toggles
 
 **Done when:** a day can be planned using only the thumb, one-handed.
 

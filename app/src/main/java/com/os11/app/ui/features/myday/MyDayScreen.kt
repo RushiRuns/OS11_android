@@ -12,11 +12,13 @@ import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
+import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.outlined.KeyboardArrowRight
 import androidx.compose.material.icons.filled.Add
+import androidx.compose.material.icons.outlined.DateRange
 import androidx.compose.material.icons.outlined.KeyboardArrowDown
 import androidx.compose.material.icons.outlined.Star
 import androidx.compose.material3.ExperimentalMaterial3Api
@@ -48,7 +50,11 @@ import com.os11.app.ui.theme.OS11Theme
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
-fun MyDayScreen(modifier: Modifier = Modifier, viewModel: MyDayViewModel = hiltViewModel()) {
+fun MyDayScreen(
+    modifier: Modifier = Modifier,
+    onNavigateToDayPlan: () -> Unit = {},
+    viewModel: MyDayViewModel = hiltViewModel(),
+) {
     val state by viewModel.uiState.collectAsState()
     val colors = OS11Theme.colors
     val spacing = OS11Theme.spacing
@@ -63,7 +69,7 @@ fun MyDayScreen(modifier: Modifier = Modifier, viewModel: MyDayViewModel = hiltV
             .fillMaxSize()
             .background(colors.surfaceBase),
     ) {
-        // 1. Header: Date and Completion Summary
+        // 1. Header: Date, Agenda icon, and Completion Summary
         Column(
             modifier = Modifier
                 .fillMaxWidth()
@@ -74,10 +80,25 @@ fun MyDayScreen(modifier: Modifier = Modifier, viewModel: MyDayViewModel = hiltV
                 verticalAlignment = Alignment.CenterVertically,
                 horizontalArrangement = Arrangement.SpaceBetween,
             ) {
-                Text(
-                    text = state.logicalToday.ifEmpty { "Today" },
-                    style = type.subViewTitle.copy(color = colors.textPrimary),
-                )
+                Row(verticalAlignment = Alignment.CenterVertically) {
+                    Text(
+                        text = state.logicalToday.ifEmpty { "Today" },
+                        style = type.subViewTitle.copy(color = colors.textPrimary),
+                    )
+                    if (state.isAgendaEnabled) {
+                        Spacer(modifier = Modifier.width(spacing.s2))
+                        OSIconButton(
+                            onClick = onNavigateToDayPlan,
+                            contentDescription = "Day Plan",
+                        ) {
+                            Icon(
+                                imageVector = Icons.Outlined.DateRange,
+                                contentDescription = null,
+                                tint = colors.accent,
+                            )
+                        }
+                    }
+                }
                 if (state.totalCount > 0) {
                     Text(
                         text = "${state.completedCount} of ${state.totalCount} completed",

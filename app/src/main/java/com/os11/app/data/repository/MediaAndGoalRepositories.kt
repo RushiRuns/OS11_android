@@ -4,6 +4,7 @@ import com.os11.app.data.db.OS11Database
 import com.os11.app.data.db.entities.AttachmentEntity
 import com.os11.app.data.db.entities.CommentEntity
 import com.os11.app.data.db.entities.GoalEntity
+import com.os11.app.data.db.entities.GoalLinkEntity
 import com.os11.app.data.db.entities.PomodoroSessionEntity
 import com.os11.app.data.db.entities.ReminderDeviceStateEntity
 import com.os11.app.data.db.entities.ReminderEntity
@@ -125,6 +126,10 @@ interface GoalRepository {
     suspend fun getById(id: String): GoalEntity?
     suspend fun save(goal: GoalEntity): GoalEntity
     suspend fun delete(id: String)
+    fun observeLinksForGoal(goalId: String): Flow<List<GoalLinkEntity>>
+    fun observeAllLinks(): Flow<List<GoalLinkEntity>>
+    suspend fun addLink(goalId: String, resourceType: String, resourceId: String)
+    suspend fun removeLink(goalId: String, resourceType: String, resourceId: String)
 }
 
 internal class GoalRepositoryImpl(private val db: OS11Database, private val trackedWriter: TrackedWriter) :
@@ -136,4 +141,17 @@ internal class GoalRepositoryImpl(private val db: OS11Database, private val trac
     override suspend fun save(goal: GoalEntity): GoalEntity = trackedWriter.writeGoal(goal)
 
     override suspend fun delete(id: String) = trackedWriter.deleteGoal(id)
+
+    override fun observeLinksForGoal(goalId: String): Flow<List<GoalLinkEntity>> =
+        db.goalLinkDao().observeByGoal(goalId)
+
+    override fun observeAllLinks(): Flow<List<GoalLinkEntity>> = db.goalLinkDao().observeAll()
+
+    override suspend fun addLink(goalId: String, resourceType: String, resourceId: String) {
+        trackedWriter.writeGoalLink(GoalLinkEntity(goalId, resourceType, resourceId))
+    }
+
+    override suspend fun removeLink(goalId: String, resourceType: String, resourceId: String) {
+        trackedWriter.deleteGoalLink(goalId, resourceType, resourceId)
+    }
 }

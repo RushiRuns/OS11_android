@@ -10,6 +10,9 @@ sealed interface OS11Route {
     data object MyDay : OS11Route
 
     @Serializable
+    data object DayPlan : OS11Route
+
+    @Serializable
     data object Inbox : OS11Route
 
     @Serializable

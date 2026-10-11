@@ -115,6 +115,9 @@ object TaskTreeFlattener {
             bucket = task.bucket,
             waitingOn = task.waitingOn,
             followUpDate = task.followUpDate,
+            estimatedMinutes = task.estimatedMinutes,
+            scheduledStartMin = task.scheduledStartMin,
+            scheduledDurationMin = task.scheduledDurationMin,
         )
     }
 }

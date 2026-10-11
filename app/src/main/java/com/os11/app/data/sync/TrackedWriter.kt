@@ -6,6 +6,7 @@ import com.os11.app.data.db.entities.AreaEntity
 import com.os11.app.data.db.entities.AttachmentEntity
 import com.os11.app.data.db.entities.CommentEntity
 import com.os11.app.data.db.entities.GoalEntity
+import com.os11.app.data.db.entities.GoalLinkEntity
 import com.os11.app.data.db.entities.MilestoneEntity
 import com.os11.app.data.db.entities.ModuleEntity
 import com.os11.app.data.db.entities.NotificationHistoryEntity
@@ -570,6 +571,19 @@ class TrackedWriter(
             pruneOutboxIfNeeded()
         }
         notifyCommitted("goals", goalId, Operation.DELETE)
+    }
+
+    suspend fun writeGoalLink(link: GoalLinkEntity): GoalLinkEntity {
+        db.withTransaction {
+            db.goalLinkDao().upsert(link)
+        }
+        return link
+    }
+
+    suspend fun deleteGoalLink(goalId: String, type: String, resourceId: String) {
+        db.withTransaction {
+            db.goalLinkDao().delete(goalId, type, resourceId)
+        }
     }
 
     suspend fun writeSetting(key: String, value: String) {

@@ -38,6 +38,9 @@ data class TaskUiModel(
     val bucket: String? = null,
     val waitingOn: String? = null,
     val followUpDate: String? = null,
+    val estimatedMinutes: Int? = null,
+    val scheduledStartMin: Int? = null,
+    val scheduledDurationMin: Int? = null,
 ) {
     val hasSecondLine: Boolean
         get() = formattedDueDate != null ||

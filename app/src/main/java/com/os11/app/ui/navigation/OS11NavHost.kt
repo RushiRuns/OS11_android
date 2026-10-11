@@ -8,6 +8,7 @@ import androidx.navigation.compose.composable
 import com.os11.app.ui.features.area.AreaOverviewScreen
 import com.os11.app.ui.features.browse.BrowseScreen
 import com.os11.app.ui.features.dashboard.DashboardScreen
+import com.os11.app.ui.features.dayplan.DayPlanScreen
 import com.os11.app.ui.features.gallery.ComponentGalleryScreen
 import com.os11.app.ui.features.goals.GoalsScreen
 import com.os11.app.ui.features.inbox.InboxScreen
@@ -36,7 +37,14 @@ fun OS11NavHost(
         modifier = modifier,
     ) {
         composable<OS11Route.MyDay> {
-            MyDayScreen()
+            MyDayScreen(
+                onNavigateToDayPlan = { navController.navigate(OS11Route.DayPlan) },
+            )
+        }
+        composable<OS11Route.DayPlan> {
+            DayPlanScreen(
+                onNavigateBack = { navController.popBackStack() },
+            )
         }
         composable<OS11Route.Inbox> {
             InboxScreen()

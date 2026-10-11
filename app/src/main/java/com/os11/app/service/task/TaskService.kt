@@ -135,15 +135,26 @@ class TaskService @Inject constructor(
             val existing = taskRepository.getById(taskId)
                 ?: return@withContext AppResult.err(AppError.NotFound)
             val previousDate = existing.myDayDate
+            val previousStart = existing.scheduledStartMin
+            val previousDuration = existing.scheduledDurationMin
             val updated = existing.copy(
                 myDayDate = null,
+                scheduledStartMin = null,
+                scheduledDurationMin = null,
                 updatedAt = clock.nowIso(),
             )
             taskRepository.saveTask(updated)
             val token = undoManager.registerUndo("Removed from My Day") {
                 val current = taskRepository.getById(taskId)
                 if (current != null) {
-                    taskRepository.saveTask(current.copy(myDayDate = previousDate, updatedAt = clock.nowIso()))
+                    taskRepository.saveTask(
+                        current.copy(
+                            myDayDate = previousDate,
+                            scheduledStartMin = previousStart,
+                            scheduledDurationMin = previousDuration,
+                            updatedAt = clock.nowIso(),
+                        ),
+                    )
                 }
                 AppResult.ok(Unit)
             }
@@ -168,6 +179,8 @@ class TaskService @Inject constructor(
                     taskRepository.saveTask(
                         task.copy(
                             myDayDate = targetDate,
+                            scheduledStartMin = null,
+                            scheduledDurationMin = null,
                             updatedAt = nowIso,
                         ),
                     )
@@ -179,6 +192,118 @@ class TaskService @Inject constructor(
                 AppResult.err(AppError.Unexpected(e))
             }
         }
+
+    suspend fun scheduleTimeBlock(taskId: String, startMin: Int, durationMin: Int): AppResult<Unit> =
+        withContext(ioDispatcher) {
+            try {
+                val task = taskRepository.getById(taskId) ?: return@withContext AppResult.err(AppError.NotFound)
+                val validationErrors = TaskValidation.validate(
+                    TaskValidationInput(
+                        title = task.title,
+                        scheduledStartMin = startMin,
+                        scheduledDurationMin = durationMin,
+                    ),
+                )
+                if (validationErrors.isNotEmpty()) {
+                    return@withContext AppResult.err(AppError.Validation("schedule", validationErrors.first().message))
+                }
+
+                val updated = task.copy(
+                    myDayDate = task.myDayDate ?: clock.today(),
+                    scheduledStartMin = startMin,
+                    scheduledDurationMin = durationMin,
+                    updatedAt = clock.nowIso(),
+                )
+                taskRepository.saveTask(updated)
+                AppResult.ok(Unit)
+            } catch (e: CancellationException) {
+                throw e
+            } catch (e: Exception) {
+                AppResult.err(AppError.Unexpected(e))
+            }
+        }
+
+    suspend fun removeScheduledTimeBlock(taskId: String): AppResult<Unit> = withContext(ioDispatcher) {
+        try {
+            val task = taskRepository.getById(taskId) ?: return@withContext AppResult.err(AppError.NotFound)
+            val updated = task.copy(
+                scheduledStartMin = null,
+                scheduledDurationMin = null,
+                updatedAt = clock.nowIso(),
+            )
+            taskRepository.saveTask(updated)
+            AppResult.ok(Unit)
+        } catch (e: CancellationException) {
+            throw e
+        } catch (e: Exception) {
+            AppResult.err(AppError.Unexpected(e))
+        }
+    }
+
+    suspend fun addTasksToDayPlan(taskIds: List<String>, dayStartMin: Int = DEFAULT_DAY_START_MIN): AppResult<Unit> =
+        withContext(ioDispatcher) {
+            try {
+                val today = clock.today()
+                val existingMyDay = taskRepository.getIncompleteMyDayBefore(
+                    java.time.LocalDate.parse(today).plusDays(1).toString(),
+                ).filter { it.myDayDate == today }
+
+                val scheduled = existingMyDay
+                    .filter { it.scheduledStartMin != null && it.scheduledDurationMin != null }
+                    .sortedBy { it.scheduledStartMin }
+
+                var nextSlot = maxOf(0, dayStartMin)
+
+                for (taskId in taskIds) {
+                    val task = taskRepository.getById(taskId) ?: continue
+                    val rawEst = task.estimatedMinutes ?: DEFAULT_TASK_DURATION_MIN
+                    val snapped = ((rawEst + SNAP_ROUNDING_OFFSET_MIN) / SNAP_INTERVAL_MIN) * SNAP_INTERVAL_MIN
+                    val duration = snapped.coerceIn(MIN_SCHEDULE_DURATION_MIN, MAX_SCHEDULE_DURATION_MIN)
+                    val assignedSlot = findNextFreeSlot(scheduled, nextSlot, duration)
+
+                    val updated = task.copy(
+                        myDayDate = today,
+                        scheduledStartMin = assignedSlot,
+                        scheduledDurationMin = duration,
+                        updatedAt = clock.nowIso(),
+                    )
+                    taskRepository.saveTask(updated)
+                    nextSlot = assignedSlot + duration
+                }
+                AppResult.ok(Unit)
+            } catch (e: CancellationException) {
+                throw e
+            } catch (e: Exception) {
+                AppResult.err(AppError.Unexpected(e))
+            }
+        }
+
+    private fun findNextFreeSlot(scheduled: List<TaskEntity>, preferredStart: Int, duration: Int): Int {
+        var candidate = (preferredStart / SNAP_INTERVAL_MIN) * SNAP_INTERVAL_MIN
+        val maxStart = MAX_DAY_MINUTES - duration
+        while (candidate <= maxStart) {
+            val candidateEnd = candidate + duration
+            val collision = scheduled.firstOrNull { block ->
+                val blockStart = block.scheduledStartMin ?: return@firstOrNull false
+                val blockDuration = block.scheduledDurationMin ?: return@firstOrNull false
+                val blockEnd = blockStart + blockDuration
+                candidate < blockEnd && candidateEnd > blockStart
+            }
+            if (collision == null) {
+                return candidate
+            }
+            val blockStart = collision.scheduledStartMin ?: 0
+            val blockDuration = collision.scheduledDurationMin ?: 0
+            val nextCandidate = blockStart + blockDuration
+            val snappedNext = ((nextCandidate + SNAP_INTERVAL_MIN - 1) / SNAP_INTERVAL_MIN) * SNAP_INTERVAL_MIN
+            if (snappedNext <= candidate) {
+                candidate += SNAP_INTERVAL_MIN
+            } else {
+                candidate = snappedNext
+            }
+        }
+        return minOf(preferredStart, maxStart).coerceAtLeast(0)
+    }
 
     suspend fun getTaskItemById(id: String): TaskItem? = withContext(ioDispatcher) {
         taskRepository.getById(id)?.toTaskItem()
@@ -891,4 +1016,14 @@ class TaskService @Inject constructor(
                 AppResult.err(AppError.Unexpected(e))
             }
         }
+
+    companion object {
+        const val DEFAULT_DAY_START_MIN = 360
+        const val DEFAULT_TASK_DURATION_MIN = 30
+        const val MIN_SCHEDULE_DURATION_MIN = 15
+        const val MAX_SCHEDULE_DURATION_MIN = 480
+        const val MAX_DAY_MINUTES = 1440
+        const val SNAP_INTERVAL_MIN = 15
+        const val SNAP_ROUNDING_OFFSET_MIN = 7
+    }
 }

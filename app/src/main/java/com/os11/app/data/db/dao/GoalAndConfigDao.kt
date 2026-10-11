@@ -39,11 +39,17 @@ internal interface GoalLinkDao {
     @Query("SELECT * FROM goal_links WHERE goal_id = :goalId")
     fun observeByGoal(goalId: String): Flow<List<GoalLinkEntity>>
 
+    @Query("SELECT * FROM goal_links")
+    fun observeAll(): Flow<List<GoalLinkEntity>>
+
     @Insert(onConflict = OnConflictStrategy.REPLACE)
     suspend fun upsert(link: GoalLinkEntity)
 
     @Query("DELETE FROM goal_links WHERE goal_id = :goalId AND resource_type = :type AND resource_id = :resourceId")
     suspend fun delete(goalId: String, type: String, resourceId: String)
+
+    @Query("DELETE FROM goal_links WHERE goal_id = :goalId")
+    suspend fun deleteByGoal(goalId: String)
 }
 
 @Dao

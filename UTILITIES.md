@@ -177,6 +177,10 @@ Record query methods here as they are written, grouped by repository, so a new q
 | `PomodoroScreen` | Pomodoro screen with ring gauge, linked task card, session dots, settings & task pickers | 12 | Built |
 | `PomodoroPill` | In-app persistent pill bar indicating active Pomodoro status & remaining time | 12 | Built |
 | `PomodoroService` | Exact alarm & timestamp-derived Pomodoro timer service with persistence & history | 12 | Built |
+| `DayPlanScreen` | Vertical timeline (80dp/hr), side-by-side lanes, unscheduled pool sheet, thumb quick-adjust sheet | 13 | Built |
+| `DayPlanLaneCalculator` | Interval graph coloring algorithm assigning overlapping day plan blocks to concurrent lanes | 13 | Built |
+| `GoalsScreen` | Goals cards with streak pills, progress bars, one-thumb quick progress logging, resource pickers | 13 | Built |
+| `GoalService` | Goal CRUD, device-local streak tracking (same day/consecutive/reset), task and project linking | 13 | Built |
 
 ## Modifiers and Compose Helpers
 

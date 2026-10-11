@@ -32,6 +32,7 @@ data class MyDayUiState(
     val uncompletedYesterdayTasks: List<TaskItem> = emptyList(),
     val showRolloverSheet: Boolean = false,
     val isSuggestionsExpanded: Boolean = false,
+    val isAgendaEnabled: Boolean = true,
     val isLoading: Boolean = false,
 )
 
@@ -71,6 +72,7 @@ class MyDayViewModel @Inject constructor(
         val suggestionsRaw: List<TaskItem>,
         val areas: List<com.os11.app.service.area.AreaItem>,
         val projects: List<com.os11.app.service.project.ProjectItem>,
+        val isAgendaEnabled: Boolean = true,
     )
 
     private val areasFlow = areaService.observeAreaItems(workspaceId)
@@ -81,8 +83,9 @@ class MyDayViewModel @Inject constructor(
         taskService.observeMyDaySuggestions(_logicalToday.value),
         areasFlow,
         projectsFlow,
-    ) { myDayRaw, suggestionsRaw, areas, projects ->
-        MyDayTaskData(myDayRaw, suggestionsRaw, areas, projects)
+        settingsService.observeModuleEnabled("agenda"),
+    ) { myDayRaw, suggestionsRaw, areas, projects, isAgenda ->
+        MyDayTaskData(myDayRaw, suggestionsRaw, areas, projects, isAgenda)
     }
 
     val uiState: StateFlow<MyDayUiState> = combine(
@@ -121,6 +124,7 @@ class MyDayViewModel @Inject constructor(
             uncompletedYesterdayTasks = uncompletedYesterday,
             showRolloverSheet = showRollover,
             isSuggestionsExpanded = isExpanded,
+            isAgendaEnabled = data.isAgendaEnabled,
             isLoading = false,
         )
     }.stateIn(
