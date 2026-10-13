@@ -14,11 +14,15 @@ import com.os11.domain.result.onSuccess
 import com.os11.domain.time.Clock
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.collections.immutable.toImmutableList
+import kotlinx.coroutines.ExperimentalCoroutinesApi
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.SharingStarted
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.flow.combine
+import kotlinx.coroutines.flow.flatMapLatest
+import android.util.Log // FLOWDBG
+import kotlinx.coroutines.flow.onEach // FLOWDBG
 import kotlinx.coroutines.flow.stateIn
 import kotlinx.coroutines.launch
 import javax.inject.Inject
@@ -78,14 +82,17 @@ class MyDayViewModel @Inject constructor(
     private val areasFlow = areaService.observeAreaItems(workspaceId)
     private val projectsFlow = projectService.observeProjectItems(workspaceId)
 
-    private val taskDataFlow = combine(
-        taskService.observeMyDayTasks(_logicalToday.value),
-        taskService.observeMyDaySuggestions(_logicalToday.value),
-        areasFlow,
-        projectsFlow,
-        settingsService.observeModuleEnabled("agenda"),
-    ) { myDayRaw, suggestionsRaw, areas, projects, isAgenda ->
-        MyDayTaskData(myDayRaw, suggestionsRaw, areas, projects, isAgenda)
+    @OptIn(ExperimentalCoroutinesApi::class)
+    private val taskDataFlow = _logicalToday.flatMapLatest { today ->
+        combine(
+            taskService.observeMyDayTasks(today),
+            taskService.observeMyDaySuggestions(today),
+            areasFlow,
+            projectsFlow,
+            settingsService.observeModuleEnabled("agenda"),
+        ) { myDayRaw, suggestionsRaw, areas, projects, isAgenda ->
+            MyDayTaskData(myDayRaw, suggestionsRaw, areas, projects, isAgenda)
+        }
     }
 
     val uiState: StateFlow<MyDayUiState> = combine(
@@ -127,7 +134,9 @@ class MyDayViewModel @Inject constructor(
             isAgendaEnabled = data.isAgendaEnabled,
             isLoading = false,
         )
-    }.stateIn(
+    }
+        .onEach { Log.d("FlowDbg", "vm myday emit tasks=${it.tasks.size} sugg=${it.suggestions.size} done=${it.completedCount}") } // FLOWDBG
+        .stateIn(
         scope = viewModelScope,
         started = SharingStarted.WhileSubscribed(5_000L),
         initialValue = MyDayUiState(isLoading = true),

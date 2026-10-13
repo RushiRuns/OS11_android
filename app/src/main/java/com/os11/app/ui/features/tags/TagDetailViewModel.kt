@@ -7,6 +7,7 @@ import com.os11.app.service.tag.TagItem
 import com.os11.app.service.tag.TagService
 import com.os11.app.service.task.TaskService
 import com.os11.app.ui.features.task.TaskTreeFlattener
+import com.os11.domain.id.DeterministicIds
 import com.os11.domain.result.AppResult
 import com.os11.domain.time.Clock
 import dagger.hilt.android.lifecycle.HiltViewModel
@@ -26,6 +27,8 @@ class TagDetailViewModel @Inject constructor(
 ) : ViewModel() {
 
     val tagId: String = checkNotNull(savedStateHandle["tagId"])
+
+    private val workspaceId = DeterministicIds.defaultWorkspaceId()
 
     private val allTagsFlow = tagService.observeTagItems()
     private val tagTasksFlow = tagService.observeTasksByTag(tagId)
@@ -64,7 +67,7 @@ class TagDetailViewModel @Inject constructor(
     fun addTask(title: String) {
         if (title.isBlank()) return
         viewModelScope.launch {
-            val result = taskService.createTask(title = title.trim(), workspaceId = "default")
+            val result = taskService.createTask(title = title.trim(), workspaceId = workspaceId)
             if (result is AppResult.Ok) {
                 tagService.addTagToTask(result.value.id, tagId)
             }

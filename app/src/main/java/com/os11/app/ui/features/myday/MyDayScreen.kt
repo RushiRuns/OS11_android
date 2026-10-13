@@ -23,8 +23,10 @@ import androidx.compose.material.icons.outlined.KeyboardArrowDown
 import androidx.compose.material.icons.outlined.Star
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.Icon
+import android.util.Log // FLOWDBG
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect // FLOWDBG
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
@@ -56,6 +58,7 @@ fun MyDayScreen(
     viewModel: MyDayViewModel = hiltViewModel(),
 ) {
     val state by viewModel.uiState.collectAsState()
+    LaunchedEffect(state.tasks, state.suggestions) { Log.d("FlowDbg", "ui myday tasks=${state.tasks.size} sugg=${state.suggestions.size}") } // FLOWDBG
     val colors = OS11Theme.colors
     val spacing = OS11Theme.spacing
     val type = OS11Theme.type

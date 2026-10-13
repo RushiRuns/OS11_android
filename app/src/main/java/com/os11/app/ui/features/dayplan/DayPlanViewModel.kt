@@ -7,10 +7,12 @@ import com.os11.app.service.task.TaskItem
 import com.os11.app.service.task.TaskService
 import com.os11.domain.time.Clock
 import dagger.hilt.android.lifecycle.HiltViewModel
+import kotlinx.coroutines.ExperimentalCoroutinesApi
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.SharingStarted
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.combine
+import kotlinx.coroutines.flow.flatMapLatest
 import kotlinx.coroutines.flow.stateIn
 import kotlinx.coroutines.launch
 import javax.inject.Inject
@@ -45,12 +47,15 @@ class DayPlanViewModel @Inject constructor(
         }
     }
 
-    private val dataFlow = combine(
-        taskService.observeMyDayTasks(clock.today()),
-        dayStartMin,
-        settingsService.observeModuleEnabled("agenda"),
-    ) { tasks, startMin, isAgendaOn ->
-        Triple(tasks, startMin, isAgendaOn)
+    @OptIn(ExperimentalCoroutinesApi::class)
+    private val dataFlow = logicalToday.flatMapLatest { today ->
+        combine(
+            taskService.observeMyDayTasks(today),
+            dayStartMin,
+            settingsService.observeModuleEnabled("agenda"),
+        ) { tasks, startMin, isAgendaOn ->
+            Triple(tasks, startMin, isAgendaOn)
+        }
     }
 
     private val controlFlow = combine(

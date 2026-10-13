@@ -1,6 +1,7 @@
 package com.os11.app.ui.features.task
 
 import android.content.Context
+import android.util.Log // FLOWDBG
 import android.content.Intent
 import android.net.Uri
 import androidx.lifecycle.ViewModel
@@ -11,6 +12,7 @@ import com.os11.app.service.tag.TagItem
 import com.os11.app.service.tag.TagService
 import com.os11.app.service.task.TaskItem
 import com.os11.app.service.task.TaskService
+import com.os11.domain.id.DeterministicIds
 import com.os11.domain.result.AppResult
 import com.os11.domain.time.Clock
 import dagger.hilt.android.lifecycle.HiltViewModel
@@ -24,6 +26,7 @@ import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.flow.combine
 import kotlinx.coroutines.flow.map
+import kotlinx.coroutines.flow.onEach // FLOWDBG
 import kotlinx.coroutines.flow.stateIn
 import kotlinx.coroutines.launch
 import java.io.File
@@ -41,6 +44,8 @@ class TaskViewModel @Inject constructor(
     private val clock: Clock,
     private val attachmentService: AttachmentService? = null,
 ) : ViewModel() {
+
+    private val workspaceId = DeterministicIds.defaultWorkspaceId()
 
     private val _sortOption = MutableStateFlow(TaskSortOption.Manual)
     val sortOption: StateFlow<TaskSortOption> = _sortOption.asStateFlow()
@@ -91,7 +96,9 @@ class TaskViewModel @Inject constructor(
             tasks = sorted,
             todayIso = clock.today(),
         ).toImmutableList()
-    }.stateIn(
+    }
+        .onEach { Log.d("FlowDbg", "vm inbox emit size=${it.size}") } // FLOWDBG
+        .stateIn(
         scope = viewModelScope,
         started = SharingStarted.WhileSubscribed(5_000),
         initialValue = persistentListOf(),
@@ -105,7 +112,7 @@ class TaskViewModel @Inject constructor(
         _filterOption.value = filter
     }
 
-    fun createTask(title: String, workspaceId: String = "default") {
+    fun createTask(title: String, workspaceId: String = this.workspaceId) {
         if (title.isBlank()) return
         viewModelScope.launch {
             taskService.createTask(

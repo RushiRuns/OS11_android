@@ -1,6 +1,8 @@
 package com.os11.app.data.sync
 
-import androidx.room.withTransaction
+import android.util.Log // FLOWDBG
+import androidx.room.immediateTransaction
+import androidx.room.useWriterConnection
 import com.os11.app.data.db.OS11Database
 import com.os11.app.data.db.entities.AreaEntity
 import com.os11.app.data.db.entities.AttachmentEntity
@@ -108,7 +110,7 @@ class TrackedWriter(
     // --- Task Writes ---
 
     suspend fun writeTask(task: TaskEntity): TaskEntity {
-        val (entityId, op) = db.withTransaction {
+        val (entityId, op) = inTransaction {
             val existing = db.taskDao().getById(task.id)
             val changedFields = computeTaskChangedFields(existing, task)
             val tickHlc = hlcClock.tick()
@@ -159,7 +161,7 @@ class TrackedWriter(
     }
 
     suspend fun deleteTask(taskId: String) {
-        val (entityId, op) = db.withTransaction {
+        val (entityId, op) = inTransaction {
             val tickHlc = hlcClock.tick()
             val nowIso = clock.nowIso()
 
@@ -194,7 +196,7 @@ class TrackedWriter(
     // --- Workspace, Area, Project, Section Writes ---
 
     suspend fun writeWorkspace(workspace: WorkspaceEntity): WorkspaceEntity {
-        db.withTransaction {
+        inTransaction {
             val tickHlc = hlcClock.tick()
             db.workspaceDao().upsert(workspace)
             val payload = mapOf("name" to FieldWrite(JsonPrimitive(workspace.name), tickHlc.raw))
@@ -208,7 +210,7 @@ class TrackedWriter(
     }
 
     suspend fun writeArea(area: AreaEntity): AreaEntity {
-        db.withTransaction {
+        inTransaction {
             val tickHlc = hlcClock.tick()
             db.areaDao().upsert(area)
             val payload = mapOf(
@@ -229,7 +231,7 @@ class TrackedWriter(
     }
 
     suspend fun deleteArea(areaId: String) {
-        db.withTransaction {
+        inTransaction {
             val tickHlc = hlcClock.tick()
             val nowIso = clock.nowIso()
             db.syncTombstoneDao().upsert(SyncTombstoneEntity("areas", areaId, tickHlc.raw, nowIso))
@@ -242,7 +244,7 @@ class TrackedWriter(
     }
 
     suspend fun writeProject(project: ProjectEntity): ProjectEntity {
-        db.withTransaction {
+        inTransaction {
             val tickHlc = hlcClock.tick()
             db.projectDao().upsert(project)
             val payload = mapOf(
@@ -265,7 +267,7 @@ class TrackedWriter(
     }
 
     suspend fun deleteProject(projectId: String) {
-        db.withTransaction {
+        inTransaction {
             val tickHlc = hlcClock.tick()
             val nowIso = clock.nowIso()
             db.syncTombstoneDao().upsert(SyncTombstoneEntity("projects", projectId, tickHlc.raw, nowIso))
@@ -278,7 +280,7 @@ class TrackedWriter(
     }
 
     suspend fun writeSection(section: SectionEntity): SectionEntity {
-        db.withTransaction {
+        inTransaction {
             val tickHlc = hlcClock.tick()
             db.sectionDao().upsert(section)
             val payload = mapOf(
@@ -299,7 +301,7 @@ class TrackedWriter(
     }
 
     suspend fun deleteSection(sectionId: String) {
-        db.withTransaction {
+        inTransaction {
             val tickHlc = hlcClock.tick()
             val nowIso = clock.nowIso()
             db.syncTombstoneDao().upsert(SyncTombstoneEntity("sections", sectionId, tickHlc.raw, nowIso))
@@ -314,7 +316,7 @@ class TrackedWriter(
     // --- Tags and Dependencies ---
 
     suspend fun writeTag(tag: TagEntity): TagEntity {
-        db.withTransaction {
+        inTransaction {
             val tickHlc = hlcClock.tick()
             db.tagDao().upsert(tag)
             val payload = mapOf(
@@ -334,7 +336,7 @@ class TrackedWriter(
     }
 
     suspend fun deleteTag(tagId: String) {
-        db.withTransaction {
+        inTransaction {
             val tickHlc = hlcClock.tick()
             val nowIso = clock.nowIso()
             db.syncTombstoneDao().upsert(SyncTombstoneEntity("tags", tagId, tickHlc.raw, nowIso))
@@ -348,7 +350,7 @@ class TrackedWriter(
 
     suspend fun writeTaskTag(taskId: String, tagId: String) {
         val compositeKey = "$taskId|$tagId"
-        db.withTransaction {
+        inTransaction {
             val tickHlc = hlcClock.tick()
             db.taskTagDao().upsert(TaskTagEntity(taskId, tagId))
             enqueueOutbox("task_tags", compositeKey, Operation.UPSERT, "{}")
@@ -360,7 +362,7 @@ class TrackedWriter(
 
     suspend fun deleteTaskTag(taskId: String, tagId: String) {
         val compositeKey = "$taskId|$tagId"
-        db.withTransaction {
+        inTransaction {
             val tickHlc = hlcClock.tick()
             val nowIso = clock.nowIso()
             db.syncTombstoneDao().upsert(SyncTombstoneEntity("task_tags", compositeKey, tickHlc.raw, nowIso))
@@ -374,7 +376,7 @@ class TrackedWriter(
 
     suspend fun writeDependency(taskId: String, dependsOnId: String) {
         val compositeKey = "$taskId|$dependsOnId"
-        db.withTransaction {
+        inTransaction {
             val tickHlc = hlcClock.tick()
             db.taskDependencyDao().upsert(TaskDependencyEntity(taskId, dependsOnId))
             enqueueOutbox("task_dependencies", compositeKey, Operation.UPSERT, "{}")
@@ -386,7 +388,7 @@ class TrackedWriter(
 
     suspend fun deleteDependency(taskId: String, dependsOnId: String) {
         val compositeKey = "$taskId|$dependsOnId"
-        db.withTransaction {
+        inTransaction {
             val tickHlc = hlcClock.tick()
             val nowIso = clock.nowIso()
             db.syncTombstoneDao().upsert(SyncTombstoneEntity("task_dependencies", compositeKey, tickHlc.raw, nowIso))
@@ -399,7 +401,7 @@ class TrackedWriter(
     }
 
     suspend fun writeMilestone(milestone: MilestoneEntity): MilestoneEntity {
-        db.withTransaction {
+        inTransaction {
             val tickHlc = hlcClock.tick()
             db.milestoneDao().upsert(milestone)
             val payload = mapOf(
@@ -420,7 +422,7 @@ class TrackedWriter(
     }
 
     suspend fun deleteMilestone(milestoneId: String) {
-        db.withTransaction {
+        inTransaction {
             val tickHlc = hlcClock.tick()
             val nowIso = clock.nowIso()
             db.syncTombstoneDao().upsert(SyncTombstoneEntity("milestones", milestoneId, tickHlc.raw, nowIso))
@@ -435,7 +437,7 @@ class TrackedWriter(
     // --- Reminders ---
 
     suspend fun writeReminder(reminder: ReminderEntity): ReminderEntity {
-        db.withTransaction {
+        inTransaction {
             val tickHlc = hlcClock.tick()
             db.reminderDao().upsert(reminder)
             val payload = mapOf(
@@ -455,7 +457,7 @@ class TrackedWriter(
     }
 
     suspend fun deleteReminder(reminderId: String) {
-        db.withTransaction {
+        inTransaction {
             val tickHlc = hlcClock.tick()
             val nowIso = clock.nowIso()
             db.syncTombstoneDao().upsert(SyncTombstoneEntity("reminders", reminderId, tickHlc.raw, nowIso))
@@ -470,7 +472,7 @@ class TrackedWriter(
     // --- Attachments & Comments & Pomodoro ---
 
     suspend fun writeAttachment(attachment: AttachmentEntity): AttachmentEntity {
-        db.withTransaction {
+        inTransaction {
             val tickHlc = hlcClock.tick()
             db.attachmentDao().upsert(attachment)
             val payload = buildMap {
@@ -495,7 +497,7 @@ class TrackedWriter(
     }
 
     suspend fun deleteAttachment(attachmentId: String) {
-        db.withTransaction {
+        inTransaction {
             val tickHlc = hlcClock.tick()
             val nowIso = clock.nowIso()
             db.syncTombstoneDao().upsert(SyncTombstoneEntity("attachments", attachmentId, tickHlc.raw, nowIso))
@@ -508,7 +510,7 @@ class TrackedWriter(
     }
 
     suspend fun writeComment(comment: CommentEntity): CommentEntity {
-        db.withTransaction {
+        inTransaction {
             val tickHlc = hlcClock.tick()
             db.commentDao().upsert(comment)
             val payload = mapOf(
@@ -529,7 +531,7 @@ class TrackedWriter(
     }
 
     suspend fun writePomodoroSession(session: PomodoroSessionEntity): PomodoroSessionEntity {
-        db.withTransaction {
+        inTransaction {
             val tickHlc = hlcClock.tick()
             db.pomodoroSessionDao().upsert(session)
             val payload = mapOf(
@@ -552,7 +554,7 @@ class TrackedWriter(
     // --- Goals ---
 
     suspend fun writeGoal(goal: GoalEntity): GoalEntity {
-        db.withTransaction {
+        inTransaction {
             val tickHlc = hlcClock.tick()
             db.goalDao().upsert(goal)
             val payload = mapOf(
@@ -574,7 +576,7 @@ class TrackedWriter(
     }
 
     suspend fun deleteGoal(goalId: String) {
-        db.withTransaction {
+        inTransaction {
             val tickHlc = hlcClock.tick()
             val nowIso = clock.nowIso()
             db.syncTombstoneDao().upsert(SyncTombstoneEntity("goals", goalId, tickHlc.raw, nowIso))
@@ -587,14 +589,14 @@ class TrackedWriter(
     }
 
     suspend fun writeGoalLink(link: GoalLinkEntity): GoalLinkEntity {
-        db.withTransaction {
+        inTransaction {
             db.goalLinkDao().upsert(link)
         }
         return link
     }
 
     suspend fun deleteGoalLink(goalId: String, type: String, resourceId: String) {
-        db.withTransaction {
+        inTransaction {
             db.goalLinkDao().delete(goalId, type, resourceId)
         }
     }
@@ -602,7 +604,7 @@ class TrackedWriter(
     suspend fun writeSetting(key: String, value: String) {
         val isSynced = SYNCED_SETTINGS_ALLOWLIST.contains(key)
         if (isSynced) {
-            db.withTransaction {
+            inTransaction {
                 val tickHlc = hlcClock.tick()
                 db.settingDao().upsert(SettingEntity(key, value))
                 val payload = mapOf("value" to FieldWrite(JsonPrimitive(value), tickHlc.raw))
@@ -613,7 +615,7 @@ class TrackedWriter(
             }
             notifyCommitted("settings", key, Operation.UPSERT)
         } else {
-            db.withTransaction {
+            inTransaction {
                 db.settingDao().upsert(SettingEntity(key, value))
             }
         }
@@ -652,13 +654,13 @@ class TrackedWriter(
     }
 
     suspend fun incrementTaskPomodoroCount(taskId: String) {
-        db.withTransaction {
+        inTransaction {
             db.taskDao().incrementPomodoroCount(taskId)
         }
     }
 
     suspend fun updateTaskPomodoroCount(taskId: String, count: Int) {
-        db.withTransaction {
+        inTransaction {
             db.taskDao().updatePomodoroCount(taskId, count)
         }
     }
@@ -668,13 +670,42 @@ class TrackedWriter(
     }
 
     suspend fun writeLocalIdentity(identity: LocalIdentityEntity): LocalIdentityEntity {
-        db.withTransaction {
+        inTransaction {
             db.localIdentityDao().upsert(identity)
         }
         return identity
     }
 
     // --- Private helpers ---
+
+    /**
+     * Runs [block] in one IMMEDIATE write transaction on the driver connection.
+     *
+     * The database is built with BundledSQLiteDriver, so the legacy androidx.room.withTransaction
+     * (which calls beginTransaction() and needs a SupportSQLiteOpenHelper) throws IllegalStateException.
+     * DAO calls made inside [block] join this transaction because they share the coroutine's connection.
+     */
+    /* // FLOWDBG
+    private suspend fun <R> inTransaction(block: suspend () -> R): R =
+        db.useWriterConnection { transactor ->
+            transactor.immediateTransaction { block() }
+        }
+    */ // FLOWDBG
+    private suspend fun <R> inTransaction(block: suspend () -> R): R { // FLOWDBG
+        Log.d("FlowDbg", "tx START ${Thread.currentThread().name}") // FLOWDBG
+        val startMs = System.currentTimeMillis() // FLOWDBG
+        try { // FLOWDBG
+            val result = db.useWriterConnection { transactor -> // FLOWDBG
+                transactor.immediateTransaction { block() } // FLOWDBG
+            } // FLOWDBG
+            val elapsedMs = System.currentTimeMillis() - startMs // FLOWDBG
+            Log.d("FlowDbg", "tx END $elapsedMs") // FLOWDBG
+            return result // FLOWDBG
+        } catch (e: Throwable) { // FLOWDBG
+            Log.d("FlowDbg", "tx FAIL ${e.javaClass.name}") // FLOWDBG
+            throw e // FLOWDBG
+        } // FLOWDBG
+    } // FLOWDBG
 
     private suspend fun enqueueOutbox(entity: String, entityId: String, operation: Operation, payload: String) {
         db.syncQueueDao().enqueue(

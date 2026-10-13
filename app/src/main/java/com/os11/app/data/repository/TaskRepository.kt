@@ -7,7 +7,11 @@ import com.os11.app.data.db.entities.TaskEntity
 import com.os11.app.data.sync.TrackedWriter
 import com.os11.domain.time.Clock
 import com.os11.domain.time.SystemClock
+import android.util.Log // FLOWDBG
 import kotlinx.coroutines.flow.Flow
+import kotlinx.coroutines.flow.onCompletion // FLOWDBG
+import kotlinx.coroutines.flow.onEach // FLOWDBG
+import kotlinx.coroutines.flow.onStart // FLOWDBG
 
 @Suppress("TooManyFunctions")
 interface TaskRepository {
@@ -60,6 +64,9 @@ internal class TaskRepositoryImpl(
     override fun observeAllSlim(): Flow<List<SlimTask>> = taskDao.observeAllSlim()
 
     override fun observeInboxSlim(): Flow<List<SlimTask>> = taskDao.observeInboxSlim()
+        .onStart { Log.d("FlowDbg", "dao inbox START") } // FLOWDBG
+        .onEach { Log.d("FlowDbg", "dao inbox emit size=${it.size} completed=${it.count { t -> t.isCompleted }}") } // FLOWDBG
+        .onCompletion { Log.d("FlowDbg", "dao inbox END") } // FLOWDBG
 
     override fun observeByProjectSlim(projectId: String): Flow<List<SlimTask>> = taskDao.observeByProjectSlim(projectId)
 
@@ -68,14 +75,23 @@ internal class TaskRepositoryImpl(
     override fun observeSubtasksSlim(parentId: String): Flow<List<SlimTask>> = taskDao.observeSubtasksSlim(parentId)
 
     override fun observeMyDaySlim(date: String): Flow<List<SlimTask>> = taskDao.observeMyDaySlim(date)
+        .onStart { Log.d("FlowDbg", "dao myday START") } // FLOWDBG
+        .onEach { Log.d("FlowDbg", "dao myday emit size=${it.size} completed=${it.count { t -> t.isCompleted }}") } // FLOWDBG
+        .onCompletion { Log.d("FlowDbg", "dao myday END") } // FLOWDBG
 
     override fun observeImportantSlim(): Flow<List<SlimTask>> = taskDao.observeImportantSlim()
 
     override fun observePlannedSlim(): Flow<List<SlimTask>> = taskDao.observePlannedSlim()
 
     override fun observeCompletedSlim(): Flow<List<SlimTask>> = taskDao.observeCompletedSlim()
+        .onStart { Log.d("FlowDbg", "dao completed START") } // FLOWDBG
+        .onEach { Log.d("FlowDbg", "dao completed emit size=${it.size} completed=${it.count { t -> t.isCompleted }}") } // FLOWDBG
+        .onCompletion { Log.d("FlowDbg", "dao completed END") } // FLOWDBG
 
     override fun observeMyDaySuggestions(today: String): Flow<List<SlimTask>> = taskDao.observeMyDaySuggestions(today)
+        .onStart { Log.d("FlowDbg", "dao sugg START") } // FLOWDBG
+        .onEach { Log.d("FlowDbg", "dao sugg emit size=${it.size} completed=${it.count { t -> t.isCompleted }}") } // FLOWDBG
+        .onCompletion { Log.d("FlowDbg", "dao sugg END") } // FLOWDBG
 
     override fun observeTrashSlim(): Flow<List<SlimTask>> = taskDao.observeTrashSlim()
 

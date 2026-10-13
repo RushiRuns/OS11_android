@@ -22,9 +22,9 @@ internal interface DashboardDao {
         """
         SELECT
             COUNT(*) AS totalTasks,
-            SUM(CASE WHEN is_completed = 1 THEN 1 ELSE 0 END) AS completedTasks,
-            SUM(CASE WHEN is_completed = 0 THEN 1 ELSE 0 END) AS pendingTasks,
-            SUM(CASE WHEN is_completed = 0 AND due_date IS NOT NULL AND due_date < :today THEN 1 ELSE 0 END) AS overdueTasks
+            COALESCE(SUM(CASE WHEN is_completed = 1 THEN 1 ELSE 0 END), 0) AS completedTasks,
+            COALESCE(SUM(CASE WHEN is_completed = 0 THEN 1 ELSE 0 END), 0) AS pendingTasks,
+            COALESCE(SUM(CASE WHEN is_completed = 0 AND due_date IS NOT NULL AND due_date < :today THEN 1 ELSE 0 END), 0) AS overdueTasks
         FROM tasks
         WHERE is_trashed = 0
           AND (:startDate IS NULL OR created_at >= :startDate OR (completed_at IS NOT NULL AND completed_at >= :startDate))

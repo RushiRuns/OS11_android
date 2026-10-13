@@ -16,6 +16,7 @@ import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.flow.combine
 import kotlinx.coroutines.flow.stateIn
+import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.isActive
 import kotlinx.coroutines.launch
 import javax.inject.Inject
@@ -58,7 +59,9 @@ class PomodoroViewModel @Inject constructor(
             initialValue = emptyList(),
         )
 
-    private val _uiState = MutableStateFlow(computeUiState(pomodoroService.timerState.value))
+    private val _uiState = MutableStateFlow(
+        computeUiState(pomodoroService.timerState.value, PomodoroUiState()),
+    )
     val uiState: StateFlow<PomodoroUiState> = _uiState.asStateFlow()
 
     init {
@@ -72,7 +75,7 @@ class PomodoroViewModel @Inject constructor(
                 if (currentTimer.status == PomodoroStatus.RUNNING && remaining <= 0) {
                     pomodoroService.completeSession()
                 } else {
-                    _uiState.value = computeUiState(currentTimer)
+                    _uiState.update { computeUiState(currentTimer, it) }
                 }
             }
         }
@@ -80,7 +83,7 @@ class PomodoroViewModel @Inject constructor(
         // React to timer state changes
         viewModelScope.launch {
             pomodoroService.timerState.collect { state ->
-                _uiState.value = computeUiState(state)
+                _uiState.update { computeUiState(state, it) }
             }
         }
 
@@ -160,12 +163,12 @@ class PomodoroViewModel @Inject constructor(
         }
     }
 
-    private fun computeUiState(timer: PomodoroState): PomodoroUiState {
+    private fun computeUiState(timer: PomodoroState, currentState: PomodoroUiState): PomodoroUiState {
         val now = System.currentTimeMillis()
         val remaining = timer.remainingSeconds(now)
         val progress = timer.progress(now)
 
-        return _uiState.value.copy(
+        return currentState.copy(
             phase = timer.phase,
             status = timer.status,
             taskId = timer.taskId,

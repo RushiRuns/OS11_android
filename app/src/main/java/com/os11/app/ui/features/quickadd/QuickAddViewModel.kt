@@ -1,11 +1,13 @@
 package com.os11.app.ui.features.quickadd
 
+import android.util.Log
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.os11.app.service.area.AreaItem
 import com.os11.app.service.area.AreaService
 import com.os11.app.service.project.ProjectItem
 import com.os11.app.service.project.ProjectService
+import com.os11.app.service.settings.SettingsService
 import com.os11.app.service.tag.TagItem
 import com.os11.app.service.tag.TagService
 import com.os11.app.service.task.TaskService
@@ -40,6 +42,8 @@ data class QuickAddUiState(
     val suggestions: List<AutocompleteSuggestion> = emptyList(),
     val lastAddedTitle: String? = null,
     val isSubmitting: Boolean = false,
+    /** Set when the last submit failed. The text is kept so nothing is lost. Call onErrorShown() once shown. */
+    val errorMessage: String? = null,
 )
 
 @OptIn(kotlinx.coroutines.FlowPreview::class)
@@ -51,6 +55,7 @@ class QuickAddViewModel @Inject constructor(
     private val projectService: ProjectService,
     private val tagService: TagService,
     private val clock: Clock,
+    private val settingsService: SettingsService,
 ) : ViewModel() {
 
     private val workspaceId = DeterministicIds.defaultWorkspaceId()
@@ -60,6 +65,21 @@ class QuickAddViewModel @Inject constructor(
 
     private val lastAddedTitleState = MutableStateFlow<String?>(null)
     private val isSubmittingState = MutableStateFlow(false)
+    private val errorMessageState = MutableStateFlow<String?>(null)
+
+    private data class SubmitStatus(
+        val lastAddedTitle: String?,
+        val isSubmitting: Boolean,
+        val errorMessage: String?,
+    )
+
+    private val submitStatusFlow = combine(
+        lastAddedTitleState,
+        isSubmittingState,
+        errorMessageState,
+    ) { lastAdded, submitting, error ->
+        SubmitStatus(lastAdded, submitting, error)
+    }
 
     private val areasFlow = areaService.observeAreaItems(workspaceId)
     private val projectsFlow = projectService.observeProjectItems(workspaceId)
@@ -72,8 +92,13 @@ class QuickAddViewModel @Inject constructor(
             if (rawText.isBlank()) {
                 NlpParseResult(title = "")
             } else {
+                val today = try {
+                    settingsService.calculateLogicalToday()
+                } catch (_: Exception) {
+                    clock.today()
+                }
                 val refDate = try {
-                    LocalDate.parse(clock.today())
+                    LocalDate.parse(today)
                 } catch (_: Exception) {
                     LocalDate.now()
                 }
@@ -95,15 +120,15 @@ class QuickAddViewModel @Inject constructor(
         _text,
         parseResultFlow,
         suggestionsFlow,
-        lastAddedTitleState,
-        isSubmittingState,
-    ) { currentText, parsed, suggestions, lastAdded, submitting ->
+        submitStatusFlow,
+    ) { currentText, parsed, suggestions, status ->
         QuickAddUiState(
             text = currentText,
             parseResult = parsed,
             suggestions = suggestions,
-            lastAddedTitle = lastAdded,
-            isSubmitting = submitting,
+            lastAddedTitle = status.lastAddedTitle,
+            isSubmitting = status.isSubmitting,
+            errorMessage = status.errorMessage,
         )
     }.stateIn(
         scope = viewModelScope,
@@ -116,6 +141,13 @@ class QuickAddViewModel @Inject constructor(
         if (lastAddedTitleState.value != null) {
             lastAddedTitleState.value = null
         }
+        if (errorMessageState.value != null) {
+            errorMessageState.value = null
+        }
+    }
+
+    fun onErrorShown() {
+        errorMessageState.value = null
     }
 
     fun onVoiceResult(spokenText: String) {
@@ -150,33 +182,45 @@ class QuickAddViewModel @Inject constructor(
         val currentInput = _text.value.trim()
         if (currentInput.isEmpty() || isSubmittingState.value) return
 
-        val refDate = try {
-            LocalDate.parse(clock.today())
-        } catch (_: Exception) {
-            LocalDate.now()
-        }
-        val parsed = NlpParser.parse(currentInput, refDate)
-        val finalTitle = parsed.title.trim().ifEmpty { currentInput }
-
         viewModelScope.launch {
             isSubmittingState.value = true
             try {
-                createAndConfigureTask(parsed, finalTitle, defaultAreaId, defaultProjectId)
-                lastAddedTitleState.value = finalTitle
-                _text.value = ""
-                onSuccess?.invoke()
+                val today = try {
+                    settingsService.calculateLogicalToday()
+                } catch (_: Exception) {
+                    clock.today()
+                }
+                val refDate = try {
+                    LocalDate.parse(today)
+                } catch (_: Exception) {
+                    LocalDate.now()
+                }
+                val parsed = NlpParser.parse(currentInput, refDate)
+                val finalTitle = parsed.title.trim().ifEmpty { currentInput }
+
+                val created = createAndConfigureTask(parsed, finalTitle, defaultAreaId, defaultProjectId)
+                if (created) {
+                    lastAddedTitleState.value = finalTitle
+                    errorMessageState.value = null
+                    _text.value = ""
+                    onSuccess?.invoke()
+                } else {
+                    // Keep the typed text so the user does not lose it, and tell the UI something went wrong.
+                    errorMessageState.value = ERROR_ADD_FAILED
+                }
             } finally {
                 isSubmittingState.value = false
             }
         }
     }
 
+    /** Returns true only when the task row was actually saved. */
     private suspend fun createAndConfigureTask(
         parsed: NlpParseResult,
         title: String,
         defaultAreaId: String?,
         defaultProjectId: String?,
-    ) {
+    ): Boolean {
         val resolvedAreaId = findAreaId(parsed.areaName) ?: defaultAreaId
         val resolvedProjectId = findProjectId(parsed.projectName) ?: defaultProjectId
 
@@ -190,14 +234,25 @@ class QuickAddViewModel @Inject constructor(
             priority = parsed.priority,
         )
 
+        if (!result.isOk) {
+            Log.e(TAG, "createTask failed: $result")
+            return false
+        }
+
         result.onSuccess { task ->
             if (parsed.tags.isNotEmpty()) {
                 attachTags(task.id, parsed.tags)
             }
-            if (parsed.dueDate == clock.today()) {
-                taskService.addToMyDay(task.id, clock.today())
+            val today = try {
+                settingsService.calculateLogicalToday()
+            } catch (_: Exception) {
+                clock.today()
+            }
+            if (parsed.dueDate == today || parsed.dueDate == clock.today()) {
+                taskService.addToMyDay(task.id, today)
             }
         }
+        return true
     }
 
     private suspend fun attachTags(taskId: String, tagNames: List<String>) {
@@ -262,6 +317,8 @@ class QuickAddViewModel @Inject constructor(
     }
 
     companion object {
+        private const val TAG = "QuickAddViewModel"
+        private const val ERROR_ADD_FAILED = "Couldn't add the task. Please try again."
         private const val DEBOUNCE_MS = 150L
         private const val SUBSCRIBE_TIMEOUT_MS = 5000L
         private const val MIN_SUGGESTION_PREFIX_LEN = 1

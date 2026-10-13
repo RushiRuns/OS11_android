@@ -37,12 +37,14 @@ import com.os11.app.ui.features.task.TaskTreeFlattener
 import com.os11.app.ui.features.task.TaskUiModel
 import com.os11.app.ui.theme.OS11Theme
 import com.os11.domain.id.DeterministicIds
+import android.util.Log // FLOWDBG
 import com.os11.domain.time.Clock
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.collections.immutable.toImmutableList
 import kotlinx.coroutines.flow.SharingStarted
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.combine
+import kotlinx.coroutines.flow.onEach // FLOWDBG
 import kotlinx.coroutines.flow.stateIn
 import kotlinx.coroutines.launch
 import javax.inject.Inject
@@ -70,7 +72,9 @@ class CompletedViewModel @Inject constructor(
             projectNames = projectMap,
             areaNames = areaMap,
         ).toImmutableList()
-    }.stateIn(
+    }
+        .onEach { Log.d("FlowDbg", "vm completed emit size=${it.size}") } // FLOWDBG
+        .stateIn(
         scope = viewModelScope,
         started = SharingStarted.WhileSubscribed(5_000L),
         initialValue = emptyList(),
