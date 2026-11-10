@@ -104,7 +104,10 @@ fun PlannedScreen(modifier: Modifier = Modifier, viewModel: PlannedViewModel = h
                 state.upcomingTasks.isNotEmpty()
         }
 
-        if (!hasAnyTasks) {
+        if (state.isLoading) {
+            // The first load is still in flight: show nothing rather than flashing "Nothing scheduled".
+            Box(modifier = Modifier.fillMaxSize())
+        } else if (!hasAnyTasks) {
             Box(
                 modifier = Modifier
                     .fillMaxSize()

@@ -45,10 +45,16 @@ fun ReorderableTaskList(
     isSelectionMode: Boolean = false,
     selectedTaskIds: Set<String> = emptySet(),
     onSelectionChange: ((TaskUiModel, Boolean) -> Unit)? = null,
+    isLoading: Boolean = false,
     emptyTitle: String = "No tasks yet",
     emptyDescription: String = "Create a task to get started.",
     contentPadding: PaddingValues = PaddingValues(bottom = OS11Theme.spacing.s16),
 ) {
+    if (tasks.isEmpty() && isLoading) {
+        // The first load is still in flight: show nothing rather than flashing the empty state.
+        Box(modifier = modifier.fillMaxSize())
+        return
+    }
     if (tasks.isEmpty()) {
         Box(
             modifier = modifier

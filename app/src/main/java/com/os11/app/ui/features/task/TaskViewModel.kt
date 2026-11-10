@@ -25,6 +25,7 @@ import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.flow.combine
 import kotlinx.coroutines.flow.map
+import kotlinx.coroutines.flow.onEach
 import kotlinx.coroutines.flow.stateIn
 import kotlinx.coroutines.launch
 import java.io.File
@@ -83,6 +84,10 @@ class TaskViewModel @Inject constructor(
     private val _selectedTaskIds = MutableStateFlow<Set<String>>(emptySet())
     val selectedTaskIds: StateFlow<Set<String>> = _selectedTaskIds.asStateFlow()
 
+    // True until the first inbox list arrives, so the screen can show nothing instead of flashing "Inbox Zero".
+    private val _isInboxLoading = MutableStateFlow(true)
+    val isInboxLoading: StateFlow<Boolean> = _isInboxLoading.asStateFlow()
+
     val inboxTasks: StateFlow<ImmutableList<TaskUiModel>> = combine(
         taskService.observeInboxTasks(),
         _sortOption,
@@ -95,6 +100,7 @@ class TaskViewModel @Inject constructor(
             todayIso = clock.today(),
         ).toImmutableList()
     }
+        .onEach { _isInboxLoading.value = false }
         .stateIn(
         scope = viewModelScope,
         started = SharingStarted.WhileSubscribed(5_000),

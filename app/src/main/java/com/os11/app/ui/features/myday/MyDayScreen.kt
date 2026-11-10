@@ -215,8 +215,10 @@ fun MyDayScreen(
             }
         }
 
-        // 4. Main Tasks List
-        if (state.tasks.isEmpty()) {
+        // 4. Main Tasks List. While the first load is in flight show nothing, not the empty state.
+        if (state.isLoading) {
+            Box(modifier = Modifier.fillMaxSize())
+        } else if (state.tasks.isEmpty()) {
             Box(
                 modifier = Modifier
                     .fillMaxSize()

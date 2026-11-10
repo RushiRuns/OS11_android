@@ -57,6 +57,7 @@ fun InboxScreen(modifier: Modifier = Modifier, viewModel: TaskViewModel = hiltVi
     val spacing = OS11Theme.spacing
 
     val tasks by viewModel.inboxTasks.collectAsStateWithLifecycle()
+    val isInboxLoading by viewModel.isInboxLoading.collectAsStateWithLifecycle()
     val sortOption by viewModel.sortOption.collectAsStateWithLifecycle()
     val filterOption by viewModel.filterOption.collectAsStateWithLifecycle()
     val selectedDetail by viewModel.selectedDetailTask.collectAsStateWithLifecycle()
@@ -125,6 +126,7 @@ fun InboxScreen(modifier: Modifier = Modifier, viewModel: TaskViewModel = hiltVi
                 isSelectionMode = isSelectionMode,
                 selectedTaskIds = selectedTaskIds,
                 onSelectionChange = { task, _ -> viewModel.toggleSelect(task.id) },
+                isLoading = isInboxLoading,
                 emptyTitle = "Inbox Zero",
                 emptyDescription = "Capture everything on your mind. Move items to projects when ready.",
                 modifier = Modifier.weight(1f),
