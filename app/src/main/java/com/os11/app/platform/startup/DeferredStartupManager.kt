@@ -1,6 +1,7 @@
 package com.os11.app.platform.startup
 
 import android.content.Context
+import com.os11.app.BuildConfig
 import com.os11.app.di.IoDispatcher
 import com.os11.app.platform.shortcuts.AppShortcutManager
 import com.os11.app.platform.widgets.WidgetUpdateManager
@@ -31,6 +32,11 @@ class DeferredStartupManager @Inject constructor(
     @param:ApplicationContext private val context: Context,
     @param:IoDispatcher private val ioDispatcher: CoroutineDispatcher,
 ) {
+    // Field-injected, not a constructor parameter, so the perf-only seeder does not widen the constructor that
+    // tests build by hand. It is only touched when BuildConfig.PERF_SEED is true (the "perf" build type).
+    @Inject
+    lateinit var perfDataSeeder: PerfDataSeeder
+
     private val scope = CoroutineScope(SupervisorJob() + ioDispatcher)
     private val hasRun = AtomicBoolean(false)
 
@@ -41,6 +47,9 @@ class DeferredStartupManager @Inject constructor(
 
         scope.launch {
             try {
+                // 0. Perf build only: fill the database with realistic volume for measuring
+                if (BuildConfig.PERF_SEED) perfDataSeeder.seedIfNeeded()
+
                 // 1. Reconcile exact reminder alarms with OS AlarmManager
                 reminderService.reconcileAlarms()
                 pomodoroService.reconcileTimerAfterReboot()

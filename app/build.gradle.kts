@@ -20,6 +20,9 @@ android {
         versionName = "1.0.0"
 
         testInstrumentationRunner = "androidx.test.runner.AndroidJUnitRunner"
+
+        // Only the "perf" build type turns this on (see below). It fills the database with test data.
+        buildConfigField("boolean", "PERF_SEED", "false")
     }
 
     buildTypes {
@@ -31,6 +34,16 @@ android {
                 getDefaultProguardFile("proguard-android-optimize.txt"),
                 "proguard-rules.pro"
             )
+        }
+
+        // A release-equivalent copy that installs next to the real app (own app ID, own data) and seeds ~2,000
+        // tasks on first launch, for measuring speed with realistic volume without touching real data.
+        create("perf") {
+            initWith(getByName("release"))
+            applicationIdSuffix = ".perf"
+            versionNameSuffix = "-perf"
+            matchingFallbacks += listOf("release")
+            buildConfigField("boolean", "PERF_SEED", "true")
         }
     }
 
