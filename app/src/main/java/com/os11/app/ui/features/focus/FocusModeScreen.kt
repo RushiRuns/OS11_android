@@ -33,7 +33,6 @@ import androidx.compose.material3.Icon
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.DisposableEffect
-import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
@@ -53,6 +52,7 @@ import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.hilt.navigation.compose.hiltViewModel
+import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import com.os11.app.service.pomodoro.PomodoroPhase
 import com.os11.app.service.pomodoro.PomodoroStatus
 import com.os11.app.ui.components.OSButton
@@ -79,7 +79,7 @@ fun FocusModeScreen(
     modifier: Modifier = Modifier,
     viewModel: FocusModeViewModel = hiltViewModel(),
 ) {
-    val state by viewModel.uiState.collectAsState()
+    val state by viewModel.uiState.collectAsStateWithLifecycle()
     val colors = OS11Theme.colors
     val spacing = OS11Theme.spacing
     val type = OS11Theme.type

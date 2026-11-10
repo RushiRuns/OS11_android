@@ -25,7 +25,6 @@ import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.Icon
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
-import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
@@ -35,6 +34,7 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.semantics.Role
 import androidx.compose.ui.unit.dp
 import androidx.hilt.navigation.compose.hiltViewModel
+import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import com.os11.app.ui.components.OSButton
 import com.os11.app.ui.components.OSButtonVariant
 import com.os11.app.ui.components.OSEmptyState
@@ -55,7 +55,7 @@ fun MyDayScreen(
     onNavigateToDayPlan: () -> Unit = {},
     viewModel: MyDayViewModel = hiltViewModel(),
 ) {
-    val state by viewModel.uiState.collectAsState()
+    val state by viewModel.uiState.collectAsStateWithLifecycle()
     val colors = OS11Theme.colors
     val spacing = OS11Theme.spacing
     val type = OS11Theme.type

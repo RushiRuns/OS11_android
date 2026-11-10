@@ -36,7 +36,6 @@ import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
-import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
@@ -56,6 +55,7 @@ import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.hilt.navigation.compose.hiltViewModel
+import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import com.os11.app.service.pomodoro.PomodoroPhase
 import com.os11.app.service.pomodoro.PomodoroStatus
 import com.os11.app.service.task.TaskItem
@@ -80,8 +80,8 @@ fun PomodoroScreen(
     onNavigateToFocusMode: (() -> Unit)? = null,
     viewModel: PomodoroViewModel = hiltViewModel(),
 ) {
-    val uiState by viewModel.uiState.collectAsState()
-    val availableTasks by viewModel.availableTasks.collectAsState()
+    val uiState by viewModel.uiState.collectAsStateWithLifecycle()
+    val availableTasks by viewModel.availableTasks.collectAsStateWithLifecycle()
     var showTaskPicker by remember { mutableStateOf(false) }
     var showSettingsSheet by remember { mutableStateOf(false) }
 

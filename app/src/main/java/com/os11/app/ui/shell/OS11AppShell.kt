@@ -39,7 +39,6 @@ import androidx.compose.material3.Text
 import androidx.compose.material3.ripple
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
-import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
@@ -51,6 +50,7 @@ import androidx.compose.ui.graphics.vector.ImageVector
 import androidx.compose.ui.semantics.Role
 import androidx.compose.ui.unit.dp
 import androidx.hilt.navigation.compose.hiltViewModel
+import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import androidx.navigation.NavGraph.Companion.findStartDestination
 import androidx.navigation.compose.currentBackStackEntryAsState
 import androidx.navigation.compose.rememberNavController
@@ -122,7 +122,7 @@ fun OS11AppShell(
 
     val snackbarHostState = remember { SnackbarHostState() }
     val pomodoroViewModel: PomodoroViewModel = hiltViewModel()
-    val pomodoroTimerState by pomodoroViewModel.rawTimerState.collectAsState()
+    val pomodoroTimerState by pomodoroViewModel.rawTimerState.collectAsStateWithLifecycle()
 
     if (undoManager != null) {
         LaunchedEffect(undoManager) {
