@@ -5,6 +5,7 @@ import androidx.room.Insert
 import androidx.room.OnConflictStrategy
 import androidx.room.Query
 import androidx.room.Update
+import androidx.room.Upsert
 import com.os11.app.data.db.entities.MilestoneEntity
 import com.os11.app.data.db.entities.TagEntity
 import com.os11.app.data.db.entities.TaskDependencyEntity
@@ -25,7 +26,8 @@ internal interface TagDao {
     @Query("SELECT * FROM tags ORDER BY sort_order ASC, name ASC")
     suspend fun getAll(): List<TagEntity>
 
-    @Insert(onConflict = OnConflictStrategy.REPLACE)
+    // @Upsert, not REPLACE: REPLACE would unlink the tag from every task and detach its child tags.
+    @Upsert
     suspend fun upsert(tag: TagEntity)
 
     @Update

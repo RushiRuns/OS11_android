@@ -5,6 +5,7 @@ import androidx.room.Insert
 import androidx.room.OnConflictStrategy
 import androidx.room.Query
 import androidx.room.Update
+import androidx.room.Upsert
 import com.os11.app.data.db.entities.CollaborationMemberEntity
 import com.os11.app.data.db.entities.DeviceEntity
 import com.os11.app.data.db.entities.GoalEntity
@@ -27,7 +28,8 @@ internal interface GoalDao {
     @Query("SELECT * FROM goals ORDER BY created_at ASC")
     suspend fun getAll(): List<GoalEntity>
 
-    @Insert(onConflict = OnConflictStrategy.REPLACE)
+    // @Upsert, not REPLACE: REPLACE would cascade-delete the goal's links.
+    @Upsert
     suspend fun upsert(goal: GoalEntity)
 
     @Update

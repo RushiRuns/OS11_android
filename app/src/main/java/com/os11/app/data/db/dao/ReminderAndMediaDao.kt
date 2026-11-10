@@ -5,6 +5,7 @@ import androidx.room.Insert
 import androidx.room.OnConflictStrategy
 import androidx.room.Query
 import androidx.room.Update
+import androidx.room.Upsert
 import com.os11.app.data.db.entities.AttachmentEntity
 import com.os11.app.data.db.entities.CommentEntity
 import com.os11.app.data.db.entities.CommentReactionEntity
@@ -90,7 +91,8 @@ internal interface CommentDao {
     @Query("SELECT * FROM comments WHERE task_id = :taskId ORDER BY created_at ASC")
     fun observeByTask(taskId: String): Flow<List<CommentEntity>>
 
-    @Insert(onConflict = OnConflictStrategy.REPLACE)
+    // @Upsert, not REPLACE: REPLACE would cascade-delete the comment's replies and reactions.
+    @Upsert
     suspend fun upsert(comment: CommentEntity)
 
     @Update

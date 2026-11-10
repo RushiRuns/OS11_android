@@ -5,6 +5,7 @@ import androidx.room.Insert
 import androidx.room.OnConflictStrategy
 import androidx.room.Query
 import androidx.room.Update
+import androidx.room.Upsert
 import com.os11.app.data.db.entities.AreaEntity
 import com.os11.app.data.db.entities.LocalIdentityEntity
 import com.os11.app.data.db.entities.ProjectEntity
@@ -35,7 +36,8 @@ internal interface WorkspaceDao {
     @Query("SELECT * FROM workspaces LIMIT 1")
     fun observeDefault(): Flow<WorkspaceEntity?>
 
-    @Insert(onConflict = OnConflictStrategy.REPLACE)
+    // @Upsert, not REPLACE: REPLACE would cascade-delete every area, project and task in the workspace.
+    @Upsert
     suspend fun upsert(workspace: WorkspaceEntity)
 
     @Update
@@ -53,7 +55,8 @@ internal interface AreaDao {
     @Query("SELECT * FROM areas WHERE workspace_id = :workspaceId ORDER BY sort_order ASC, id ASC")
     fun observeAll(workspaceId: String): Flow<List<AreaEntity>>
 
-    @Insert(onConflict = OnConflictStrategy.REPLACE)
+    // @Upsert, not REPLACE: REPLACE would null out area_id on every project and task in the area.
+    @Upsert
     suspend fun upsert(area: AreaEntity)
 
     @Update
@@ -77,7 +80,8 @@ internal interface ProjectDao {
     @Query("SELECT * FROM projects WHERE area_id = :areaId ORDER BY sort_order ASC, id ASC")
     fun observeByArea(areaId: String): Flow<List<ProjectEntity>>
 
-    @Insert(onConflict = OnConflictStrategy.REPLACE)
+    // @Upsert, not REPLACE: REPLACE would delete its sections and milestones and null out project_id on its tasks.
+    @Upsert
     suspend fun upsert(project: ProjectEntity)
 
     @Update
@@ -101,7 +105,8 @@ internal interface SectionDao {
     @Query("SELECT * FROM sections WHERE project_id = :projectId ORDER BY sort_order ASC, id ASC")
     suspend fun getByProject(projectId: String): List<SectionEntity>
 
-    @Insert(onConflict = OnConflictStrategy.REPLACE)
+    // @Upsert, not REPLACE: REPLACE would null out section_id on every task in the section.
+    @Upsert
     suspend fun upsert(section: SectionEntity)
 
     @Update

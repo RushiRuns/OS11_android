@@ -1,10 +1,9 @@
 package com.os11.app.data.db.dao
 
 import androidx.room.Dao
-import androidx.room.Insert
-import androidx.room.OnConflictStrategy
 import androidx.room.Query
 import androidx.room.Update
+import androidx.room.Upsert
 import com.os11.app.data.db.entities.TaskEntity
 import kotlinx.coroutines.flow.Flow
 
@@ -349,10 +348,12 @@ internal interface TaskDao {
     @Query("UPDATE tasks SET pomodoro_count = :count WHERE id = :taskId")
     suspend fun updatePomodoroCount(taskId: String, count: Int)
 
-    @Insert(onConflict = OnConflictStrategy.REPLACE)
+    // Must be @Upsert, never INSERT OR REPLACE: REPLACE is DELETE + INSERT, which fires ON DELETE CASCADE /
+    // SET NULL on every child row (subtasks, tags, reminders, attachments, comments, history, dependencies).
+    @Upsert
     suspend fun upsert(task: TaskEntity)
 
-    @Insert(onConflict = OnConflictStrategy.REPLACE)
+    @Upsert
     suspend fun upsertAll(tasks: List<TaskEntity>)
 
     @Update
