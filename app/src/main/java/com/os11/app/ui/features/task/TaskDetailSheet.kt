@@ -42,6 +42,7 @@ import androidx.compose.ui.draw.clip
 import androidx.compose.ui.semantics.Role
 import androidx.compose.ui.unit.dp
 import com.os11.app.service.attachment.AttachmentItem
+import com.os11.app.service.note.NoteSanitizer
 import com.os11.app.service.tag.TagItem
 import com.os11.app.ui.components.OSCheckbox
 import com.os11.app.ui.components.OSChip
@@ -56,6 +57,7 @@ import com.os11.app.ui.components.OSTagShape
 import com.os11.app.ui.components.OSTextField
 import com.os11.app.ui.components.TagPickerSheet
 import com.os11.app.ui.components.note.NoteEditor
+import com.os11.app.ui.components.rememberDebouncedDraft
 import com.os11.app.ui.theme.OS11Theme
 
 /**
@@ -101,8 +103,13 @@ fun TaskDetailSheet(
     val spacing = OS11Theme.spacing
     val type = OS11Theme.type
 
-    var currentTitle by remember(title) { mutableStateOf(title) }
-    var currentNotes by remember(notes) { mutableStateOf(notes ?: "") }
+    // Local drafts, deliberately not keyed on the incoming values: the saved value echoes back through the
+    // ViewModel, and re-keying on it reset the field mid-typing (lost and reordered characters). Edits are
+    // saved after a short pause, and immediately when the sheet closes (see rememberDebouncedDraft).
+    var currentTitle by remember { mutableStateOf(title) }
+    val initialNotes = remember { notes ?: "" }
+    val titleDraft = rememberDebouncedDraft<String>(onSave = onTitleChange)
+    val notesDraft = rememberDebouncedDraft<String> { plain -> onNotesChange(NoteSanitizer.fromPlainText(plain)) }
     var currentPriority by remember(priority) { mutableIntStateOf(priority) }
     var showDatePicker by remember { mutableStateOf(false) }
     var showTagPicker by remember { mutableStateOf(false) }
@@ -137,7 +144,7 @@ fun TaskDetailSheet(
                 onCompletedChange = onCompletedChange,
                 onTitleChange = {
                     currentTitle = it
-                    onTitleChange(it)
+                    titleDraft.update(it)
                 },
                 onClose = onDismissRequest,
             )
@@ -217,11 +224,8 @@ fun TaskDetailSheet(
 
             if (isNotesExpanded) {
                 NoteEditor(
-                    initialText = currentNotes,
-                    onNotesChanged = {
-                        currentNotes = it
-                        onNotesChange(it)
-                    },
+                    initialText = initialNotes,
+                    onTextChanged = { notesDraft.update(it) },
                     modifier = Modifier.padding(top = spacing.s2),
                 )
             }

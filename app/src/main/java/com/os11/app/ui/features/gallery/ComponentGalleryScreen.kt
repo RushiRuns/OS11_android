@@ -356,7 +356,7 @@ fun ComponentGalleryScreen(modifier: Modifier = Modifier) {
                 com.os11.app.ui.components.note.NoteEditor(
                     initialText = "<h2>Sprint Notes</h2><p>Sanitized with Jsoup on save " +
                         "per <strong>ADR-A11</strong>.</p>",
-                    onNotesChanged = {},
+                    onTextChanged = {},
                 )
             }
         }

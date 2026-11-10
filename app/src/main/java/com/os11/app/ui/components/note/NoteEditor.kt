@@ -39,13 +39,15 @@ import com.os11.app.ui.theme.OS11Theme
 /**
  * Lightweight native note editor per ADR-A11 and Spike S-2.
  *
- * Provides inline formatting shortcuts (Bold, Italic, Strikethrough, Code, Lists, Checklists)
- * and sanitizes HTML output via Jsoup upon save.
+ * Provides inline formatting shortcuts (Bold, Italic, Strikethrough, Code, Lists, Checklists).
+ * [initialText] is the stored HTML, read once; [onTextChanged] reports the plain text on every change. The
+ * caller decides when to save and converts to sanitized HTML with [NoteSanitizer.fromPlainText] then, so
+ * typing never runs the HTML sanitizer per keystroke.
  */
 @Composable
 fun NoteEditor(
     initialText: String,
-    onNotesChanged: (String) -> Unit,
+    onTextChanged: (String) -> Unit,
     modifier: Modifier = Modifier,
     placeholder: String = "Add notes...",
 ) {
@@ -76,7 +78,7 @@ fun NoteEditor(
         }
 
         textFieldValue = TextFieldValue(newText, selection = TextRange(newCursor))
-        onNotesChanged(NoteSanitizer.fromPlainText(newText))
+        onTextChanged(newText)
     }
 
     fun applyPrefixFormatting(prefix: String) {
@@ -88,7 +90,7 @@ fun NoteEditor(
         val newCursor = selection.start + prefix.length
 
         textFieldValue = TextFieldValue(newText, selection = TextRange(newCursor))
-        onNotesChanged(NoteSanitizer.fromPlainText(newText))
+        onTextChanged(newText)
     }
 
     Column(
@@ -150,8 +152,9 @@ fun NoteEditor(
         BasicTextField(
             value = textFieldValue,
             onValueChange = { newValue ->
+                val textChanged = newValue.text != textFieldValue.text
                 textFieldValue = newValue
-                onNotesChanged(NoteSanitizer.fromPlainText(newValue.text))
+                if (textChanged) onTextChanged(newValue.text)
             },
             modifier = Modifier
                 .fillMaxWidth()
