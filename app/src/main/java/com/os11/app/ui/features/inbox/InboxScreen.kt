@@ -17,9 +17,7 @@ import androidx.compose.material.icons.filled.Menu
 import androidx.compose.material.icons.outlined.CheckCircle
 import androidx.compose.material3.Icon
 import androidx.compose.material3.Text
-import android.util.Log // FLOWDBG
 import androidx.compose.runtime.Composable
-import androidx.compose.runtime.LaunchedEffect // FLOWDBG
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
@@ -59,7 +57,6 @@ fun InboxScreen(modifier: Modifier = Modifier, viewModel: TaskViewModel = hiltVi
     val spacing = OS11Theme.spacing
 
     val tasks by viewModel.inboxTasks.collectAsStateWithLifecycle()
-    LaunchedEffect(tasks) { Log.d("FlowDbg", "ui inbox tasks=${tasks.size}") } // FLOWDBG
     val sortOption by viewModel.sortOption.collectAsStateWithLifecycle()
     val filterOption by viewModel.filterOption.collectAsStateWithLifecycle()
     val selectedDetail by viewModel.selectedDetailTask.collectAsStateWithLifecycle()

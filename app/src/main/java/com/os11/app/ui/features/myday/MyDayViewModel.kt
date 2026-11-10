@@ -21,8 +21,6 @@ import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.flow.combine
 import kotlinx.coroutines.flow.flatMapLatest
-import android.util.Log // FLOWDBG
-import kotlinx.coroutines.flow.onEach // FLOWDBG
 import kotlinx.coroutines.flow.stateIn
 import kotlinx.coroutines.launch
 import javax.inject.Inject
@@ -135,7 +133,6 @@ class MyDayViewModel @Inject constructor(
             isLoading = false,
         )
     }
-        .onEach { Log.d("FlowDbg", "vm myday emit tasks=${it.tasks.size} sugg=${it.suggestions.size} done=${it.completedCount}") } // FLOWDBG
         .stateIn(
         scope = viewModelScope,
         started = SharingStarted.WhileSubscribed(5_000L),

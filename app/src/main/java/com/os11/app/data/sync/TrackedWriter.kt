@@ -1,6 +1,5 @@
 package com.os11.app.data.sync
 
-import android.util.Log // FLOWDBG
 import androidx.room.immediateTransaction
 import androidx.room.useWriterConnection
 import com.os11.app.data.db.OS11Database
@@ -685,27 +684,10 @@ class TrackedWriter(
      * (which calls beginTransaction() and needs a SupportSQLiteOpenHelper) throws IllegalStateException.
      * DAO calls made inside [block] join this transaction because they share the coroutine's connection.
      */
-    /* // FLOWDBG
     private suspend fun <R> inTransaction(block: suspend () -> R): R =
         db.useWriterConnection { transactor ->
             transactor.immediateTransaction { block() }
         }
-    */ // FLOWDBG
-    private suspend fun <R> inTransaction(block: suspend () -> R): R { // FLOWDBG
-        Log.d("FlowDbg", "tx START ${Thread.currentThread().name}") // FLOWDBG
-        val startMs = System.currentTimeMillis() // FLOWDBG
-        try { // FLOWDBG
-            val result = db.useWriterConnection { transactor -> // FLOWDBG
-                transactor.immediateTransaction { block() } // FLOWDBG
-            } // FLOWDBG
-            val elapsedMs = System.currentTimeMillis() - startMs // FLOWDBG
-            Log.d("FlowDbg", "tx END $elapsedMs") // FLOWDBG
-            return result // FLOWDBG
-        } catch (e: Throwable) { // FLOWDBG
-            Log.d("FlowDbg", "tx FAIL ${e.javaClass.name}") // FLOWDBG
-            throw e // FLOWDBG
-        } // FLOWDBG
-    } // FLOWDBG
 
     private suspend fun enqueueOutbox(entity: String, entityId: String, operation: Operation, payload: String) {
         db.syncQueueDao().enqueue(

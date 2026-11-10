@@ -1,7 +1,6 @@
 package com.os11.app.ui.features.task
 
 import android.content.Context
-import android.util.Log // FLOWDBG
 import android.content.Intent
 import android.net.Uri
 import androidx.lifecycle.ViewModel
@@ -26,7 +25,6 @@ import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.flow.combine
 import kotlinx.coroutines.flow.map
-import kotlinx.coroutines.flow.onEach // FLOWDBG
 import kotlinx.coroutines.flow.stateIn
 import kotlinx.coroutines.launch
 import java.io.File
@@ -97,7 +95,6 @@ class TaskViewModel @Inject constructor(
             todayIso = clock.today(),
         ).toImmutableList()
     }
-        .onEach { Log.d("FlowDbg", "vm inbox emit size=${it.size}") } // FLOWDBG
         .stateIn(
         scope = viewModelScope,
         started = SharingStarted.WhileSubscribed(5_000),
