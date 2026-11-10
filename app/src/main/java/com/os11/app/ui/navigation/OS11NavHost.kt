@@ -1,5 +1,8 @@
 package com.os11.app.ui.navigation
 
+import androidx.compose.animation.ExitTransition
+import androidx.compose.animation.core.tween
+import androidx.compose.animation.fadeIn
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Modifier
 import androidx.navigation.NavHostController
@@ -28,6 +31,8 @@ import com.os11.app.ui.features.smartlists.CompletedScreen
 import com.os11.app.ui.features.smartlists.ImportantScreen
 import com.os11.app.ui.features.trash.TrashScreen
 
+private const val NAV_FADE_IN_MS = 120
+
 /**
  * Main application navigation graph with type-safe route destinations.
  */
@@ -37,10 +42,17 @@ fun OS11NavHost(
     modifier: Modifier = Modifier,
     startDestination: OS11Route = OS11Route.MyDay,
 ) {
+    // Navigation Compose's default is a 700 ms cross-fade that keeps both screens composed and drawn at once.
+    // Instead the old screen leaves immediately and the new one fades in briefly, so a tab switch feels instant
+    // and only one screen is being drawn.
     NavHost(
         navController = navController,
         startDestination = startDestination,
         modifier = modifier,
+        enterTransition = { fadeIn(animationSpec = tween(NAV_FADE_IN_MS)) },
+        exitTransition = { ExitTransition.None },
+        popEnterTransition = { fadeIn(animationSpec = tween(NAV_FADE_IN_MS)) },
+        popExitTransition = { ExitTransition.None },
     ) {
         composable<OS11Route.MyDay> {
             MyDayScreen(
